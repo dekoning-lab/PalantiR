@@ -1,0 +1,14 @@
+CXX_STD = CXX11
+PKG_CPPFLAGS += -Dis_R -IPalantiR_Core
+
+TEST_HEADERS = $(wildcard PalantiR_Core/test/*.hpp)
+TEST_SOURCES = $(wildcard PalantiR_Core/test/*.cpp)
+
+EXT_HEADERS = $(wildcard PalantiR_Core/*.hpp)
+EXT_SOURCES = $(wildcard PalantiR_Core/*.cpp)
+
+RCPP_SOURCES = $(wildcard *.cpp)
+
+SOURCES = $(EXT_SOURCES) $(RCPP_SOURCES)
+
+OBJECTS = $(SOURCES:.cpp=.o)
