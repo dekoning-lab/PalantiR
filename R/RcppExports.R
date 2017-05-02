@@ -9,7 +9,3 @@ MutationSelection <- function(population_size, mutation_rate, nucleotide_equilib
     .Call('PalantiR_MutationSelection', PACKAGE = 'PalantiR', population_size, mutation_rate, nucleotide_equilibrium, nucleotide_transition, fitness)
 }
 
-Phylogeny <- function(newick) {
-    .Call('PalantiR_Phylogeny', PACKAGE = 'PalantiR', newick)
-}
-
