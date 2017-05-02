@@ -1,0 +1,19 @@
+.node circle {
+  stroke: none;
+  transition: r 0.1s;
+}
+
+.node circle:hover {
+  stroke: orange;
+  stroke-width: 1px;
+}
+
+
+.interval :hover {
+  stroke: orange;
+  stroke-width: 1px;
+}
+
+.link:hover {
+  stroke: orange;
+}

@@ -56,3 +56,16 @@ List MutationSelection(
     ms.attr("class") = "SubstitutionModel";
     return ms;
 }
+
+// [[Rcpp::export]]
+List Phylogeny(std::string newick)
+{
+    Palantir::Phylogeny tree(newick);
+
+    List phylo = List::create(
+        _["json"] = tree.to_JSON(),
+        _["n_nodes"] = tree.n_nodes
+    );
+    phylo.attr("class") = "Phylogeny";
+    return phylo;
+}
