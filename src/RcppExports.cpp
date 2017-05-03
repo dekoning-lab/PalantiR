@@ -45,6 +45,32 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// equilibrium_to_fitness
+arma::vec equilibrium_to_fitness(arma::vec equilibrium, unsigned long long population_size);
+RcppExport SEXP PalantiR_equilibrium_to_fitness(SEXP equilibriumSEXP, SEXP population_sizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type equilibrium(equilibriumSEXP);
+    Rcpp::traits::input_parameter< unsigned long long >::type population_size(population_sizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(equilibrium_to_fitness(equilibrium, population_size));
+    return rcpp_result_gen;
+END_RCPP
+}
+// simulate_over_time
+DataFrame simulate_over_time(List substitution_model, unsigned long long start, double duration, double rate);
+RcppExport SEXP PalantiR_simulate_over_time(SEXP substitution_modelSEXP, SEXP startSEXP, SEXP durationSEXP, SEXP rateSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type substitution_model(substitution_modelSEXP);
+    Rcpp::traits::input_parameter< unsigned long long >::type start(startSEXP);
+    Rcpp::traits::input_parameter< double >::type duration(durationSEXP);
+    Rcpp::traits::input_parameter< double >::type rate(rateSEXP);
+    rcpp_result_gen = Rcpp::wrap(simulate_over_time(substitution_model, start, duration, rate));
+    return rcpp_result_gen;
+END_RCPP
+}
 // simulate_over_phylogeny
 DataFrame simulate_over_phylogeny(List tree, List substitution_model, arma::uvec sequence, double rate);
 RcppExport SEXP PalantiR_simulate_over_phylogeny(SEXP treeSEXP, SEXP substitution_modelSEXP, SEXP sequenceSEXP, SEXP rateSEXP) {

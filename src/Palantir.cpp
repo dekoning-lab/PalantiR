@@ -79,6 +79,40 @@ List Phylogeny(std::string newick)
 }
 
 // [[Rcpp::export]]
+arma::vec equilibrium_to_fitness(arma::vec equilibrium, unsigned long long population_size)
+{
+    return Palantir::equilibrium_to_fitness(equilibrium, population_size);
+}
+
+// [[Rcpp::export]]
+DataFrame simulate_over_time(
+    List substitution_model,
+    unsigned long long start,
+    double duration,
+    double rate = 1)
+{
+    std::string cl = substitution_model.attr("class");
+    if(cl != "SubstitutionModel") {
+        stop("Argument `substitution_model` should be of class `SubstitutionModel`");
+    }
+
+    arma::mat transition = substitution_model["transition"];
+    arma::mat sampling = substitution_model["sampling"];
+
+    Palantir::SubstitutionHistory sh =
+        Palantir::Simulate::over_time(transition, sampling, start, duration, rate);
+
+    Rcout << sh.size << endl;
+
+    return DataFrame::create(
+        _["time"] = sh.time,
+        _["from"] = sh.state_from,
+        _["to"] = sh.state_to
+    );
+}
+
+
+// [[Rcpp::export]]
 DataFrame simulate_over_phylogeny(
     List tree,
     List substitution_model,

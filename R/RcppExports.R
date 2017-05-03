@@ -13,6 +13,14 @@ Phylogeny <- function(newick) {
     .Call('PalantiR_Phylogeny', PACKAGE = 'PalantiR', newick)
 }
 
+equilibrium_to_fitness <- function(equilibrium, population_size) {
+    .Call('PalantiR_equilibrium_to_fitness', PACKAGE = 'PalantiR', equilibrium, population_size)
+}
+
+simulate_over_time <- function(substitution_model, start, duration, rate = 1) {
+    .Call('PalantiR_simulate_over_time', PACKAGE = 'PalantiR', substitution_model, start, duration, rate)
+}
+
 simulate_over_phylogeny <- function(tree, substitution_model, sequence, rate = 1) {
     .Call('PalantiR_simulate_over_phylogeny', PACKAGE = 'PalantiR', tree, substitution_model, sequence, rate)
 }
