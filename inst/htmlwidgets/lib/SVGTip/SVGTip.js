@@ -62,6 +62,7 @@ var SVGTip = function (options) {
   tooltip.text = tooltip.append('text')
     .attr('class', 'text')
     .style({
+      'font': '10px monospace',
       'fill': 'white',
       'stroke': 'none',
       'text-anchor': 'middle',

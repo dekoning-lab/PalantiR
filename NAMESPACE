@@ -1,3 +1,3 @@
-useDynLib(PalantiR)
 exportPattern("^[[:alpha:]]+")
-import(methods, Rcpp)
+importFrom(Rcpp, evalCpp)
+useDynLib(PalantiR)

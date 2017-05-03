@@ -9,3 +9,11 @@ MutationSelection <- function(population_size, mutation_rate, nucleotide_equilib
     .Call('PalantiR_MutationSelection', PACKAGE = 'PalantiR', population_size, mutation_rate, nucleotide_equilibrium, nucleotide_transition, fitness)
 }
 
+Phylogeny <- function(newick) {
+    .Call('PalantiR_Phylogeny', PACKAGE = 'PalantiR', newick)
+}
+
+simulate_over_phylogeny <- function(tree, substitution_model, sequence, rate = 1) {
+    .Call('PalantiR_simulate_over_phylogeny', PACKAGE = 'PalantiR', tree, substitution_model, sequence, rate)
+}
+

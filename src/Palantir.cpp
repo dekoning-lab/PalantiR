@@ -5,8 +5,11 @@
 #include "HasegawaKishinoYano.hpp"
 #include "MutationSelection.hpp"
 #include "GeneticCode.hpp"
+#include "SubstitutionHistory.hpp"
+#include "Simulate.hpp"
 
 using namespace Rcpp;
+using namespace std;
 
 std::string get_genetic_code_name() {
     Environment globals = Environment::namespace_env("PalantiR").get(".globals");
@@ -24,7 +27,8 @@ List HasegawaKishinoYano(arma::vec equilibrium, double transition_rate = 1, doub
         _["equilibrium"] = equilibrium,
         _["transition"] = transition,
         _["sampling"] = sampling,
-        _["n_states"] = n_states
+        _["n_states"] = n_states,
+        _["type"] = "nucleotide"
     );
 
     hky.attr("class") = "SubstitutionModel";
@@ -50,22 +54,83 @@ List MutationSelection(
         _["equilibrium"] = equilibrium,
         _["transition"] = transition,
         _["sampling"] = sampling,
-        _["n_states"] = n_states
+        _["n_states"] = n_states,
+        _["type"] = "codon"
     );
 
     ms.attr("class") = "SubstitutionModel";
     return ms;
 }
 
-// // [[Rcpp::export]]
-// List Phylogeny(std::string newick)
-// {
-//     Palantir::Phylogeny tree(newick);
-//
-//     List phylo = List::create(
-//         _["json"] = tree.to_JSON(),
-//         _["n_nodes"] = tree.n_nodes
-//     );
-//     phylo.attr("class") = "Phylogeny";
-//     return phylo;
-// }
+// [[Rcpp::export]]
+List Phylogeny(std::string newick)
+{
+    //TODO: need error checking and file parsing
+    Palantir::Phylogeny tree(newick);
+
+    List phylo = List::create(
+        _["json"] = tree.to_JSON(),
+        _["string"] = tree.to_string(),
+        _["newick"] = newick,
+        _["n_nodes"] = tree.n_nodes
+    );
+    phylo.attr("class") = "Phylogeny";
+    return phylo;
+}
+
+// [[Rcpp::export]]
+DataFrame simulate_over_phylogeny(
+    List tree,
+    List substitution_model,
+    arma::uvec sequence,
+    double rate = 1)
+{
+    arma::mat transition = substitution_model["transition"];
+    arma::mat sampling = substitution_model["sampling"];
+
+    string newick = tree["newick"];
+    Palantir::Phylogeny p(newick);
+
+    vector<vector<Palantir::SubstitutionHistory>> sh =
+        Palantir::Simulate::sequence_over_phylogeny(
+            p, transition, sampling, sequence, rate);
+    Rcout << sh.size() << std::endl;
+    Rcout << sh[0].size() << std::endl;
+
+    unsigned long long size = 0;
+
+    for(unsigned long long site = 0; site < sh.size(); site ++) {
+        for(unsigned long long node = 0; node < sh[site].size(); node ++) {
+            Palantir::SubstitutionHistory& s = sh[site][node];
+            size += s.size;
+        }
+    }
+    Rcout << size << std::endl;
+    arma::uvec sites(size);
+    arma::uvec node_index(size);
+    arma::vec time(size);
+    arma::uvec state_from(size);
+    arma::uvec state_to(size);
+
+    unsigned long long i = 0;
+    for(unsigned long long site = 0; site < sh.size(); site ++) {
+        for(unsigned long long node = 0; node < sh[site].size(); node ++) {
+            Palantir::SubstitutionHistory& s = sh[site][node];
+            for(unsigned long long sub = 0; sub < s.size; sub ++) {
+                sites[i] = site;
+                node_index[i] = node;
+                time[i] = s.time[i];
+                state_from[i] = s.state_from[i];
+                state_to[i] = s.state_to[i];
+                i ++;
+            }
+        }
+    }
+
+    return DataFrame::create(
+        _["site"] = sites,
+        _["node"] = node_index,
+        _["time"] = time,
+        _["from"] = state_from,
+        _["to"] = state_to);
+}

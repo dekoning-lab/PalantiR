@@ -1,5 +1,7 @@
 plot.Phylogeny <- function(phylogeny) PhyloPlot(phylogeny)
 
+print.Phylogeny <- function(phylogeny) cat(phylogeny$string)
+
 PhyloPlot <- function(
     phylogeny,
     substitutions = NULL,

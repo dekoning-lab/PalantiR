@@ -34,3 +34,28 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// Phylogeny
+List Phylogeny(std::string newick);
+RcppExport SEXP PalantiR_Phylogeny(SEXP newickSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type newick(newickSEXP);
+    rcpp_result_gen = Rcpp::wrap(Phylogeny(newick));
+    return rcpp_result_gen;
+END_RCPP
+}
+// simulate_over_phylogeny
+DataFrame simulate_over_phylogeny(List tree, List substitution_model, arma::uvec sequence, double rate);
+RcppExport SEXP PalantiR_simulate_over_phylogeny(SEXP treeSEXP, SEXP substitution_modelSEXP, SEXP sequenceSEXP, SEXP rateSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type tree(treeSEXP);
+    Rcpp::traits::input_parameter< List >::type substitution_model(substitution_modelSEXP);
+    Rcpp::traits::input_parameter< arma::uvec >::type sequence(sequenceSEXP);
+    Rcpp::traits::input_parameter< double >::type rate(rateSEXP);
+    rcpp_result_gen = Rcpp::wrap(simulate_over_phylogeny(tree, substitution_model, sequence, rate));
+    return rcpp_result_gen;
+END_RCPP
+}
