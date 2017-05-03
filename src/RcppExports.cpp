@@ -20,8 +20,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // MutationSelection
-List MutationSelection(unsigned long long population_size, double mutation_rate, arma::vec nucleotide_equilibrium, arma::mat nucleotide_transition, arma::vec fitness);
-RcppExport SEXP PalantiR_MutationSelection(SEXP population_sizeSEXP, SEXP mutation_rateSEXP, SEXP nucleotide_equilibriumSEXP, SEXP nucleotide_transitionSEXP, SEXP fitnessSEXP) {
+List MutationSelection(unsigned long long population_size, double mutation_rate, arma::vec nucleotide_equilibrium, arma::mat nucleotide_transition, arma::vec fitness, std::string scaling_type);
+RcppExport SEXP PalantiR_MutationSelection(SEXP population_sizeSEXP, SEXP mutation_rateSEXP, SEXP nucleotide_equilibriumSEXP, SEXP nucleotide_transitionSEXP, SEXP fitnessSEXP, SEXP scaling_typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -30,7 +30,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type nucleotide_equilibrium(nucleotide_equilibriumSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type nucleotide_transition(nucleotide_transitionSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type fitness(fitnessSEXP);
-    rcpp_result_gen = Rcpp::wrap(MutationSelection(population_size, mutation_rate, nucleotide_equilibrium, nucleotide_transition, fitness));
+    Rcpp::traits::input_parameter< std::string >::type scaling_type(scaling_typeSEXP);
+    rcpp_result_gen = Rcpp::wrap(MutationSelection(population_size, mutation_rate, nucleotide_equilibrium, nucleotide_transition, fitness, scaling_type));
     return rcpp_result_gen;
 END_RCPP
 }

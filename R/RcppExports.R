@@ -5,8 +5,8 @@ HasegawaKishinoYano <- function(equilibrium, transition_rate = 1, transversion_r
     .Call('PalantiR_HasegawaKishinoYano', PACKAGE = 'PalantiR', equilibrium, transition_rate, transversion_rate)
 }
 
-MutationSelection <- function(population_size, mutation_rate, nucleotide_equilibrium, nucleotide_transition, fitness) {
-    .Call('PalantiR_MutationSelection', PACKAGE = 'PalantiR', population_size, mutation_rate, nucleotide_equilibrium, nucleotide_transition, fitness)
+MutationSelection <- function(population_size, mutation_rate, nucleotide_equilibrium, nucleotide_transition, fitness, scaling_type = "synonymous") {
+    .Call('PalantiR_MutationSelection', PACKAGE = 'PalantiR', population_size, mutation_rate, nucleotide_equilibrium, nucleotide_transition, fitness, scaling_type)
 }
 
 Phylogeny <- function(newick) {

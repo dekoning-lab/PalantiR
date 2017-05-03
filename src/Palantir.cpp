@@ -41,12 +41,16 @@ List MutationSelection(
         double mutation_rate,
         arma::vec nucleotide_equilibrium,
         arma::mat nucleotide_transition,
-        arma::vec fitness)
+        arma::vec fitness,
+        std::string scaling_type = "synonymous")
 {
     Palantir::GeneticCode g(get_genetic_code_name());
 
     arma::vec equilibrium = Palantir::MutationSelection::equilibrium(population_size, mutation_rate, nucleotide_equilibrium, fitness, g);
     arma::mat transition = Palantir::MutationSelection::transition(population_size, mutation_rate, nucleotide_transition, fitness, g);
+    double scaling = Palantir::MutationSelection::scaling(equilibrium, transition, scaling_type, g);
+    transition /= scaling;
+
     arma::mat sampling = Palantir::sampling(transition);
     unsigned long long n_states = equilibrium.n_elem;
 
@@ -54,6 +58,7 @@ List MutationSelection(
         _["equilibrium"] = equilibrium,
         _["transition"] = transition,
         _["sampling"] = sampling,
+        _["scaling"] = scaling,
         _["n_states"] = n_states,
         _["type"] = "codon"
     );
