@@ -35,6 +35,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// decorate_codon_substitutions
+DataFrame decorate_codon_substitutions(DataFrame substitutions);
+RcppExport SEXP PalantiR_decorate_codon_substitutions(SEXP substitutionsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< DataFrame >::type substitutions(substitutionsSEXP);
+    rcpp_result_gen = Rcpp::wrap(decorate_codon_substitutions(substitutions));
+    return rcpp_result_gen;
+END_RCPP
+}
 // Phylogeny
 List Phylogeny(std::string newick);
 RcppExport SEXP PalantiR_Phylogeny(SEXP newickSEXP) {
@@ -58,22 +69,8 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// simulate_over_time
-DataFrame simulate_over_time(List substitution_model, unsigned long long start, double duration, double rate);
-RcppExport SEXP PalantiR_simulate_over_time(SEXP substitution_modelSEXP, SEXP startSEXP, SEXP durationSEXP, SEXP rateSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type substitution_model(substitution_modelSEXP);
-    Rcpp::traits::input_parameter< unsigned long long >::type start(startSEXP);
-    Rcpp::traits::input_parameter< double >::type duration(durationSEXP);
-    Rcpp::traits::input_parameter< double >::type rate(rateSEXP);
-    rcpp_result_gen = Rcpp::wrap(simulate_over_time(substitution_model, start, duration, rate));
-    return rcpp_result_gen;
-END_RCPP
-}
 // simulate_over_phylogeny
-DataFrame simulate_over_phylogeny(List tree, List substitution_model, arma::uvec sequence, double rate);
+List simulate_over_phylogeny(List tree, List substitution_model, arma::uvec sequence, double rate);
 RcppExport SEXP PalantiR_simulate_over_phylogeny(SEXP treeSEXP, SEXP substitution_modelSEXP, SEXP sequenceSEXP, SEXP rateSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;

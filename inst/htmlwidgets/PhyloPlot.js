@@ -299,7 +299,7 @@ HTMLWidgets.widget({
           .append('circle')
           .filter(function(d) {
             var node = d3.select(this.parentNode).datum();
-            return node.index === d.branch_index;
+            return node.index === d.node;
           })
           .filter(function(d) {
             if (options.sites === 'all') { return true; }
@@ -314,10 +314,7 @@ HTMLWidgets.widget({
           })
           .attr('fill', function(d) {
             if (d.hasOwnProperty("color")) return(d.color);
-            else if (d.mode_switch) return('#2A4BE8');
-            else if (d.synonymous) return('#16A35E');
-            else if (d.transition) return('#16A35E');
-            else return('#E84B2A');
+            else return('#FC571F');
           })
           .call(subs_tip);
     };
@@ -378,9 +375,11 @@ HTMLWidgets.widget({
       if (!is_empty_object(data.intervals) && (options.n_sites === 1 || options.sites.length === 1)) {
         var intervals = render_intervals(data.intervals, plot, plot.options);
       }
-      if (!is_empty_object(data.substitutions) && options.show_substitutions) {
+      if (!is_empty_object(data.substitutions)) {
         var subs = render_substitutions(data.substitutions, plot, plot.options);
+        console.log(data.substitutions);
       }
+      console.log("Heyo!");
     };
 
     return {

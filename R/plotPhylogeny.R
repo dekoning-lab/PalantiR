@@ -10,7 +10,6 @@ PhyloPlot <- function(
     width = NULL,
     height = NULL,
     sites = "all",
-    show_substitutions = TRUE,
     show_labels = T,
     label_font_size = 10,
     show_axis = T,
@@ -24,12 +23,10 @@ PhyloPlot <- function(
 
     data <- toJSON(list(
         tree = tree,
-        substitutions = NULL,
-        intervals = NULL,
+        substitutions = substitutions,
+        intervals = intervals,
         options = list(
-            substitutions = substitutions,
             sites = sites,
-            show_substitutions = show_substitutions,
             n_sites = n_sites,
             show_labels = show_labels,
             label_font_size = label_font_size,

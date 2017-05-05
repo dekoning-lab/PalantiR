@@ -9,16 +9,16 @@ MutationSelection <- function(population_size, mutation_rate, nucleotide_equilib
     .Call('PalantiR_MutationSelection', PACKAGE = 'PalantiR', population_size, mutation_rate, nucleotide_equilibrium, nucleotide_transition, fitness, scaling_type)
 }
 
+decorate_codon_substitutions <- function(substitutions) {
+    .Call('PalantiR_decorate_codon_substitutions', PACKAGE = 'PalantiR', substitutions)
+}
+
 Phylogeny <- function(newick) {
     .Call('PalantiR_Phylogeny', PACKAGE = 'PalantiR', newick)
 }
 
 equilibrium_to_fitness <- function(equilibrium, population_size) {
     .Call('PalantiR_equilibrium_to_fitness', PACKAGE = 'PalantiR', equilibrium, population_size)
-}
-
-simulate_over_time <- function(substitution_model, start, duration, rate = 1) {
-    .Call('PalantiR_simulate_over_time', PACKAGE = 'PalantiR', substitution_model, start, duration, rate)
 }
 
 simulate_over_phylogeny <- function(tree, substitution_model, sequence, rate = 1) {

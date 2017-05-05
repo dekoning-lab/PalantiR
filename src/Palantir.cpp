@@ -16,6 +16,11 @@ std::string get_genetic_code_name() {
     return globals["genetic_code_name"];
 }
 
+bool has_class(List a, std::string cl) {
+    std::string c = a.attr("class");
+    return cl == c;
+}
+
 // [[Rcpp::export]]
 List HasegawaKishinoYano(arma::vec equilibrium, double transition_rate = 1, double transversion_rate = 1)
 {
@@ -67,6 +72,38 @@ List MutationSelection(
     return ms;
 }
 
+CharacterVector predicate(uvec predicate, string yes, string no)
+{
+    CharacterVector c(predicate.size());
+    for(unsigned long long i = 0; i < predicate.size(); i++) {
+        if(predicate[i]) {
+            c[i] = yes;
+        } else {
+            c[i] = no;
+        }
+    }
+    return c;
+}
+
+// [[Rcpp::export]]
+DataFrame decorate_codon_substitutions(DataFrame substitutions)
+{
+    Palantir::GeneticCode g(get_genetic_code_name());
+    arma::uvec state_from = substitutions["from"];
+    arma::uvec state_to = substitutions["to"];
+
+    substitutions["codon_from"] = Palantir::Codon::to_string(state_from, g);
+    substitutions["codon_to"] = Palantir::Codon::to_string(state_to, g);
+    substitutions["amino_acid_from"] = Palantir::Codon::to_amino_acid(state_from, g);
+    substitutions["amino_acid_to"] = Palantir::Codon::to_amino_acid(state_to, g);
+
+    arma::uvec synonymous = Palantir::Codon::synonymous(state_from, state_to, g);
+    substitutions["synonymous"] = LogicalVector(synonymous.begin(), synonymous.end());
+    substitutions["color"] = predicate(synonymous, "#16A35E", "#E84B2A");
+
+    return substitutions;
+}
+
 // [[Rcpp::export]]
 List Phylogeny(std::string newick)
 {
@@ -90,40 +127,19 @@ arma::vec equilibrium_to_fitness(arma::vec equilibrium, unsigned long long popul
 }
 
 // [[Rcpp::export]]
-DataFrame simulate_over_time(
-    List substitution_model,
-    unsigned long long start,
-    double duration,
-    double rate = 1)
-{
-    std::string cl = substitution_model.attr("class");
-    if(cl != "SubstitutionModel") {
-        stop("Argument `substitution_model` should be of class `SubstitutionModel`");
-    }
-
-    arma::mat transition = substitution_model["transition"];
-    arma::mat sampling = substitution_model["sampling"];
-
-    Palantir::SubstitutionHistory sh =
-        Palantir::Simulate::over_time(transition, sampling, start, duration, rate);
-
-    Rcout << sh.size << endl;
-
-    return DataFrame::create(
-        _["time"] = sh.time,
-        _["from"] = sh.state_from,
-        _["to"] = sh.state_to
-    );
-}
-
-
-// [[Rcpp::export]]
-DataFrame simulate_over_phylogeny(
+List simulate_over_phylogeny(
     List tree,
     List substitution_model,
     arma::uvec sequence,
     double rate = 1)
 {
+    if(!has_class(tree, "Phylogeny")) {
+        stop("Argument `tree` should be of class `Phylogeny`");
+    }
+    if(!has_class(substitution_model, "SubstitutionModel")) {
+        stop("Argument `substitution_model` should be of class `SubstitutionModel`");
+    }
+
     arma::mat transition = substitution_model["transition"];
     arma::mat sampling = substitution_model["sampling"];
 
@@ -133,8 +149,6 @@ DataFrame simulate_over_phylogeny(
     vector<vector<Palantir::SubstitutionHistory>> sh =
         Palantir::Simulate::sequence_over_phylogeny(
             p, transition, sampling, sequence, rate);
-    Rcout << sh.size() << std::endl;
-    Rcout << sh[0].size() << std::endl;
 
     unsigned long long size = 0;
 
@@ -144,7 +158,6 @@ DataFrame simulate_over_phylogeny(
             size += s.size;
         }
     }
-    Rcout << size << std::endl;
     arma::uvec sites(size);
     arma::uvec node_index(size);
     arma::vec time(size);
@@ -158,18 +171,30 @@ DataFrame simulate_over_phylogeny(
             for(unsigned long long sub = 0; sub < s.size; sub ++) {
                 sites[i] = site;
                 node_index[i] = node;
-                time[i] = s.time[i];
-                state_from[i] = s.state_from[i];
-                state_to[i] = s.state_to[i];
+                time[i] = s.time[sub];
+                state_from[i] = s.state_from[sub];
+                state_to[i] = s.state_to[sub];
                 i ++;
             }
         }
     }
 
-    return DataFrame::create(
+    DataFrame substitutions = DataFrame::create(
         _["site"] = sites,
         _["node"] = node_index,
         _["time"] = time,
         _["from"] = state_from,
         _["to"] = state_to);
+
+
+    List simulation = List::create(
+        _["phylogeny"] = tree,
+        _["model"] = substitution_model,
+        _["substitutions"] = substitutions,
+        _["intervals"] = NULL
+    );
+
+    simulation.attr("class") = "Simulation";
+
+    return simulation;
 }
