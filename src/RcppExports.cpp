@@ -6,6 +6,19 @@
 
 using namespace Rcpp;
 
+// Sequence
+List Sequence(std::string sequence, std::string type, unsigned long long mode);
+RcppExport SEXP PalantiR_Sequence(SEXP sequenceSEXP, SEXP typeSEXP, SEXP modeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type sequence(sequenceSEXP);
+    Rcpp::traits::input_parameter< std::string >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< unsigned long long >::type mode(modeSEXP);
+    rcpp_result_gen = Rcpp::wrap(Sequence(sequence, type, mode));
+    return rcpp_result_gen;
+END_RCPP
+}
 // HasegawaKishinoYano
 List HasegawaKishinoYano(arma::vec equilibrium, double transition_rate, double transversion_rate);
 RcppExport SEXP PalantiR_HasegawaKishinoYano(SEXP equilibriumSEXP, SEXP transition_rateSEXP, SEXP transversion_rateSEXP) {

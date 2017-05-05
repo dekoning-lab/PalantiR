@@ -22,6 +22,67 @@ bool has_class(List a, std::string cl) {
 }
 
 // [[Rcpp::export]]
+List Sequence(std::string sequence, std::string type = "codon", unsigned long long mode = 0)
+{
+    Palantir::GeneticCode g(get_genetic_code_name());
+
+    if(type == "nucleotide") {
+        vector<string> s = Palantir::Nucleotide::split(sequence);
+        List seq = List::create(
+            _["sequence"] = sequence,
+            _["index"] = Palantir::Nucleotide::to_digit(s),
+            _["type"] = type
+        );
+        seq.attr("class") = "Sequence";
+        return seq;
+    }
+    if(type == "amino_acid") {
+        vector<string> s = Palantir::AminoAcid::split(sequence);
+        List seq = List::create(
+            _["sequence"] = sequence,
+            _["index"] = Palantir::AminoAcid::to_digit(s),
+            _["type"] = type
+        );
+        seq.attr("class") = "Sequence";
+        return seq;
+    }
+    if(type == "codon") {
+        vector<string> s = Palantir::Codon::split(sequence);
+        List seq = List::create(
+            _["sequence"] = sequence,
+            _["index"] = Palantir::Codon::to_digit(s, g),
+            _["type"] = type
+        );
+        seq.attr("class") = "Sequence";
+        return seq;
+    }
+    if(type == "codon_pair") {
+        vector<string> s = Palantir::CodonPair::split(sequence);
+        List seq = List::create(
+            _["sequence"] = sequence,
+            _["index"] = Palantir::CodonPair::to_digit(s, g),
+            _["type"] = type
+        );
+        seq.attr("class") = "Sequence";
+        return seq;
+    }
+    if(type == "compound_codon") {
+        vector<string> s = Palantir::CompoundCodon::split(sequence, mode);
+        List seq = List::create(
+            _["sequence"] = sequence,
+            _["index"] = Palantir::CompoundCodon::to_digit(s, g),
+            _["type"] = type
+        );
+        seq.attr("class") = "Sequence";
+        return seq;
+    }
+    else {
+        stop("Unkown sequence type");
+    }
+}
+
+
+// [[Rcpp::export]]
 List HasegawaKishinoYano(arma::vec equilibrium, double transition_rate = 1, double transversion_rate = 1)
 {
     arma::mat transition = Palantir::HasegawaKishinoYano::transition(equilibrium, transition_rate, transversion_rate);
