@@ -6,19 +6,6 @@
 
 using namespace Rcpp;
 
-// Sequence
-List Sequence(std::string sequence, std::string type, unsigned long long mode);
-RcppExport SEXP PalantiR_Sequence(SEXP sequenceSEXP, SEXP typeSEXP, SEXP modeSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type sequence(sequenceSEXP);
-    Rcpp::traits::input_parameter< std::string >::type type(typeSEXP);
-    Rcpp::traits::input_parameter< unsigned long long >::type mode(modeSEXP);
-    rcpp_result_gen = Rcpp::wrap(Sequence(sequence, type, mode));
-    return rcpp_result_gen;
-END_RCPP
-}
 // HasegawaKishinoYano
 List HasegawaKishinoYano(arma::vec equilibrium, double transition_rate, double transversion_rate);
 RcppExport SEXP PalantiR_HasegawaKishinoYano(SEXP equilibriumSEXP, SEXP transition_rateSEXP, SEXP transversion_rateSEXP) {
@@ -93,6 +80,31 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::uvec >::type sequence(sequenceSEXP);
     Rcpp::traits::input_parameter< double >::type rate(rateSEXP);
     rcpp_result_gen = Rcpp::wrap(simulate_over_phylogeny(tree, substitution_model, sequence, rate));
+    return rcpp_result_gen;
+END_RCPP
+}
+// Sequence
+List Sequence(std::string sequence, std::string type, unsigned long long mode);
+RcppExport SEXP PalantiR_Sequence(SEXP sequenceSEXP, SEXP typeSEXP, SEXP modeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type sequence(sequenceSEXP);
+    Rcpp::traits::input_parameter< std::string >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< unsigned long long >::type mode(modeSEXP);
+    rcpp_result_gen = Rcpp::wrap(Sequence(sequence, type, mode));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sample_sequence
+List sample_sequence(List model, unsigned long long length);
+RcppExport SEXP PalantiR_sample_sequence(SEXP modelSEXP, SEXP lengthSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type model(modelSEXP);
+    Rcpp::traits::input_parameter< unsigned long long >::type length(lengthSEXP);
+    rcpp_result_gen = Rcpp::wrap(sample_sequence(model, length));
     return rcpp_result_gen;
 END_RCPP
 }
