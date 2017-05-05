@@ -9,6 +9,7 @@
 #include "Simulate.hpp"
 
 #include "RcppUtil.hpp"
+#include "Decorate.hpp"
 
 using namespace Rcpp;
 using namespace std;
@@ -65,37 +66,6 @@ List MutationSelection(
     return ms;
 }
 
-CharacterVector predicate(uvec predicate, string yes, string no)
-{
-    CharacterVector c(predicate.size());
-    for(unsigned long long i = 0; i < predicate.size(); i++) {
-        if(predicate[i]) {
-            c[i] = yes;
-        } else {
-            c[i] = no;
-        }
-    }
-    return c;
-}
-
-// [[Rcpp::export]]
-DataFrame decorate_codon_substitutions(DataFrame substitutions)
-{
-    Palantir::GeneticCode g(get_genetic_code_name());
-    arma::uvec state_from = substitutions["from"];
-    arma::uvec state_to = substitutions["to"];
-
-    substitutions["codon_from"] = Palantir::Codon::to_string(state_from, g);
-    substitutions["codon_to"] = Palantir::Codon::to_string(state_to, g);
-    substitutions["amino_acid_from"] = Palantir::Codon::to_amino_acid(state_from, g);
-    substitutions["amino_acid_to"] = Palantir::Codon::to_amino_acid(state_to, g);
-
-    arma::uvec synonymous = Palantir::Codon::synonymous(state_from, state_to, g);
-    substitutions["synonymous"] = LogicalVector(synonymous.begin(), synonymous.end());
-    substitutions["color"] = predicate(synonymous, "#16A35E", "#E84B2A");
-
-    return substitutions;
-}
 
 // [[Rcpp::export]]
 List Phylogeny(std::string newick)
@@ -123,7 +93,7 @@ arma::vec equilibrium_to_fitness(arma::vec equilibrium, unsigned long long popul
 List simulate_over_phylogeny(
     List tree,
     List substitution_model,
-    arma::uvec sequence,
+    List sequence,
     double rate = 1)
 {
     if(!has_class(tree, "Phylogeny")) {
@@ -132,16 +102,20 @@ List simulate_over_phylogeny(
     if(!has_class(substitution_model, "SubstitutionModel")) {
         stop("Argument `substitution_model` should be of class `SubstitutionModel`");
     }
+    if(!has_class(sequence, "Sequence")) {
+        stop("Argument `sequence` should be of class `Sequence`");
+    }
 
     arma::mat transition = substitution_model["transition"];
     arma::mat sampling = substitution_model["sampling"];
 
     string newick = tree["newick"];
     Palantir::Phylogeny p(newick);
+    uvec states = sequence["index"];
 
     vector<vector<Palantir::SubstitutionHistory>> sh =
         Palantir::Simulate::sequence_over_phylogeny(
-            p, transition, sampling, sequence, rate);
+            p, transition, sampling, states, rate);
 
     unsigned long long size = 0;
 
@@ -172,18 +146,19 @@ List simulate_over_phylogeny(
         }
     }
 
-    DataFrame substitutions = DataFrame::create(
+    List substitutions = List::create(
         _["site"] = sites,
         _["node"] = node_index,
         _["time"] = time,
         _["from"] = state_from,
         _["to"] = state_to);
 
+    decorate_substitutions(substitutions, substitution_model["type"]);
 
     List simulation = List::create(
         _["phylogeny"] = tree,
         _["model"] = substitution_model,
-        _["substitutions"] = substitutions,
+        _["substitutions"] = DataFrame(substitutions),
         _["intervals"] = NULL
     );
 
