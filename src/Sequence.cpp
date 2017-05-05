@@ -1,9 +1,9 @@
 #include <RcppArmadillo.h>
 
-#include "GeneticCode.hpp"
-#include "Palantir.hpp"
+#include "Palantir_Core/GeneticCode.hpp"
+#include "Palantir_Core/Palantir.hpp"
 
-#include "RcppUtil.hpp"
+#include "RcppPalantir.hpp"
 
 using namespace Rcpp;
 using namespace std;
@@ -61,24 +61,12 @@ List sample_sequence(List model, unsigned long long length)
     string type = model["type"];
     vector<string> s;
 
-    if(type == "nucleotide") {
-        s = Palantir::Nucleotide::to_string(i);
-    }
-    else if(type == "amino_acid") {
-        s = Palantir::AminoAcid::to_string(i);
-    }
-    else if(type == "codon") {
-        s = Palantir::Codon::to_string(i, g);
-    }
-    else if(type == "codon_pair") {
-        s = Palantir::CodonPair::to_string(i, g);
-    }
-    else if(type == "compound_codon") {
-        s = Palantir::CompoundCodon::to_string(i, g);
-    }
-    else {
-        stop("Unkown model type");
-    }
+    if(type == "nucleotide") s = Palantir::Nucleotide::to_string(i);
+    else if(type == "amino_acid") s = Palantir::AminoAcid::to_string(i);
+    else if(type == "codon") s = Palantir::Codon::to_string(i, g);
+    else if(type == "codon_pair") s = Palantir::CodonPair::to_string(i, g);
+    else if(type == "compound_codon") s = Palantir::CompoundCodon::to_string(i, g);
+    else stop("Unkown model type");
 
     List seq = List::create(
         _["sequence"] = s,
@@ -88,4 +76,35 @@ List sample_sequence(List model, unsigned long long length)
     );
     seq.attr("class") = "Sequence";
     return seq;
+}
+
+CharacterMatrix get_alignment(const vector<Palantir::SiteSimulation>& sims, const Palantir::Phylogeny& p, std::string type)
+{
+    Palantir::GeneticCode g(get_genetic_code_name());
+    vector<reference_wrapper<const Palantir::Phylogeny::Node> > leaves = p.leaf_traversal();
+    CharacterMatrix alignment(leaves.size(), sims.size());
+
+    CharacterVector labels(leaves.size());
+    for(unsigned long long leaf = 0; leaf < leaves.size(); leaf++) {
+        const Palantir::Phylogeny::Node& node = leaves[leaf].get();
+        labels[leaf] = node.label;
+    }
+
+    for(unsigned long long site = 0; site < sims.size(); site++) {
+        uvec i = sims[site].leaf_states(p);
+        vector<string> s;
+
+        if(type == "nucleotide") s = Palantir::Nucleotide::to_string(i);
+        else if(type == "amino_acid") s = Palantir::AminoAcid::to_string(i);
+        else if(type == "codon") s = Palantir::Codon::to_string(i, g);
+        else if(type == "codon_pair") s = Palantir::CodonPair::to_string(i, g);
+        else if(type == "compound_codon") s = Palantir::CompoundCodon::to_string(i, g);
+        else stop("Unkown model type");
+
+        for(unsigned long long leaf = 0; leaf < leaves.size(); leaf++) {
+            alignment(leaf, site) = s[leaf];
+        }
+    }
+    rownames(alignment) = labels;
+    return alignment;
 }

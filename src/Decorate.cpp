@@ -1,4 +1,4 @@
-#include "Decorate.hpp"
+#include "RcppPalantir.hpp"
 
 void decorate_substitutions(List& substitutions, std::string type)
 {

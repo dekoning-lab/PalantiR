@@ -1,5 +1,5 @@
 CXX_STD = CXX11
-PKG_CPPFLAGS += -Dis_R -IPalantiR_Core
+PKG_CPPFLAGS += -Dis_R
 
 TEST_HEADERS = $(wildcard PalantiR_Core/test/*.hpp)
 TEST_SOURCES = $(wildcard PalantiR_Core/test/*.cpp)

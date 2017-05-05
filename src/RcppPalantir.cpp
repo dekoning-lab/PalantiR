@@ -1,4 +1,4 @@
-#include "RcppUtil.hpp"
+#include "RcppPalantir.hpp"
 
 std::string get_genetic_code_name() {
     Environment globals = Environment::namespace_env("PalantiR").get(".globals");

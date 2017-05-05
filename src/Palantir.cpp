@@ -1,71 +1,15 @@
 #include <RcppArmadillo.h>
 
-#include "Phylogeny.hpp"
-#include "Palantir.hpp"
-#include "HasegawaKishinoYano.hpp"
-#include "MutationSelection.hpp"
-#include "GeneticCode.hpp"
-#include "SubstitutionHistory.hpp"
-#include "Simulate.hpp"
+#include "Palantir_Core/Phylogeny.hpp"
+#include "Palantir_Core/Palantir.hpp"
+#include "Palantir_Core/GeneticCode.hpp"
+#include "Palantir_Core/SiteSimulation.hpp"
+#include "Palantir_Core/Simulate.hpp"
 
-#include "RcppUtil.hpp"
-#include "Decorate.hpp"
+#include "RcppPalantir.hpp"
 
 using namespace Rcpp;
 using namespace std;
-
-
-// [[Rcpp::export]]
-List HasegawaKishinoYano(arma::vec equilibrium, double transition_rate = 1, double transversion_rate = 1)
-{
-    arma::mat transition = Palantir::HasegawaKishinoYano::transition(equilibrium, transition_rate, transversion_rate);
-    arma::mat sampling = Palantir::sampling(transition);
-    unsigned long long n_states = equilibrium.n_elem;
-
-    List hky = List::create(
-        _["equilibrium"] = equilibrium,
-        _["transition"] = transition,
-        _["sampling"] = sampling,
-        _["n_states"] = n_states,
-        _["type"] = "nucleotide"
-    );
-
-    hky.attr("class") = "SubstitutionModel";
-    return hky;
-}
-
-// [[Rcpp::export]]
-List MutationSelection(
-        unsigned long long population_size,
-        double mutation_rate,
-        arma::vec nucleotide_equilibrium,
-        arma::mat nucleotide_transition,
-        arma::vec fitness,
-        std::string scaling_type = "synonymous")
-{
-    Palantir::GeneticCode g(get_genetic_code_name());
-
-    arma::vec equilibrium = Palantir::MutationSelection::equilibrium(population_size, mutation_rate, nucleotide_equilibrium, fitness, g);
-    arma::mat transition = Palantir::MutationSelection::transition(population_size, mutation_rate, nucleotide_transition, fitness, g);
-    double scaling = Palantir::MutationSelection::scaling(equilibrium, transition, scaling_type, g);
-    transition /= scaling;
-
-    arma::mat sampling = Palantir::sampling(transition);
-    unsigned long long n_states = equilibrium.n_elem;
-
-    List ms = List::create(
-        _["equilibrium"] = equilibrium,
-        _["transition"] = transition,
-        _["sampling"] = sampling,
-        _["scaling"] = scaling,
-        _["n_states"] = n_states,
-        _["type"] = "codon"
-    );
-
-    ms.attr("class") = "SubstitutionModel";
-    return ms;
-}
-
 
 // [[Rcpp::export]]
 List Phylogeny(std::string newick)
@@ -113,15 +57,15 @@ List simulate_over_phylogeny(
     Palantir::Phylogeny p(newick);
     uvec states = sequence["index"];
 
-    vector<vector<Palantir::SubstitutionHistory>> sh =
+    vector<Palantir::SiteSimulation> sims =
         Palantir::Simulate::sequence_over_phylogeny(
             p, transition, sampling, states, rate);
 
     unsigned long long size = 0;
 
-    for(unsigned long long site = 0; site < sh.size(); site ++) {
-        for(unsigned long long node = 0; node < sh[site].size(); node ++) {
-            Palantir::SubstitutionHistory& s = sh[site][node];
+    for(unsigned long long site = 0; site < sims.size(); site ++) {
+        for(unsigned long long node = 0; node < sims[site].substitutions.size(); node ++) {
+            const Palantir::SubstitutionHistory& s = sims[site].substitutions[node];
             size += s.size;
         }
     }
@@ -132,9 +76,9 @@ List simulate_over_phylogeny(
     arma::uvec state_to(size);
 
     unsigned long long i = 0;
-    for(unsigned long long site = 0; site < sh.size(); site ++) {
-        for(unsigned long long node = 0; node < sh[site].size(); node ++) {
-            Palantir::SubstitutionHistory& s = sh[site][node];
+    for(unsigned long long site = 0; site < sims.size(); site ++) {
+        for(unsigned long long node = 0; node < sims[site].substitutions.size(); node ++) {
+            const Palantir::SubstitutionHistory& s = sims[site].substitutions[node];
             for(unsigned long long sub = 0; sub < s.size; sub ++) {
                 sites[i] = site;
                 node_index[i] = node;
@@ -145,6 +89,8 @@ List simulate_over_phylogeny(
             }
         }
     }
+
+    CharacterMatrix alignment = get_alignment(sims, p, substitution_model["type"]);
 
     List substitutions = List::create(
         _["site"] = sites,
@@ -159,6 +105,7 @@ List simulate_over_phylogeny(
         _["phylogeny"] = tree,
         _["model"] = substitution_model,
         _["substitutions"] = DataFrame(substitutions),
+        _["alignment"] = alignment,
         _["intervals"] = NULL
     );
 
@@ -166,3 +113,4 @@ List simulate_over_phylogeny(
 
     return simulation;
 }
+
