@@ -3,9 +3,13 @@ dependencies:
     version: 3.5.17
     src: htmlwidgets/lib/d3
     script: d3.min.js
+  - name: downloadSVG
+    version: 0.0.1
+    src: htmlwidgets/lib
+    script: downloadSVG.js
   - name: SVGTip
     version: 0.0.2
-    src: htmlwidgets/lib/SVGTip
+    src: htmlwidgets/lib
     script: SVGTip.js
   - name: monospaceCharWidth
     version: 0.0

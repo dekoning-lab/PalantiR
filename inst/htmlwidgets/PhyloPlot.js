@@ -379,7 +379,6 @@ HTMLWidgets.widget({
         var subs = render_substitutions(data.substitutions, plot, plot.options);
         console.log(data.substitutions);
       }
-      console.log("Heyo!");
     };
 
     return {
