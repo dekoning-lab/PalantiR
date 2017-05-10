@@ -6,22 +6,11 @@ HTMLWidgets.widget({
 
   factory: function(el, width, height) {
 
-    var data = {
-      alignment: null,
-      taxa: null,
-    };
-
-    var plot = {
-      tree: null,
-      nodes: null,
-      links: null,
-      scale: null,
-      vis: null,
-      svg: null,
-      options: null
-    };
+    var data = {};
+    var plot = {};
 
     var render = function(data, plot, width, height) {
+        data = data;
         d3.select("#" + el.id).selectAll("div").remove();
 
         plot.container = d3.select("#" + el.id)
@@ -125,12 +114,21 @@ HTMLWidgets.widget({
 
     return {
       renderValue: function(object) {
-        render(object, plot, width, height);
+          data = object;
+          render(object, plot, width, height);
       },
       resize: function(width, height) {
-        render(data, plot, width, height);
-      },
-      plot: plot
+          plot.taxa.style({
+              "max-widht": width + "px",
+              "max-height": height + "px"
+          });
+
+          plot.alignment.style({
+              "max-widht": width + "px",
+              "max-height": height + "px"
+
+          });
+      }
     };
   }
 });
