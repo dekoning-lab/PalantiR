@@ -1,0 +1,9 @@
+dependencies:
+  - name: d3
+    version: 3.5.17
+    src: htmlwidgets/lib/d3
+    script: d3.min.js
+  - name: monospaceCharWidth
+    version: 0.0
+    src: htmlwidgets/lib
+    script: monospaceCharWidth.js
