@@ -72,6 +72,23 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// simulate_over_interval_phylogeny
+List simulate_over_interval_phylogeny(List tree, List mode_tree, List substitution_models, List sequence, double rate, double segment_length, double tolerance);
+RcppExport SEXP PalantiR_simulate_over_interval_phylogeny(SEXP treeSEXP, SEXP mode_treeSEXP, SEXP substitution_modelsSEXP, SEXP sequenceSEXP, SEXP rateSEXP, SEXP segment_lengthSEXP, SEXP toleranceSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type tree(treeSEXP);
+    Rcpp::traits::input_parameter< List >::type mode_tree(mode_treeSEXP);
+    Rcpp::traits::input_parameter< List >::type substitution_models(substitution_modelsSEXP);
+    Rcpp::traits::input_parameter< List >::type sequence(sequenceSEXP);
+    Rcpp::traits::input_parameter< double >::type rate(rateSEXP);
+    Rcpp::traits::input_parameter< double >::type segment_length(segment_lengthSEXP);
+    Rcpp::traits::input_parameter< double >::type tolerance(toleranceSEXP);
+    rcpp_result_gen = Rcpp::wrap(simulate_over_interval_phylogeny(tree, mode_tree, substitution_models, sequence, rate, segment_length, tolerance));
+    return rcpp_result_gen;
+END_RCPP
+}
 // Sequence
 List Sequence(std::string sequence, std::string type, unsigned long long mode);
 RcppExport SEXP PalantiR_Sequence(SEXP sequenceSEXP, SEXP typeSEXP, SEXP modeSEXP) {
@@ -85,6 +102,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// as_compound
+List as_compound(List sequence, unsigned long long mode);
+RcppExport SEXP PalantiR_as_compound(SEXP sequenceSEXP, SEXP modeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type sequence(sequenceSEXP);
+    Rcpp::traits::input_parameter< unsigned long long >::type mode(modeSEXP);
+    rcpp_result_gen = Rcpp::wrap(as_compound(sequence, mode));
+    return rcpp_result_gen;
+END_RCPP
+}
 // sample_sequence
 List sample_sequence(List model, unsigned long long length);
 RcppExport SEXP PalantiR_sample_sequence(SEXP modelSEXP, SEXP lengthSEXP) {
@@ -94,6 +123,17 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< List >::type model(modelSEXP);
     Rcpp::traits::input_parameter< unsigned long long >::type length(lengthSEXP);
     rcpp_result_gen = Rcpp::wrap(sample_sequence(model, length));
+    return rcpp_result_gen;
+END_RCPP
+}
+// as_amino_acid
+std::vector<std::string> as_amino_acid(std::vector<std::string>& codons);
+RcppExport SEXP PalantiR_as_amino_acid(SEXP codonsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::vector<std::string>& >::type codons(codonsSEXP);
+    rcpp_result_gen = Rcpp::wrap(as_amino_acid(codons));
     return rcpp_result_gen;
 END_RCPP
 }

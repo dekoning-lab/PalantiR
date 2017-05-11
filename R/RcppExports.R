@@ -21,11 +21,23 @@ simulate_over_phylogeny <- function(tree, substitution_model, sequence, rate = 1
     .Call('PalantiR_simulate_over_phylogeny', PACKAGE = 'PalantiR', tree, substitution_model, sequence, rate)
 }
 
+simulate_over_interval_phylogeny <- function(tree, mode_tree, substitution_models, sequence, rate = 1, segment_length = 0.001, tolerance = 0.001) {
+    .Call('PalantiR_simulate_over_interval_phylogeny', PACKAGE = 'PalantiR', tree, mode_tree, substitution_models, sequence, rate, segment_length, tolerance)
+}
+
 Sequence <- function(sequence, type = "codon", mode = 0L) {
     .Call('PalantiR_Sequence', PACKAGE = 'PalantiR', sequence, type, mode)
 }
 
+as_compound <- function(sequence, mode) {
+    .Call('PalantiR_as_compound', PACKAGE = 'PalantiR', sequence, mode)
+}
+
 sample_sequence <- function(model, length) {
     .Call('PalantiR_sample_sequence', PACKAGE = 'PalantiR', model, length)
+}
+
+as_amino_acid <- function(codons) {
+    .Call('PalantiR_as_amino_acid', PACKAGE = 'PalantiR', codons)
 }
 

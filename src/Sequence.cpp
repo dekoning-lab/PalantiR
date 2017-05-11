@@ -50,6 +50,41 @@ List Sequence(std::string sequence, std::string type = "codon", unsigned long lo
 }
 
 //[[Rcpp::export]]
+List as_compound(List sequence, unsigned long long mode)
+{
+    Palantir::GeneticCode g(get_genetic_code_name());
+    if(!has_class(sequence, "Sequence")) {
+        stop("Argument `sequence` should be of class `Sequence`");
+    }
+    vector<string> s = sequence["sequence"];
+    uvec i = sequence["index"];
+    string type = sequence["type"];
+    unsigned long long length = sequence["length"];
+
+    unsigned long long size;
+    if(type == "nucleotide") size = Palantir::Nucleotide::size;
+    else if(type == "amino_acid") size = Palantir::AminoAcid::size;
+    else if(type == "codon") size = g.size;
+    else if(type == "codon_pair") size = g.size * g.size;
+    else if(type == "compound_codon") size = g.size;
+    else stop("Unkown model type");
+
+    i += size * mode;
+    for(unsigned long long site = 0; site < length; site++) {
+        s[site] += "," + ::to_string(mode);
+    }
+
+    List seq = List::create(
+        _["sequence"] = s,
+        _["index"] = i,
+        _["type"] = "compound_codon",
+        _["length"] = length
+    );
+    seq.attr("class") = "Sequence";
+    return seq;
+}
+
+//[[Rcpp::export]]
 List sample_sequence(List model, unsigned long long length)
 {
     if(!has_class(model, "SubstitutionModel")) {
@@ -107,4 +142,12 @@ CharacterMatrix get_alignment(const vector<Palantir::SiteSimulation>& sims, cons
     }
     rownames(alignment) = labels;
     return alignment;
+}
+
+//[[Rcpp::export]]
+std::vector<std::string> as_amino_acid(std::vector<std::string>& codons)
+{
+    Palantir::GeneticCode g(get_genetic_code_name());
+    uvec states = Palantir::Codon::to_digit(codons, g);
+    return Palantir::Codon::to_amino_acid(states, g);
 }

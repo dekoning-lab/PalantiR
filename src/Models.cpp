@@ -51,6 +51,7 @@ List MutationSelection(
         _["transition"] = transition,
         _["sampling"] = sampling,
         _["scaling"] = scaling,
+        _["scaling_type"] = scaling_type,
         _["n_states"] = n_states,
         _["type"] = "codon"
     );
