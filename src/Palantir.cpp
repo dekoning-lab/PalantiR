@@ -72,7 +72,8 @@ List simulate_over_phylogeny(
         _["model"] = substitution_model,
         _["substitutions"] = DataFrame(substitutions),
         _["alignment"] = alignment,
-        _["intervals"] = NULL
+        _["intervals"] = NULL,
+        _["type"] = substitution_model["type"]
     );
 
     simulation.attr("class") = "Simulation";
@@ -170,7 +171,8 @@ List simulate_over_interval_phylogeny(
         _["models"] = substitution_models,
         _["substitutions"] = DataFrame(substitutions),
         _["alignment"] = alignment,
-        _["intervals"] = DataFrame(intervals)
+        _["intervals"] = DataFrame(intervals),
+        _["type"] = "compound_codon"
     );
 
     simulation.attr("class") = "Simulation";

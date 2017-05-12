@@ -254,7 +254,8 @@ HTMLWidgets.widget({
           .attr('d', diagonal)
           .call(SVGTip({
             content: function(d) {
-              return ["index: " + d.target.index,
+              return ["Branch:",
+                      "index: " + d.target.index,
                       "length: " + d.target.length];
             },
             parent: plot.svg
@@ -283,7 +284,7 @@ HTMLWidgets.widget({
       var subs_tip = SVGTip({
         content: function(d) {
           var site = ifelse(options.n_sites === 1, 1, d.site);
-          var description = [];
+          var description = ["Substitution:"];
           Object.getOwnPropertyNames(d)
               .forEach(function(name, index, array) {
                 if (name !== "color") {
@@ -323,10 +324,69 @@ HTMLWidgets.widget({
           .call(subs_tip);
     };
 
+    var render_pair_substitutions = function(substitutions, plot, options) {
+      var subs_tip = SVGTip({
+        content: function(d) {
+          var site = ifelse(options.n_sites === 1, 1, d.site);
+          var description = ["Pair Substitution:"];
+          Object.getOwnPropertyNames(d)
+              .forEach(function(name, index, array) {
+                if (name !== "color") {
+                  var munged_name = name.split("_").join(" ");
+                  description.push(munged_name + ": " + d[name]);
+                }
+              });
+          return description;
+        },
+        parent: plot.svg
+      });
+
+      var subs = plot.nodes.selectAll('.substitution')
+          .data(substitutions)
+          .enter()
+          .append('g')
+          .filter(function(d) {
+            var node = d3.select(this.parentNode).datum();
+            return node.index === d.node;
+          })
+          .filter(function(d) {
+            if (options.sites === 'all') { return true; }
+            if (options.sites === 'none') { return false; }
+            return options.sites.indexOf(d.site) !== -1;
+          })
+          .attr('class', 'substitution')
+          .attr('transform', function(d) {
+              var node = d3.select(this.parentNode).datum();
+              return translate(plot.scale(d.time - node.length), 0);
+          })
+          .style({'fill-opacity': options.circle_opacity})
+          .call(subs_tip);
+
+      subs.append('circle')
+          .attr('r', options.circle_size)
+          .attr('cy', function(d) {
+              return -options.circle_size;
+          })
+          .attr('fill', function(d) {
+            if (d.hasOwnProperty("first_color")) return(d.first_color);
+            else return('#FC571F');
+          });
+
+      subs.append('circle')
+          .attr('r', options.circle_size)
+          .attr('cy', function(d) {
+              return options.circle_size;
+          })
+          .attr('fill', function(d) {
+            if (d.hasOwnProperty("second_color")) return(d.second_color);
+            else return('#FC571F');
+          });
+    };
+
     var render_intervals = function(intervals, plot, options) {
       var interval_tip = SVGTip({
         content: function(d) {
-          var description = [];
+          var description = ["Interval:"];
           Object.getOwnPropertyNames(d)
               .forEach(function(name, index, array) {
                 if (name !== "color") {
@@ -378,8 +438,12 @@ HTMLWidgets.widget({
         var intervals = render_intervals(data.intervals, plot, plot.options);
       }
       if (!is_empty_object(data.substitutions)) {
-        var subs = render_substitutions(data.substitutions, plot, plot.options);
-        console.log(data.substitutions);
+          if(plot.options.sim_type == "codon_pair") {
+              var subs = render_pair_substitutions(data.substitutions, plot, plot.options);
+          } else {
+              var subs = render_substitutions(data.substitutions, plot, plot.options);
+          }
+
       }
     };
 

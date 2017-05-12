@@ -9,6 +9,7 @@ PhyloPlot <- function(
     n_sites = NULL,
     width = NULL,
     height = NULL,
+    sim_type = NULL,
     sites = "all",
     show_labels = T,
     plot_intervals = F,
@@ -29,6 +30,7 @@ PhyloPlot <- function(
         substitutions = substitutions,
         intervals = intervals,
         options = list(
+            sim_type = sim_type,
             sites = sites,
             n_sites = n_sites,
             show_labels = show_labels,
