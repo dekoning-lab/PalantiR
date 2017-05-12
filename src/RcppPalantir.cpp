@@ -87,16 +87,16 @@ List site_simulations_to_list(const std::vector<Palantir::SiteSimulation>& sims,
 }
 
 // Do substitution models and intervals have the same modes?
-// set{substitution_models} =? set{intervals.state}
+// set{substitution_models} contains set{intervals.state}
+//[[Rcpp::export]]
 bool compare_modes(const List& substitution_models, const List& intervals)
 {
-    set<ullong> model_modes;
-    for(ullong i = 0; i < substitution_models.size(); i++) {
-        model_modes.insert(i);
-    }
+    vector<ullong> model_modes;
+    for(ullong i = 0; i < substitution_models.size(); i++)
+        model_modes.push_back(i);
 
     vector<ullong> tree_states = intervals["state"];
-    set<ullong> tree_modes(tree_states.begin(), tree_states.end());
-
-    return model_modes == tree_modes;
+    set<ullong> unique_tree_states(tree_states.begin(), tree_states.end());
+    return includes(model_modes.begin(), model_modes.end(),
+                    unique_tree_states.begin(), unique_tree_states.end());
 }

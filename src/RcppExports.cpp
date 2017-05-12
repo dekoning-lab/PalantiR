@@ -107,6 +107,36 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// simulate_with_nested_heterogeneity
+List simulate_with_nested_heterogeneity(List tree, List switching_model, List substitution_models, List sequence, double rate, double switching_rate, double segment_length, double tolerance);
+RcppExport SEXP PalantiR_simulate_with_nested_heterogeneity(SEXP treeSEXP, SEXP switching_modelSEXP, SEXP substitution_modelsSEXP, SEXP sequenceSEXP, SEXP rateSEXP, SEXP switching_rateSEXP, SEXP segment_lengthSEXP, SEXP toleranceSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type tree(treeSEXP);
+    Rcpp::traits::input_parameter< List >::type switching_model(switching_modelSEXP);
+    Rcpp::traits::input_parameter< List >::type substitution_models(substitution_modelsSEXP);
+    Rcpp::traits::input_parameter< List >::type sequence(sequenceSEXP);
+    Rcpp::traits::input_parameter< double >::type rate(rateSEXP);
+    Rcpp::traits::input_parameter< double >::type switching_rate(switching_rateSEXP);
+    Rcpp::traits::input_parameter< double >::type segment_length(segment_lengthSEXP);
+    Rcpp::traits::input_parameter< double >::type tolerance(toleranceSEXP);
+    rcpp_result_gen = Rcpp::wrap(simulate_with_nested_heterogeneity(tree, switching_model, substitution_models, sequence, rate, switching_rate, segment_length, tolerance));
+    return rcpp_result_gen;
+END_RCPP
+}
+// compare_modes
+bool compare_modes(const List& substitution_models, const List& intervals);
+RcppExport SEXP PalantiR_compare_modes(SEXP substitution_modelsSEXP, SEXP intervalsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const List& >::type substitution_models(substitution_modelsSEXP);
+    Rcpp::traits::input_parameter< const List& >::type intervals(intervalsSEXP);
+    rcpp_result_gen = Rcpp::wrap(compare_modes(substitution_models, intervals));
+    return rcpp_result_gen;
+END_RCPP
+}
 // Sequence
 List Sequence(std::string sequence, std::string type, unsigned long long mode);
 RcppExport SEXP PalantiR_Sequence(SEXP sequenceSEXP, SEXP typeSEXP, SEXP modeSEXP) {
