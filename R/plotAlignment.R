@@ -1,11 +1,36 @@
+# This should be global somewhere
+aa_colors <- list("A"="#77dd88",
+                  "G"="#77aa88",
+                  "C"="#99ee66",
+                  "D"="#55bb33",
+                  "E"="#55bb33",
+                  "N"="#55bb33",
+                  "Q"="#55bb33",
+                  "I"="#66bbff",
+                  "L"="#66bbff",
+                  "M"="#66bbff",
+                  "V"="#66bbff",
+                  "F"="#9999ff",
+                  "W"="#9999ff",
+                  "Y"="#9999ff",
+                  "H"="#5555ff",
+                  "K"="#ffcc77",
+                  "R"="#ffcc77",
+                  "P"="#eeaaaa",
+                  "S"="#ff4455",
+                  "T"="#ff4455")
+
 AlignmentPlot <- function(alignment, width = NULL, height = NULL) {
 
     taxa <- dimnames(alignment)[[1]]
+    colors <- apply(apply(alignment, 2, as_amino_acid), c(1,2), function(x) aa_colors[[x]])
 
     sequences <- lapply(seq_len(nrow(alignment)), function(row) {
         list(index = row,
-             sequence = alignment[row, ],
-             taxon = taxa[[row]])
+             taxon = taxa[[row]],
+             sequence = data.frame(
+                 state = alignment[row,],
+                 color = colors[row, ]))
     })
 
     data <- jsonlite::toJSON(sequences)

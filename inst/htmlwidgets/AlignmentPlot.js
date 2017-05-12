@@ -16,7 +16,9 @@ HTMLWidgets.widget({
         plot.container = d3.select("#" + el.id)
             .append("div")
             .style({
-                "display": "flex"
+                "display": "flex",
+                "font-size": 12,
+                "font-family": "monospace"
             });
 
         plot.taxa = plot.container
@@ -81,11 +83,10 @@ HTMLWidgets.widget({
             })
             .enter()
             .append("td")
-            .style({
-                "border": "1px solid black"
-            })
+            .style({"border": "1px solid black"})
+            .style("background-color", function(d) { return d.color; })
             .text(function(d, i) {
-                return d;
+                return d.state;
             });
 
         // Sync scrolling
