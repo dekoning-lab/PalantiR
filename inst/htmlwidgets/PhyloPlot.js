@@ -124,12 +124,15 @@ HTMLWidgets.widget({
 
       options.show_substitutions = get_default(options.show_substitutions, true);
       options.show_labels = get_default(options.show_labels, true);
+      options.plot_intervals = get_default(options.plot_intervals, false);
+      options.interval_opacity = get_default(options.interval_opacity, 0.3);
       options.label_font_size = get_default(options.label_font_size, 10);
       options.show_axis = get_default(options.show_axis, true);
       options.axis_ticks = get_default(options.axis_ticks, 20);
       options.axis_tick_font_size = get_default(options.axis_tick_font_size, 10);
       options.padding = get_default(options.padding, 10);
       options.circle_size = get_default(options.circle_size, 4);
+      options.circle_opacity = get_default(options.circle_opacity, 1);
       options.line_width = get_default(options.line_width, 4);
     };
 
@@ -316,6 +319,7 @@ HTMLWidgets.widget({
             if (d.hasOwnProperty("color")) return(d.color);
             else return('#FC571F');
           })
+          .style({'fill-opacity': options.circle_opacity})
           .call(subs_tip);
     };
 
@@ -341,12 +345,9 @@ HTMLWidgets.widget({
           .append('line')
           .filter(function(d){
             var node = d3.select(this.parentNode).datum();
-            return node.index === d.branch_index;
+            return node.index === d.node;
           })
-          .filter(function(d) {
-            if (options.n_sites === 1) return true;
-            return d.site === options.sites[0];
-          })
+          // Should we filter on sites?
           .attr({
             'class': 'interval',
             y1: 0,
@@ -364,7 +365,8 @@ HTMLWidgets.widget({
             'stroke': function(d) {
               return color_scale(d.state);
             },
-            'stroke-width': options.line_width
+            'stroke-width': options.line_width,
+            'stroke-opacity': options.interval_opacity
           })
           .call(interval_tip);
     };
@@ -372,7 +374,7 @@ HTMLWidgets.widget({
     var render = function(data, plot, options, width, height) {
       render_tree(data.tree, plot.options, width, height);
 
-      if (!is_empty_object(data.intervals) && (options.n_sites === 1 || options.sites.length === 1)) {
+      if (!is_empty_object(data.intervals) && plot.options.plot_intervals) {
         var intervals = render_intervals(data.intervals, plot, plot.options);
       }
       if (!is_empty_object(data.substitutions)) {

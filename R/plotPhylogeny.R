@@ -11,12 +11,15 @@ PhyloPlot <- function(
     height = NULL,
     sites = "all",
     show_labels = T,
+    plot_intervals = F,
+    interval_opacity = 0.3,
     label_font_size = 10,
     show_axis = T,
     axis_ticks = 20,
     axis_tick_font_size = 10,
     padding = 10,
     circle_size = 4,
+    circle_opacity = 1,
     line_width = 4) {
 
     tree <- fromJSON(phylogeny$json, simplifyVector = F)
@@ -29,12 +32,15 @@ PhyloPlot <- function(
             sites = sites,
             n_sites = n_sites,
             show_labels = show_labels,
+            plot_intervals = plot_intervals,
+            interval_opacity = interval_opacity,
             label_font_size = label_font_size,
             show_axis = show_axis,
             axis_ticks = axis_ticks,
             axis_tick_font_size = axis_tick_font_size,
             padding = padding,
             circle_size = circle_size,
+            circle_opacity = circle_opacity,
             line_width = line_width)
     ), auto_unbox = T)
 
