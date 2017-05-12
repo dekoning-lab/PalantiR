@@ -3,6 +3,7 @@
 #include "Palantir_Core/Palantir.hpp"
 #include "Palantir_Core/HasegawaKishinoYano.hpp"
 #include "Palantir_Core/MutationSelection.hpp"
+#include "Palantir_Core/CoEvolution.hpp"
 
 #include "RcppPalantir.hpp"
 
@@ -38,9 +39,12 @@ List MutationSelection(
 {
     Palantir::GeneticCode g(get_genetic_code_name());
 
-    arma::vec equilibrium = Palantir::MutationSelection::equilibrium(population_size, mutation_rate, nucleotide_equilibrium, fitness, g);
-    arma::mat transition = Palantir::MutationSelection::transition(population_size, mutation_rate, nucleotide_transition, fitness, g);
-    double scaling = Palantir::MutationSelection::scaling(equilibrium, transition, scaling_type, g);
+    arma::vec equilibrium = Palantir::MutationSelection::equilibrium(
+        population_size, mutation_rate, nucleotide_equilibrium, fitness, g);
+    arma::mat transition = Palantir::MutationSelection::transition(
+        population_size, mutation_rate, nucleotide_transition, fitness, g);
+    double scaling = Palantir::MutationSelection::scaling(
+        equilibrium, transition, scaling_type, g);
     transition /= scaling;
 
     arma::mat sampling = Palantir::sampling(transition);
@@ -54,6 +58,43 @@ List MutationSelection(
         _["scaling_type"] = scaling_type,
         _["n_states"] = n_states,
         _["type"] = "codon"
+    );
+
+    ms.attr("class") = "SubstitutionModel";
+    return ms;
+}
+
+//[[Rcpp::export]]
+List CoEvolution(
+    unsigned long long population_size,
+    double mutation_rate,
+    arma::vec nucleotide_equilibrium,
+    arma::mat nucleotide_transition,
+    arma::vec fitness_1,
+    arma::vec fitness_2,
+    arma::mat delta,
+    std::string scaling_type = "synonymous")
+{
+    Palantir::GeneticCode g(get_genetic_code_name());
+
+    arma::vec equilibrium = Palantir::CoEvolution::equilibrium(
+        population_size, mutation_rate, nucleotide_equilibrium, fitness_1, fitness_2, delta, g);
+    arma::mat transition = Palantir::CoEvolution::transition(
+        population_size, mutation_rate, nucleotide_transition, fitness_1, fitness_2, delta, g);
+    double scaling = Palantir::CoEvolution::scaling(equilibrium, transition, scaling_type, g);
+    transition /= scaling;
+
+    arma::mat sampling = Palantir::sampling(transition);
+    unsigned long long n_states = equilibrium.n_elem;
+
+    List ms = List::create(
+        _["equilibrium"] = equilibrium,
+        _["transition"] = transition,
+        _["sampling"] = sampling,
+        _["scaling"] = scaling,
+        _["scaling_type"] = scaling_type,
+        _["n_states"] = n_states,
+        _["type"] = "codon_pair"
     );
 
     ms.attr("class") = "SubstitutionModel";

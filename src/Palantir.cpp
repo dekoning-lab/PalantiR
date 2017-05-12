@@ -176,5 +176,4 @@ List simulate_over_interval_phylogeny(
     simulation.attr("class") = "Simulation";
 
     return simulation;
-
 }
