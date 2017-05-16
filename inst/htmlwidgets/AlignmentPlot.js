@@ -15,7 +15,7 @@ HTMLWidgets.widget({
 
         plot.container = d3.select("#" + el.id)
             .append("div")
-            .style({
+            .styles({
                 "display": "flex",
                 "font-size": 12,
                 "font-family": "monospace"
@@ -23,7 +23,7 @@ HTMLWidgets.widget({
 
         plot.taxa = plot.container
             .append("div")
-            .style({
+            .styles({
                 "overflow-y": "scroll",
                 "flex-basis": "content",
                 "text-align": "right",
@@ -32,7 +32,7 @@ HTMLWidgets.widget({
 
         plot.taxa.table = plot.taxa
             .append('table')
-            .style({
+            .styles({
                 "border-collapse": "collapse"
             })
             .append('tbody');
@@ -48,7 +48,7 @@ HTMLWidgets.widget({
             })
             .enter()
             .append("td")
-            .style({
+            .styles({
                 "border": "1px solid white",
             })
             .text(function(d, i) {
@@ -57,7 +57,7 @@ HTMLWidgets.widget({
 
         plot.alignment = plot.container
             .append("div")
-            .style({
+            .styles({
                 "text-align": "center",
                 "overflow-x": "scroll",
                 "overflow-y": "scroll",
@@ -67,7 +67,7 @@ HTMLWidgets.widget({
 
         plot.alignment.table = plot.alignment
             .append('table')
-            .style({
+            .styles({
                 "border-collapse": "collapse"
             })
             .append('tbody');
@@ -83,7 +83,7 @@ HTMLWidgets.widget({
             })
             .enter()
             .append("td")
-            .style({"border": "1px solid black"})
+            .styles({"border": "1px solid black"})
             .style("background-color", function(d) { return d.color; })
             .text(function(d, i) {
                 return d.state;
@@ -119,12 +119,12 @@ HTMLWidgets.widget({
           render(object, plot, width, height);
       },
       resize: function(width, height) {
-          plot.taxa.style({
+          plot.taxa.styles({
               "max-widht": width + "px",
               "max-height": height + "px"
           });
 
-          plot.alignment.style({
+          plot.alignment.styles({
               "max-widht": width + "px",
               "max-height": height + "px"
 

@@ -40,7 +40,11 @@ AlignmentPlot <- function(alignment, width = NULL, height = NULL) {
         x = data,
         width = width,
         height = height,
-        package = "PalantiR"
+        package = "PalantiR",
+        sizingPolicy = htmlwidgets::sizingPolicy(
+            viewer.padding = 0,
+            browser.fill = T
+        )
     )
 }
 
