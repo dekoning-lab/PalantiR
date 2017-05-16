@@ -7,18 +7,42 @@ dependencies:
     version: 1.0.1
     src: htmlwidgets/lib/d3
     script: d3-selection-multi.min.js
+  - name: Util
+    version: 0.0
+    src: htmlwidgets/lib
+    script: Util.js
   - name: downloadSVG
     version: 0.0
     src: htmlwidgets/lib
     script: downloadSVG.js
+  - name: SubstitutionTooltip
+    version: 0.0
+    src: htmlwidgets/PhyloPlot
+    script: SubstitutionTooltip.js
+  - name: render_tree
+    version: 0.0
+    src: htmlwidgets/PhyloPlot
+    script: RenderTree.js
+  - name: render_substitutions
+    version: 0.0
+    src: htmlwidgets/PhyloPlot
+    script: RenderSubstitutions.js
+  - name: render_pair_substitutions
+    version: 0.0
+    src: htmlwidgets/PhyloPlot
+    script: RenderPairSubstitutions.js
+  - name: render_intervals
+    version: 0.0
+    src: htmlwidgets/PhyloPlot
+    script: RenderIntervals.js
   - name: SVGTip
     version: 0.0.2
     src: htmlwidgets/lib
     script: SVGTip.js
-  - name: monospaceCharWidth
+  - name: stringBoundingBox
     version: 0.0
     src: htmlwidgets/lib
-    script: monospaceCharWidth.js
+    script: stringBoundingBox.js
   - name: styles
     version: 0.0
     src: htmlwidgets

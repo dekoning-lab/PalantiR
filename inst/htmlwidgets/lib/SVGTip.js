@@ -1,134 +1,115 @@
 var SVGTip = function (options) {
-  var getDefault = function (x, d) {
-    return x === undefined ? d : x;
-  };
-
-  var isArray = function (value) {
-    return value &&
-      typeof value === "object" &&
-      typeof value.length === "number" &&
-      typeof value.splice === "function" &&
-      !(value.propertyIsEnumerable("length"));
-  };
-
-  var tip = function (x, y) {
-    return [
-      [x, y],
-      [x + 3, y - 4],
-      [x - 3, y - 4]
-    ].map(function (x) {
-      return x.join(",");
-    }).join(" ");
-  };
-
-  var translate = function (coord) {
-    return "translate(" + coord[0] + "," + coord[1] + ")";
-  };
-
-  var content = getDefault(options.content, "");
-  var style = getDefault(options.style, "");
-  var parent = getDefault(options.parent, d3.select("svg"));
-  var padding = 3; //px
-  var cornerRadius = 5; //px
-  var lineHeight = 1.2; //em
-
-  var tooltip = parent.append("g")
-    .attrs({
-        "class": "svg-tooltip"
-    })
-    .styles({
-      "text-align": "center",
-      "font": "12px sans-serif",
-      "fill": "black",
-      "opacity": "0.8",
-      "pointer-events": "none"
-    });
-    var tooltipStyle = {
-      "fill": "black",
-      "opacity": "0.8",
-      "corner-radius": "2"
+    var get_default = function (x, d) {
+        return x === undefined ? d : x;
     };
 
-  tooltip.container = tooltip.append("g");
-  tooltip.tip = tooltip.container.append("polygon")
-    .attrs({
-        "class": "tip"
-    })
-    .styles(tooltipStyle);
-  tooltip.box = tooltip.container.append("rect")
-    .attrs({
-      "class": "box",
-      "rx": cornerRadius,
-      "ry": cornerRadius
-    })
-    .styles(tooltipStyle);
+    var is_array = function (value) {
+        return value &&
+        typeof value === "object" &&
+        typeof value.length === "number" &&
+        typeof value.splice === "function" &&
+        !(value.propertyIsEnumerable("length"));
+    };
 
-  tooltip.text = tooltip.append("text")
-    .attrs({
-        "class": "text"
-    })
-    .styles({
-      "font": "10px monospace",
-      "fill": "white",
-      "stroke": "none",
-      "text-anchor": "middle",
-      "alignment-baseline": "middle"
-    });
+    var translate = function (coord) {
+        return "translate(" + coord[0] + "," + coord[1] + ")";
+    };
 
-  var show = function () {
-    tooltip.style("display", "inline");
-  };
+    var content = get_default(options.content, "");
+    var style = get_default(options.style, "");
+    var parent = get_default(options.parent, d3.select("svg"));
+    var padding = 3; //px
+    var corner_radius = 5; //px
+    var line_height = 1.2; //em
 
-  var hide = function () {
-    tooltip.style("display", "none");
-  };
+    var tooltip = parent.append("g")
+        .attrs({
+            "class": "svg-tooltip",
+            "text-align": "center",
+            "font-size": "12px",
+            "font-family": "Helvetica",
+            "fill": "black",
+            "opacity": "0.8",
+            "pointer-events": "none"
+        });
+    var tooltip_style = {
+        "fill": "black",
+        "opacity": "0.8",
+        "corner-radius": corner_radius
+    };
 
-  return function (selection) {
-    selection.on("mouseover", show)
-      .on("mouseout", hide)
-      .on("mousemove", function (d, n) {
-        var point = d3.mouse(parent.node());
-        point.x = point[0];
-        point.y = point[1];
+    tooltip.container = tooltip.append("g");
+    tooltip.box = tooltip.container.append("rect")
+        .attrs({
+            "class": "box",
+            "rx": corner_radius,
+            "ry": corner_radius
+        })
+        .attrs(tooltip_style);
 
-        tooltip.text.selectAll("tspan").remove();
-
-        var lines = ((typeof content === "function") ? content(d, n) : content);
-        if (!isArray(lines)) lines = [lines];
-        var s = ((typeof style === "function") ? style(d, n) : style);
-
-        lines.forEach(function (line) {
-          tooltip.text.append("tspan").text(line)
-              .attrs({
-                x: 0,
-                dy: lineHeight + "em"
-              })
-              .styles({
-                "text-anchor": "middle",
-                "alignment-baseline": "middle"
-              });
-          tooltip.text.style(s);
+    tooltip.text = tooltip.append("text")
+        .attrs({
+            "class": "text"
+        })
+        .attrs({
+            "font-size": "12px",
+            "font-family": "Helvetica",
+            "fill": "#eee",
+            "stroke": "none",
+            "text-anchor": "middle",
+            "alignment-baseline": "middle"
         });
 
-        var bbox = tooltip.text.node().getBBox();
+    var show = function () {
+        tooltip.style("display", "inline");
+    };
 
-        tooltip.attr("transform",
-          translate([
-            point.x,
-            point.y - (bbox.height + bbox.y + padding + 4)
-          ]));
+    var hide = function () {
+        tooltip.style("display", "none");
+    };
 
-        tooltip.tip.attr({
-          points: tip(
-            bbox.x + (bbox.width / 2),
-            bbox.y + bbox.height + padding + 4)
-        });
-        tooltip.box.attr({
-          x: bbox.x - padding,
-          y: bbox.y - padding,
-          width: bbox.width + (padding * 2),
-          height: bbox.height + (padding * 2)
-        });
-      });
-  };
+    return function (selection) {
+        selection
+            .on("mouseover", show)
+            .on("mouseout", hide)
+            .on("mousemove", function (d, n) {
+                var point = d3.mouse(parent.node());
+                point.x = point[0];
+                point.y = point[1];
+
+                tooltip.text.selectAll("tspan").remove();
+
+                var lines = ((typeof content === "function") ? content(d, n) : content);
+                if (!is_array(lines)) lines = [lines];
+                var s = ((typeof style === "function") ? style(d, n) : style);
+
+                lines.forEach(function (line) {
+                    tooltip.text.append("tspan").text(line)
+                    .attrs({
+                        x: 0,
+                        dy: line_height + "em"
+                    })
+                    .attrs({
+                        "text-anchor": "middle",
+                        "alignment-baseline": "middle"
+                    });
+                    tooltip.text.attrs(s);
+                });
+
+                var bbox = tooltip.text.node().getBBox();
+
+                tooltip.attr("transform",
+                    translate([
+                        point.x,
+                        point.y - (bbox.height + bbox.y + padding + 4)
+                        ]));
+
+                tooltip.box.attrs({
+                    x: bbox.x - padding,
+                    y: bbox.y - padding,
+                    width: bbox.width + (padding * 2),
+                    height: bbox.height + (padding * 2)
+                });
+            });
+    };
 };
