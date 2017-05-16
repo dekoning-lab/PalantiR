@@ -13,8 +13,8 @@ CoEvolution <- function(population_size, mutation_rate, nucleotide_equilibrium, 
     .Call('PalantiR_CoEvolution', PACKAGE = 'PalantiR', population_size, mutation_rate, nucleotide_equilibrium, nucleotide_transition, fitness_1, fitness_2, delta, scaling_type)
 }
 
-Phylogeny <- function(newick) {
-    .Call('PalantiR_Phylogeny', PACKAGE = 'PalantiR', newick)
+Phylogeny <- function(newick_path) {
+    .Call('PalantiR_Phylogeny', PACKAGE = 'PalantiR', newick_path)
 }
 
 equilibrium_to_fitness <- function(equilibrium, population_size) {

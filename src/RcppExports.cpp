@@ -54,13 +54,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // Phylogeny
-List Phylogeny(std::string newick);
-RcppExport SEXP PalantiR_Phylogeny(SEXP newickSEXP) {
+List Phylogeny(std::string newick_path);
+RcppExport SEXP PalantiR_Phylogeny(SEXP newick_pathSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type newick(newickSEXP);
-    rcpp_result_gen = Rcpp::wrap(Phylogeny(newick));
+    Rcpp::traits::input_parameter< std::string >::type newick_path(newick_pathSEXP);
+    rcpp_result_gen = Rcpp::wrap(Phylogeny(newick_path));
     return rcpp_result_gen;
 END_RCPP
 }

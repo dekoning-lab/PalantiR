@@ -5,6 +5,7 @@
 #include "Palantir_Core/GeneticCode.hpp"
 #include "Palantir_Core/SiteSimulation.hpp"
 #include "Palantir_Core/Simulate.hpp"
+#include "Palantir_Core/Util.hpp"
 
 #include "RcppPalantir.hpp"
 
@@ -12,8 +13,16 @@ using namespace Rcpp;
 using namespace std;
 
 // [[Rcpp::export]]
-List Phylogeny(std::string newick)
+List Phylogeny(std::string newick_path)
 {
+    string newick;
+
+    ifstream f(newick_path);
+    if(f.good()) {
+        newick = file_to_string(newick_path);
+    } else {
+        stop("Could not find file " + newick_path);
+    }
     //TODO: need error checking and file parsing
     Palantir::Phylogeny tree(newick);
 
