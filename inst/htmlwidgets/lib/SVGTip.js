@@ -103,9 +103,10 @@ var SVGTip = function (options) {
                 var x_adj = (bbox.width / 2) + padding;
                 var y_adj = - bbox.height - bbox.y - padding;
 
-                if((point.x + bbox.width + padding) > parent.node().width.baseVal.value ||
-                    (point.y - bbox.height - padding) < 0) {
+                if((point.x + bbox.width + padding) > parent.node().width.baseVal.value) {
                     x_adj = -x_adj;
+                }
+                if((point.y - bbox.height - padding) < 0) {
                     y_adj = 0;
                 }
                 tooltip.attr("transform",
