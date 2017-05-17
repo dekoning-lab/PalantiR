@@ -15,10 +15,10 @@ dependencies:
     version: 0.0
     src: htmlwidgets/lib
     script: downloadSVG.js
-  - name: SubstitutionTooltip
+  - name: Tooltip
     version: 0.0
     src: htmlwidgets/PhyloPlot
-    script: SubstitutionTooltip.js
+    script: Tooltip.js
   - name: render_tree
     version: 0.0
     src: htmlwidgets/PhyloPlot

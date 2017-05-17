@@ -1,10 +1,16 @@
 var render_substitutions = function(plot, substitutions) {
-    var tip = substitution_tooltip(plot);
+    var tip = tooltip(plot, "Substitution:");
 
     plot.hierarchy.eachBefore(function(node) {
-        var node_substitutions = substitutions.filter(function(s) {
-            return s.node === node.data.index;
-        });
+        var node_substitutions = substitutions
+            .filter(function(s) {
+                return s.node === node.data.index;
+            })
+            .filter(function(s) {
+                if (plot.options.sites === "all") { return true; }
+                if (plot.options.sites === "none") { return false; }
+                return plot.options.sites.indexOf(s.site) !== -1;
+            });
 
         d3.select("#node_" + node.data.index)
             .selectAll(".substitution")
