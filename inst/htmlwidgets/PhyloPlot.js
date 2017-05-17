@@ -23,6 +23,11 @@ HTMLWidgets.widget({
             plot.options.width = width;
             plot.options.height = height;
 
+            // promote to array
+            if (plot.options.sites.length === undefined) {
+                plot.options.sites = [plot.options.sites];
+            }
+
             render_tree(plot, data.tree);
 
             if (!is_empty_object(data.intervals) && plot.options.plot_intervals) {
