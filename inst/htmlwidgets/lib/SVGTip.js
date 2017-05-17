@@ -18,7 +18,7 @@ var SVGTip = function (options) {
     var content = get_default(options.content, "");
     var style = get_default(options.style, "");
     var parent = get_default(options.parent, d3.select("svg"));
-    var padding = 3; //px
+    var padding = 7; //px
     var corner_radius = 5; //px
     var line_height = 1.2; //em
 
@@ -98,10 +98,21 @@ var SVGTip = function (options) {
 
                 var bbox = tooltip.text.node().getBBox();
 
+                var x_adj = (bbox.width / 2) + padding;
+                var y_adj = - bbox.height - bbox.y - padding;
+
+                console.log(bbox);
+                console.log(point);
+
+                if((point.x + bbox.width + padding) > parent.node().width.baseVal.value ||
+                    (point.y - bbox.height - padding) < 0) {
+                    x_adj = -x_adj;
+                    y_adj = 0;
+                }
                 tooltip.attr("transform",
                     translate([
-                        point.x,
-                        point.y - (bbox.height + bbox.y + padding + 4)
+                        point.x + x_adj,
+                        point.y + y_adj
                         ]));
 
                 tooltip.box.attrs({

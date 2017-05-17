@@ -43,11 +43,10 @@ var render_tree = function(plot, root) {
             "width": options.width,
             "height": options.height,
             "id": "phylogram"
-        })
-        .append("g")
-        .attr("transform", "translate(" + options.padding + "," + options.padding + ")");
+        });
 
-    plot.vis = plot.svg.append("g");
+    plot.vis =  plot.svg.append("g")
+        .attr("transform", "translate(" + options.padding + "," + options.padding + ")");
 
     // Initialize data
     plot.hierarchy = d3.hierarchy(root);
