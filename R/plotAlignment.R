@@ -1,5 +1,4 @@
-# This should be global somewhere
-aa_colors <- list("A"="#77dd88",
+.aa_colors <- list("A"="#77dd88",
                   "G"="#77aa88",
                   "C"="#99ee66",
                   "D"="#55bb33",
@@ -22,8 +21,8 @@ aa_colors <- list("A"="#77dd88",
 
 AlignmentPlot <- function(alignment, width = NULL, height = NULL) {
 
-    taxa <- dimnames(alignment)[[1]]
-    colors <- apply(apply(alignment, 2, as_amino_acid), c(1,2), function(x) aa_colors[[x]])
+    taxa <- row.names(alignment)
+    colors <- apply(apply(alignment, 2, as_amino_acid), c(1,2), function(x) .aa_colors[[x]])
 
     sequences <- lapply(seq_len(nrow(alignment)), function(row) {
         list(index = row,
@@ -55,4 +54,12 @@ AlignmentPlotOutput <- function(outputId, width = "100%", height = "100%"){
 AlignmentPlotRender <- function(expr, env = parent.frame(), quoted = FALSE) {
     if (!quoted) expr <- substitute(expr) # force quoted
     htmlwidgets::shinyRenderWidget(expr, AlignmentPlotOutput, env, quoted = TRUE)
+}
+
+as.fasta.alignment <- function(alignemnt) {
+    taxa <- row.names(alignment)
+    for(row in seq_len(nrow(alignment))) {
+        cat(">", taxa[row], "\n", sep = "")
+        cat(alignment[row, ], "\n", sep = "")
+    }
 }

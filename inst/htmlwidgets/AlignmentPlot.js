@@ -17,8 +17,8 @@ HTMLWidgets.widget({
             .append("div")
             .styles({
                 "display": "flex",
-                "font-size": 12,
-                "font-family": "monospace"
+                "font-size": 9,
+                "font-family": "Courier"
             });
 
         plot.taxa = plot.container
@@ -49,7 +49,7 @@ HTMLWidgets.widget({
             .enter()
             .append("td")
             .styles({
-                "border": "1px solid white",
+                "border": "1px solid black",
             })
             .text(function(d, i) {
                 return d;

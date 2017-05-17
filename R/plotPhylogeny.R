@@ -6,7 +6,6 @@ PhyloPlot <- function(
     phylogeny,
     substitutions = NULL,
     intervals = NULL,
-    n_sites = NULL,
     width = NULL,
     height = NULL,
     sim_type = NULL,
