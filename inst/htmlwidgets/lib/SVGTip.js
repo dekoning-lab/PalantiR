@@ -39,6 +39,7 @@ var SVGTip = function (options) {
     };
 
     tooltip.container = tooltip.append("g");
+
     tooltip.box = tooltip.container.append("rect")
         .attrs({
             "class": "box",
@@ -60,18 +61,19 @@ var SVGTip = function (options) {
             "alignment-baseline": "middle"
         });
 
-    var show = function () {
-        tooltip.style("display", "inline");
-    };
-
-    var hide = function () {
-        tooltip.style("display", "none");
-    };
-
     return function (selection) {
+        var default_stroke = null;
         selection
-            .on("mouseover", show)
-            .on("mouseout", hide)
+            .on("mouseover", function() {
+                var el = d3.select(this);
+                default_stroke = el.attr("stroke");
+                el.attr("stroke", "orange");
+                tooltip.style("display", "inline");
+            })
+            .on("mouseout", function() {
+                d3.select(this).attr("stroke", default_stroke);
+                tooltip.style("display", "none");
+            })
             .on("mousemove", function (d, n) {
                 var point = d3.mouse(parent.node());
                 point.x = point[0];
@@ -100,9 +102,6 @@ var SVGTip = function (options) {
 
                 var x_adj = (bbox.width / 2) + padding;
                 var y_adj = - bbox.height - bbox.y - padding;
-
-                console.log(bbox);
-                console.log(point);
 
                 if((point.x + bbox.width + padding) > parent.node().width.baseVal.value ||
                     (point.y - bbox.height - padding) < 0) {

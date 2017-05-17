@@ -43,8 +43,4 @@ dependencies:
     version: 0.0
     src: htmlwidgets/lib
     script: stringBoundingBox.js
-  - name: styles
-    version: 0.0
-    src: htmlwidgets
-    stylesheet: PhyloPlot.css
 
