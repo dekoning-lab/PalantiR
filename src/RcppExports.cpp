@@ -19,37 +19,47 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// GeneralTimeReversible
+List GeneralTimeReversible(arma::vec equilibrium, arma::mat exchangeability);
+RcppExport SEXP PalantiR_GeneralTimeReversible(SEXP equilibriumSEXP, SEXP exchangeabilitySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type equilibrium(equilibriumSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type exchangeability(exchangeabilitySEXP);
+    rcpp_result_gen = Rcpp::wrap(GeneralTimeReversible(equilibrium, exchangeability));
+    return rcpp_result_gen;
+END_RCPP
+}
 // MutationSelection
-List MutationSelection(unsigned long long population_size, double mutation_rate, arma::vec nucleotide_equilibrium, arma::mat nucleotide_transition, arma::vec fitness, std::string scaling_type);
-RcppExport SEXP PalantiR_MutationSelection(SEXP population_sizeSEXP, SEXP mutation_rateSEXP, SEXP nucleotide_equilibriumSEXP, SEXP nucleotide_transitionSEXP, SEXP fitnessSEXP, SEXP scaling_typeSEXP) {
+List MutationSelection(unsigned long long population_size, double mutation_rate, List nucleotide_model, arma::vec fitness, std::string scaling_type);
+RcppExport SEXP PalantiR_MutationSelection(SEXP population_sizeSEXP, SEXP mutation_rateSEXP, SEXP nucleotide_modelSEXP, SEXP fitnessSEXP, SEXP scaling_typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< unsigned long long >::type population_size(population_sizeSEXP);
     Rcpp::traits::input_parameter< double >::type mutation_rate(mutation_rateSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type nucleotide_equilibrium(nucleotide_equilibriumSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type nucleotide_transition(nucleotide_transitionSEXP);
+    Rcpp::traits::input_parameter< List >::type nucleotide_model(nucleotide_modelSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type fitness(fitnessSEXP);
     Rcpp::traits::input_parameter< std::string >::type scaling_type(scaling_typeSEXP);
-    rcpp_result_gen = Rcpp::wrap(MutationSelection(population_size, mutation_rate, nucleotide_equilibrium, nucleotide_transition, fitness, scaling_type));
+    rcpp_result_gen = Rcpp::wrap(MutationSelection(population_size, mutation_rate, nucleotide_model, fitness, scaling_type));
     return rcpp_result_gen;
 END_RCPP
 }
 // CoEvolution
-List CoEvolution(unsigned long long population_size, double mutation_rate, arma::vec nucleotide_equilibrium, arma::mat nucleotide_transition, arma::vec fitness_1, arma::vec fitness_2, arma::mat delta, std::string scaling_type);
-RcppExport SEXP PalantiR_CoEvolution(SEXP population_sizeSEXP, SEXP mutation_rateSEXP, SEXP nucleotide_equilibriumSEXP, SEXP nucleotide_transitionSEXP, SEXP fitness_1SEXP, SEXP fitness_2SEXP, SEXP deltaSEXP, SEXP scaling_typeSEXP) {
+List CoEvolution(unsigned long long population_size, double mutation_rate, List nucleotide_model, arma::vec fitness_1, arma::vec fitness_2, arma::mat delta, std::string scaling_type);
+RcppExport SEXP PalantiR_CoEvolution(SEXP population_sizeSEXP, SEXP mutation_rateSEXP, SEXP nucleotide_modelSEXP, SEXP fitness_1SEXP, SEXP fitness_2SEXP, SEXP deltaSEXP, SEXP scaling_typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< unsigned long long >::type population_size(population_sizeSEXP);
     Rcpp::traits::input_parameter< double >::type mutation_rate(mutation_rateSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type nucleotide_equilibrium(nucleotide_equilibriumSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type nucleotide_transition(nucleotide_transitionSEXP);
+    Rcpp::traits::input_parameter< List >::type nucleotide_model(nucleotide_modelSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type fitness_1(fitness_1SEXP);
     Rcpp::traits::input_parameter< arma::vec >::type fitness_2(fitness_2SEXP);
     Rcpp::traits::input_parameter< arma::mat >::type delta(deltaSEXP);
     Rcpp::traits::input_parameter< std::string >::type scaling_type(scaling_typeSEXP);
-    rcpp_result_gen = Rcpp::wrap(CoEvolution(population_size, mutation_rate, nucleotide_equilibrium, nucleotide_transition, fitness_1, fitness_2, delta, scaling_type));
+    rcpp_result_gen = Rcpp::wrap(CoEvolution(population_size, mutation_rate, nucleotide_model, fitness_1, fitness_2, delta, scaling_type));
     return rcpp_result_gen;
 END_RCPP
 }

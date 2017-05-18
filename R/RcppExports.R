@@ -5,12 +5,16 @@ HasegawaKishinoYano <- function(equilibrium, transition_rate = 1, transversion_r
     .Call('PalantiR_HasegawaKishinoYano', PACKAGE = 'PalantiR', equilibrium, transition_rate, transversion_rate)
 }
 
-MutationSelection <- function(population_size, mutation_rate, nucleotide_equilibrium, nucleotide_transition, fitness, scaling_type = "synonymous") {
-    .Call('PalantiR_MutationSelection', PACKAGE = 'PalantiR', population_size, mutation_rate, nucleotide_equilibrium, nucleotide_transition, fitness, scaling_type)
+GeneralTimeReversible <- function(equilibrium, exchangeability) {
+    .Call('PalantiR_GeneralTimeReversible', PACKAGE = 'PalantiR', equilibrium, exchangeability)
 }
 
-CoEvolution <- function(population_size, mutation_rate, nucleotide_equilibrium, nucleotide_transition, fitness_1, fitness_2, delta, scaling_type = "synonymous") {
-    .Call('PalantiR_CoEvolution', PACKAGE = 'PalantiR', population_size, mutation_rate, nucleotide_equilibrium, nucleotide_transition, fitness_1, fitness_2, delta, scaling_type)
+MutationSelection <- function(population_size, mutation_rate, nucleotide_model, fitness, scaling_type = "synonymous") {
+    .Call('PalantiR_MutationSelection', PACKAGE = 'PalantiR', population_size, mutation_rate, nucleotide_model, fitness, scaling_type)
+}
+
+CoEvolution <- function(population_size, mutation_rate, nucleotide_model, fitness_1, fitness_2, delta, scaling_type = "synonymous") {
+    .Call('PalantiR_CoEvolution', PACKAGE = 'PalantiR', population_size, mutation_rate, nucleotide_model, fitness_1, fitness_2, delta, scaling_type)
 }
 
 Phylogeny <- function(newick_path) {
