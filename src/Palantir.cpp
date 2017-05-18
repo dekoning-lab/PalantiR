@@ -96,6 +96,7 @@ List simulate_over_interval_phylogeny(
     List mode_tree,
     List substitution_models,
     List sequence,
+    unsigned long long start_mode,
     double rate = 1,
     double segment_length = 0.001,
     double tolerance = 0.001)
@@ -147,13 +148,7 @@ List simulate_over_interval_phylogeny(
     }
 
     uvec states = sequence["index"];
-    uvec modes = Palantir::CompoundCodon::to_mode_index(states, g);
     uvec codons = Palantir::CompoundCodon::to_codon_index(states, g);
-    ullong start_mode = modes[0];
-
-    if(any(modes != start_mode)) {
-        stop("Every site in the sequence should have the same mode");
-    }
 
     vector<vec> equilibrium;
     vector<mat> transition;
@@ -195,6 +190,7 @@ List simulate_with_nested_heterogeneity(
     List switching_model,
     List substitution_models,
     List sequence,
+    unsigned long long start_mode,
     double rate = 1,
     double switching_rate = 1,
     double segment_length = 0.001,
@@ -223,8 +219,8 @@ List simulate_with_nested_heterogeneity(
     if(!has_class(sequence, "Sequence")) {
         stop("Argument `sequence` should be of class `Sequence`");
     }
-    if(get_attr(sequence, "type") != "compound_codon") {
-        stop("Argument `sequence` should be of type `compound_codon`");
+    if(get_attr(sequence, "type") != "codon") {
+        stop("Argument `sequence` should be of type `codon`");
     }
 
     Palantir::GeneticCode g(get_genetic_code_name());
@@ -236,12 +232,7 @@ List simulate_with_nested_heterogeneity(
     mat switching_sampling = switching_model["sampling"];
 
     uvec states = sequence["index"];
-    uvec modes = Palantir::CompoundCodon::to_mode_index(states, g);
     uvec codons = Palantir::CompoundCodon::to_codon_index(states, g);
-    ullong start_mode = modes[0];
-    if(any(modes != start_mode)) {
-        stop("Every site in the sequence should have the same mode");
-    }
 
     vector<Palantir::IntervalHistory> tree_intervals = Palantir::Simulate::switching_intervals(
         p, switching_transition, switching_sampling, start_mode, switching_rate);
