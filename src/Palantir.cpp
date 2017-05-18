@@ -242,7 +242,6 @@ List simulate_with_nested_heterogeneity(
         stop("The modes of the `switching_model` should index the elements in `substitution_models` list");
     }
 
-
     vector<vec> equilibrium;
     vector<mat> transition;
     vector<mat> sampling;

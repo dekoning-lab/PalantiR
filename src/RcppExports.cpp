@@ -63,6 +63,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// MarkovModulatedMutationSelection
+List MarkovModulatedMutationSelection(List mutation_selection_models, List switching_model);
+RcppExport SEXP PalantiR_MarkovModulatedMutationSelection(SEXP mutation_selection_modelsSEXP, SEXP switching_modelSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type mutation_selection_models(mutation_selection_modelsSEXP);
+    Rcpp::traits::input_parameter< List >::type switching_model(switching_modelSEXP);
+    rcpp_result_gen = Rcpp::wrap(MarkovModulatedMutationSelection(mutation_selection_models, switching_model));
+    return rcpp_result_gen;
+END_RCPP
+}
 // Phylogeny
 List Phylogeny(std::string newick_path);
 RcppExport SEXP PalantiR_Phylogeny(SEXP newick_pathSEXP) {

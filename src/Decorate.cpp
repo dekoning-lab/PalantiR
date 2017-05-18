@@ -15,6 +15,33 @@ void decorate_substitutions(List& substitutions, std::string type)
         arma::uvec synonymous = Palantir::Codon::synonymous(state_from, state_to, g);
         substitutions["synonymous"] = LogicalVector(synonymous.begin(), synonymous.end());
         substitutions["color"] = predicate(synonymous, "#16A35E", "#E84B2A");
+    } else if(type == "compound_codon") {
+        uvec codon_from  = Palantir::CompoundCodon::to_codon_index(state_from, g);
+        uvec codon_to = Palantir::CompoundCodon::to_codon_index(state_to, g);
+        uvec model_from = Palantir::CompoundCodon::to_mode_index(state_from, g);
+        uvec model_to = Palantir::CompoundCodon::to_mode_index(state_to, g);
+
+        substitutions["model_from"] = model_from;
+        substitutions["model_to"] = model_to;
+        substitutions["codon_from"] = Palantir::Codon::to_string(codon_from, g);
+        substitutions["codon_to"] = Palantir::Codon::to_string(codon_to, g);
+
+        arma::uvec synonymous = Palantir::Codon::synonymous(codon_from, codon_to, g);
+        substitutions["synonymous"] = LogicalVector(synonymous.begin(), synonymous.end());
+
+        arma::uvec model_switch(model_from.n_elem);
+        for(unsigned long long i = 0; i < model_from.n_elem; i++) {
+            model_switch[i] = (model_to[i] != model_from[i]);
+        }
+        substitutions["model_switch"] = LogicalVector(model_switch.begin(), model_switch.end());
+
+        CharacterVector color = predicate(synonymous, "#16A35E", "#E84B2A");
+        for(unsigned long long i = 0; i < model_switch.n_elem; i++) {
+            if(model_switch[i]) {
+                color[i] = "#002FCF";
+            }
+        }
+        substitutions["color"] = color;
     } else if(type == "codon_pair") {
         substitutions["pair_from"] = Palantir::CodonPair::to_string(state_from, g);
         substitutions["pair_to"] = Palantir::CodonPair::to_string(state_to, g);

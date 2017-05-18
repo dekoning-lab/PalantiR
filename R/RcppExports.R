@@ -17,6 +17,10 @@ CoEvolution <- function(population_size, mutation_rate, nucleotide_model, fitnes
     .Call('PalantiR_CoEvolution', PACKAGE = 'PalantiR', population_size, mutation_rate, nucleotide_model, fitness_1, fitness_2, delta, scaling_type)
 }
 
+MarkovModulatedMutationSelection <- function(mutation_selection_models, switching_model) {
+    .Call('PalantiR_MarkovModulatedMutationSelection', PACKAGE = 'PalantiR', mutation_selection_models, switching_model)
+}
+
 Phylogeny <- function(newick_path) {
     .Call('PalantiR_Phylogeny', PACKAGE = 'PalantiR', newick_path)
 }

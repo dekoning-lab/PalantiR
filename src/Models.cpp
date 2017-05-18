@@ -5,6 +5,8 @@
 #include "Palantir_Core/GeneralTimeReversible.hpp"
 #include "Palantir_Core/MutationSelection.hpp"
 #include "Palantir_Core/CoEvolution.hpp"
+#include "Palantir_Core/MarkovModel.hpp"
+#include "Palantir_Core/MarkovModulated.hpp"
 
 #include "RcppPalantir.hpp"
 
@@ -44,7 +46,7 @@ List GeneralTimeReversible(arma::vec equilibrium, arma::mat exchangeability)
         _["sampling"] = sampling,
         _["exchangeability"] = exchangeability,
         _["n_states"] = n_states,
-        _["type"] = "general"
+        _["type"] = "exchangeable"
     );
 
     gtr.attr("class") = "SubstitutionModel";
@@ -142,4 +144,44 @@ List CoEvolution(
     return ms;
 }
 
+//[[Rcpp::export]]
+List MarkovModulatedMutationSelection(
+    List mutation_selection_models,
+    List switching_model)
+{
+    Palantir::GeneticCode g(get_genetic_code_name());
+    if(!has_class(switching_model, "SubstitutionModel") || get_attr(switching_model, "type") != "exchangeable") {
+        stop("Argument `switching_model` should be an exchangeable substitution model");
+    }
+    vec switching_equilibrium = switching_model["equilibrium"];
+    mat exchangeability = switching_model["exchangeability"];
+    vector<const vec> substitution_equilibrium;
+    vector<const mat> substitution_transition;
 
+    for(ullong i = 0; i < mutation_selection_models.size(); i++) {
+        List ms_model = mutation_selection_models[i];
+        substitution_equilibrium.push_back(ms_model["equilibrium"]);
+        substitution_transition.push_back(ms_model["transition"]);
+    }
+
+    mat transition = Palantir::MarkovModulated::transition(
+        substitution_transition, exchangeability, switching_equilibrium, g);
+
+    vec equilibrium = Palantir::MarkovModel::solve_equilibrium(transition);
+
+    unsigned long long n_states = equilibrium.n_elem;
+
+    mat sampling = Palantir::sampling(transition);
+
+    List ms = List::create(
+        _["equilibrium"] = equilibrium,
+        _["transition"] = transition,
+        _["sampling"] = sampling,
+        _["mutation_selection_models"] = mutation_selection_models,
+        _["n_states"] = n_states,
+        _["type"] = "compound_codon"
+    );
+
+    ms.attr("class") = "SubstitutionModel";
+    return ms;
+}

@@ -30,7 +30,7 @@ HTMLWidgets.widget({
 
             render_tree(plot, data.tree);
 
-            if (!is_empty_object(data.intervals) && plot.options.plot_intervals) {
+            if (!is_empty_object(data.intervals) && plot.options.plot_intervals && data.intervals) {
                 render_intervals(plot, data.intervals);
             }
             if (!is_empty_object(data.substitutions)) {
