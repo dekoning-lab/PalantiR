@@ -1,135 +1,213 @@
 HTMLWidgets.widget({
 
-  name: 'AlignmentPlot',
+    name: 'AlignmentPlot',
 
-  type: 'output',
+    type: 'output',
 
-  factory: function(el, width, height) {
+    factory: function(el, width, height) {
 
-    var data = {};
-    var plot = {};
+        var data = {};
+        var plot = {};
 
-    var render = function(data, plot, width, height) {
-        data = data;
-        d3.select("#" + el.id).selectAll("div").remove();
+        var render = function(data, plot, width, height) {
+            data = data;
 
-        plot.container = d3.select("#" + el.id)
-            .append("div")
-            .styles({
-                "display": "flex",
-                "font-size": 9,
-                "font-family": "Courier"
-            });
+            var sites = Array.apply(null, Array(data[0].sequence.length)).map(function (_, i) { return i; });
 
-        plot.taxa = plot.container
-            .append("div")
-            .styles({
-                "overflow-y": "scroll",
-                "flex-basis": "content",
-                "text-align": "right",
-                "max-widht": width + "px",
-                "max-height": height + "px"});
+            var scrollbar_width = get_scrollbar_width();
 
-        plot.taxa.table = plot.taxa
-            .append('table')
-            .styles({
-                "border-collapse": "collapse"
-            })
-            .append('tbody');
-
-        plot.taxa.rows = plot.taxa.table.selectAll("tr")
-            .data(data)
-            .enter()
-            .append("tr");
-
-        plot.taxa.cells = plot.taxa.rows.selectAll("td")
-            .data(function(d) {
-                return d.taxon;
-            })
-            .enter()
-            .append("td")
-            .styles({
-                "border": "1px solid black",
-            })
-            .text(function(d, i) {
-                return d;
-            });
-
-        plot.alignment = plot.container
-            .append("div")
-            .styles({
+            var table_styles = {
+                "font-family": "Courier",
                 "text-align": "center",
+                "border-collapse": "collapse"
+            };
+
+            var div_styles = {
+                "position": "absolute",
                 "overflow-x": "scroll",
                 "overflow-y": "scroll",
-                "flex": 1,
-                "max-widht": width + "px",
-                "max-height": height + "px"});
+            };
 
-        plot.alignment.table = plot.alignment
-            .append('table')
-            .styles({
-                "border-collapse": "collapse"
-            })
-            .append('tbody');
+            plot.container = d3.select("#" + el.id)
+                .append("div")
+                .styles({
+                    "position": "relative",
+                    "overflow": "hidden",
+                    "width": width + "px",
+                    "height": height + "px"
+                });
 
-        plot.alignment.rows = plot.alignment.table.selectAll("tr")
-            .data(data)
-            .enter()
-            .append("tr");
+            // Alignment
+            plot.alignment = {};
+            plot.alignment.div = plot.container
+                .append("div")
+                .styles(div_styles);
 
-        plot.alignment.cells = plot.alignment.rows.selectAll("td")
-            .data(function(d) {
-                return d.sequence;
-            })
-            .enter()
-            .append("td")
-            .styles({"border": "1px solid black"})
-            .style("background-color", function(d) { return d.color; })
-            .text(function(d, i) {
-                return d.state;
+            plot.alignment.table = plot.alignment.div
+                .append("table")
+                .styles(table_styles);
+
+            var cells = plot.alignment.table
+                .selectAll("tr")
+                .data(data)
+                .enter()
+                .append("tr")
+                .selectAll("td")
+                .data(function(d) { return d.sequence; })
+                .enter()
+                .append("td")
+                .styles({
+                    "border": "1px solid black",
+                    "background-color": function(d) {
+                        return d.color;
+                    }
+                })
+                .text(function(d) {
+                    return d.state;
+                });
+
+            var cell_width = cells.node().offsetWidth;
+            var cell_height = cells.node().offsetHeight;
+            var table_width = plot.alignment.table.node().offsetWidth;
+            var table_height = plot.alignment.table.node().offsetHeight;
+
+            // Taxa
+            plot.taxa = {};
+            plot.taxa.div = plot.container
+                .append("div")
+                .styles(div_styles);
+
+            plot.taxa.table = plot.taxa.div
+                .append("table")
+                .styles({
+                    "table-layout": "fixed",
+                    "height": table_height + "px"
+                })
+                .styles(table_styles);
+
+            plot.taxa.table.selectAll("tr")
+                .data(data)
+                .enter()
+                .append("tr")
+                .append("td")
+                .styles({
+                    "border": "1px solid black",
+                    "font-size": "10px",
+                })
+                .text(function(d) {
+                    return d.taxon;
+                });
+
+            // Sites
+            plot.site = {};
+            plot.site.div = plot.container
+                .append("div")
+                .styles(div_styles);
+
+            plot.site.table = plot.site.div
+                .append("table")
+                .styles({
+                    "table-layout": "fixed",
+                    "width": table_width + "px"
+                })
+                .styles(table_styles);
+
+            plot.site.table
+                .append("tr")
+                .selectAll("td")
+                .data(sites)
+                .enter()
+                .append("td")
+                .styles({
+                    "border": "1px solid black",
+                    "font-size": "10px"
+                })
+                .text(function(d) {
+                    return d;
+                });
+
+            // reposition
+            var taxa_width = plot.taxa.table.node().offsetWidth;
+            var site_height = plot.site.table.node().offsetHeight;
+
+            plot.alignment.div
+                .styles({
+                    "left": taxa_width + scrollbar_width + "px",
+                    "top": site_height + scrollbar_width + "px",
+                    "max-height": height - site_height + "px",
+                    "max-width": width - taxa_width + "px",
+                });
+
+            plot.site.div
+                .styles({
+                    "left": taxa_width + scrollbar_width + "px",
+                    "max-width": width - taxa_width + "px",
+                });
+
+            plot.taxa.div
+                .styles({
+                    "top": site_height + scrollbar_width + "px",
+                    "max-height": height - site_height + "px",
+                });
+
+            // Sync scrolling
+            var syncing_taxa_scroll = false;
+            var syncing_alignment_scroll = false;
+            var syncing_site_scroll = false;
+
+            plot.taxa.div.on("scroll", function() {
+                if(!syncing_taxa_scroll) {
+                    syncing_alignment_scroll = true;
+                    plot.alignment.div.node().scrollTop = this.scrollTop;
+                }
+                syncing_taxa_scroll = false;
             });
 
-        // Sync scrolling
+            plot.site.div.on("scroll", function() {
+                if(!syncing_site_scroll) {
+                    syncing_alignment_scroll = true;
+                    plot.alignment.div.node().scrollLeft = this.scrollLeft;
+                }
+                syncing_site_scroll = false;
+            });
 
-        var taxa_div  = plot.taxa.node();
-        var syncing_taxa_scroll = false;
-        var alignment_div  = plot.alignment.node();
-        var syncing_alignment_scroll = false;
-
-        taxa_div.onscroll = function() {
-            if(!syncing_taxa_scroll) {
-                syncing_alignment_scroll = true;
-                alignment_div.scrollTop = this.scrollTop;
-            }
-            syncing_taxa_scroll = false;
+            plot.alignment.div.on("scroll", function() {
+                if(!syncing_alignment_scroll) {
+                    syncing_taxa_scroll = true;
+                    plot.taxa.div.node().scrollTop = this.scrollTop;
+                    plot.site.div.node().scrollLeft = this.scrollLeft;
+                }
+                syncing_alignment_scroll = false;
+            });
         };
 
-        alignment_div.onscroll = function() {
-            if(!syncing_alignment_scroll) {
-                syncing_taxa_scroll = true;
-                taxa_div.scrollTop = this.scrollTop;
+        return {
+            renderValue: function(object) {
+                data = object;
+                render(object, plot, width, height);
+            },
+            resize: function(width, height) {
+                var taxa_width = plot.taxa.table.node().offsetWidth;
+                var site_height = plot.site.table.node().offsetHeight;
+                plot.container
+                    .styles({
+                        "width": width + "px",
+                        "height": height + "px"
+                    });
+                plot.alignment.div
+                    .styles({
+                        "max-height": height - site_height + "px",
+                        "max-width": width - taxa_width + "px",
+                    });
+                plot.site.div
+                    .styles({
+                        "max-width": width - taxa_width + "px",
+                    });
+                plot.taxa.div
+                    .styles({
+                        "max-height": height - site_height + "px",
+                    });
             }
-            syncing_alignment_scroll = false;
         };
-    };
-
-    return {
-      renderValue: function(object) {
-          data = object;
-          render(object, plot, width, height);
-      },
-      resize: function(width, height) {
-          plot.taxa.styles({
-              "max-widht": width + "px",
-              "max-height": height + "px"
-          });
-
-          plot.alignment.styles({
-              "max-widht": width + "px",
-              "max-height": height + "px"
-
-          });
-      }
-    };
-  }
+    }
 });

@@ -11,3 +11,7 @@ dependencies:
     version: 0.0
     src: htmlwidgets/lib
     script: monospaceCharWidth.js
+  - name: getScrollbarWidth
+    version: 0.0
+    src: htmlwidgets/lib
+    script: getScrollbarWidth.js

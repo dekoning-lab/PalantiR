@@ -32,7 +32,7 @@ AlignmentPlot <- function(alignment, width = NULL, height = NULL) {
                  color = colors[row, ]))
     })
 
-    data <- jsonlite::toJSON(sequences)
+    data <- jsonlite::toJSON(sequences, auto_unbox = T)
 
     htmlwidgets::createWidget(
         name = "AlignmentPlot",
@@ -41,7 +41,6 @@ AlignmentPlot <- function(alignment, width = NULL, height = NULL) {
         height = height,
         package = "PalantiR",
         sizingPolicy = htmlwidgets::sizingPolicy(
-            viewer.padding = 0,
             browser.fill = T
         )
     )
