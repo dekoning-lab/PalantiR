@@ -31,7 +31,6 @@ PhyloPlot <- function(
         options = list(
             sim_type = sim_type,
             sites = sites,
-            n_sites = n_sites,
             show_labels = show_labels,
             plot_intervals = plot_intervals,
             interval_opacity = interval_opacity,
