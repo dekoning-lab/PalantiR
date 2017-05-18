@@ -19,7 +19,26 @@
                   "S"="#ff4455",
                   "T"="#ff4455")
 
+# Make sure the alignment is in "just codons"
+.normalize <- function(alignment) {
+    type = attr(alignment, "type")
+    if(type == "codon") {
+        return(alignment);
+    } else if(type == "compound_codon") {
+        return(apply(alignment, c(1, 2), function(x)
+            strsplit(x, ",")[[1]][[1]]))
+    } else if(type == "codon_pair") {
+        return(t(apply(sim_co$alignment, 1, function(col)
+            vapply(col, function(x)
+                strsplit(x, ",")[[1]], character(2)))))
+    } else {
+        stop("Unknown alignment type")
+    }
+}
+
 AlignmentPlot <- function(alignment, width = NULL, height = NULL) {
+
+    alignment <- .normalize(alignment)
 
     taxa <- row.names(alignment)
     colors <- apply(apply(alignment, 2, as_amino_acid), c(1,2), function(x) .aa_colors[[x]])
@@ -55,10 +74,12 @@ AlignmentPlotRender <- function(expr, env = parent.frame(), quoted = FALSE) {
     htmlwidgets::shinyRenderWidget(expr, AlignmentPlotOutput, env, quoted = TRUE)
 }
 
-as.fasta.alignment <- function(alignemnt) {
+as.fasta.Alignment <- function(alignment) {
     taxa <- row.names(alignment)
     for(row in seq_len(nrow(alignment))) {
         cat(">", taxa[row], "\n", sep = "")
         cat(alignment[row, ], "\n", sep = "")
     }
 }
+
+plot.Alignment <- function(alignment) AlignmentPlot(alignment)

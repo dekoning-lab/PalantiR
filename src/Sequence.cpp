@@ -141,6 +141,8 @@ CharacterMatrix get_alignment(const vector<Palantir::SiteSimulation>& sims, cons
         }
     }
     rownames(alignment) = labels;
+    alignment.attr("class") = "Alignment";
+    alignment.attr("type") = type;
     return alignment;
 }
 

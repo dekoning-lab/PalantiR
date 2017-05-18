@@ -275,3 +275,95 @@ List simulate_with_nested_heterogeneity(
 
     return simulation;
 }
+
+//[[Rcpp::export]]
+List simulate_with_poisson_heterogeneity(
+    List tree,
+    List switching_model,
+    List substitution_models,
+    List sequence,
+    unsigned long long start_mode,
+    double rate = 1,
+    double switching_rate = 1,
+    double segment_length = 0.001,
+    double tolerance = 0.001)
+{
+    //Type checking
+    List first_model = substitution_models[0];
+    string model_type = get_attr(first_model, "type");
+
+    if(!has_class(tree, "Phylogeny")) {
+        stop("Argument `tree` should be of class `Phylogeny`");
+    }
+    for(ullong i = 0; i < substitution_models.size(); i++) {
+        List s = substitution_models[i];
+        if(!has_class(s, "SubstitutionModel")) {
+            stop("Each argument in `substitution_models` should be of class `SubstitutionModel`");
+        }
+
+        if(get_attr(s, "type") != model_type) {
+            stop("All models in `substitution_models` should have the same `type`");
+        }
+        if(get_attr(s, "scaling_type") != get_attr(first_model, "scaling_type")) {
+            stop("All models in `substitution_models` should have the same `scaling_type`");
+        }
+    }
+    if(!has_class(sequence, "Sequence")) {
+        stop("Argument `sequence` should be of class `Sequence`");
+    }
+    if(get_attr(sequence, "type") != "codon") {
+        stop("Argument `sequence` should be of type `codon`");
+    }
+
+    Palantir::GeneticCode g(get_genetic_code_name());
+
+    string newick = tree["newick"];
+    Palantir::Phylogeny p(newick);
+
+    mat switching_transition = switching_model["transition"];
+    mat switching_sampling = switching_model["sampling"];
+
+    uvec states = sequence["index"];
+    uvec codons = Palantir::CompoundCodon::to_codon_index(states, g);
+
+    vector<Palantir::IntervalHistory> tree_intervals = Palantir::Simulate::switching_intervals(
+        p, switching_transition, switching_sampling, start_mode, switching_rate);
+    List intervals = interval_histories_to_list(tree_intervals, p);
+
+    if(!compare_modes(substitution_models, intervals)) {
+        stop("The modes of the `switching_model` should index the elements in `substitution_models` list");
+    }
+
+    vector<vec> equilibrium;
+    vector<mat> transition;
+    vector<mat> sampling;
+
+    for(ullong i = 0; i < substitution_models.size(); i++) {
+        List substitution_model = substitution_models[i];
+        equilibrium.push_back(substitution_model["equilibrium"]);
+        transition.push_back(substitution_model["transition"]);
+        sampling.push_back(substitution_model["sampling"]);
+    }
+
+    vector<Palantir::SiteSimulation> sims = Palantir::Simulate::sequence_over_intervals(
+        p, tree_intervals, equilibrium, transition, sampling, codons, start_mode, g, rate, segment_length, tolerance);
+
+    List substitutions = site_simulations_to_list(sims, p);
+
+    decorate_substitutions(substitutions, model_type);
+
+    CharacterMatrix alignment = get_alignment(sims, p, model_type);
+
+    List simulation = List::create(
+        _["phylogeny"] = tree,
+        _["models"] = substitution_models,
+        _["substitutions"] = DataFrame(substitutions),
+        _["alignment"] = alignment,
+        _["intervals"] = DataFrame(intervals),
+        _["type"] = "compound_codon"
+    );
+
+    simulation.attr("class") = "Simulation";
+
+    return simulation;
+}

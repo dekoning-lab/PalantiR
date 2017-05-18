@@ -41,6 +41,10 @@ simulate_with_nested_heterogeneity <- function(tree, switching_model, substituti
     .Call('PalantiR_simulate_with_nested_heterogeneity', PACKAGE = 'PalantiR', tree, switching_model, substitution_models, sequence, start_mode, rate, switching_rate, segment_length, tolerance)
 }
 
+simulate_with_poisson_heterogeneity <- function(tree, switching_model, substitution_models, sequence, start_mode, rate = 1, switching_rate = 1, segment_length = 0.001, tolerance = 0.001) {
+    .Call('PalantiR_simulate_with_poisson_heterogeneity', PACKAGE = 'PalantiR', tree, switching_model, substitution_models, sequence, start_mode, rate, switching_rate, segment_length, tolerance)
+}
+
 compare_modes <- function(substitution_models, intervals) {
     .Call('PalantiR_compare_modes', PACKAGE = 'PalantiR', substitution_models, intervals)
 }
