@@ -79,7 +79,7 @@ List simulate_over_phylogeny(
     List simulation = List::create(
         _["phylogeny"] = tree,
         _["model"] = substitution_model,
-        _["substitutions"] = DataFrame(substitutions),
+        _["substitutions"] = DataFrame::create(substitutions, _["stringsAsFactors"] = false),
         _["alignment"] = alignment,
         _["intervals"] = NULL,
         _["type"] = substitution_model["type"]
@@ -173,7 +173,7 @@ List simulate_over_interval_phylogeny(
     List simulation = List::create(
         _["phylogeny"] = tree,
         _["models"] = substitution_models,
-        _["substitutions"] = DataFrame(substitutions),
+        _["substitutions"] = DataFrame::create(substitutions, _["stringsAsFactors"] = false),
         _["alignment"] = alignment,
         _["intervals"] = DataFrame(intervals),
         _["type"] = "compound_codon"
@@ -266,7 +266,7 @@ List simulate_with_nested_heterogeneity(
     List simulation = List::create(
         _["phylogeny"] = tree,
         _["models"] = substitution_models,
-        _["substitutions"] = DataFrame(substitutions),
+        _["substitutions"] = DataFrame::create(substitutions, _["stringsAsFactors"] = false),
         _["alignment"] = alignment,
         _["intervals"] = DataFrame(intervals),
         _["type"] = "compound_codon"
@@ -372,7 +372,7 @@ List simulate_with_poisson_heterogeneity(
     List simulation = List::create(
         _["phylogeny"] = tree,
         _["models"] = substitution_models,
-        _["substitutions"] = DataFrame(substitutions),
+        _["substitutions"] = DataFrame::create(substitutions, _["stringsAsFactors"] = false),
         _["alignment"] = alignment,
         _["intervals"] = site_intervals,
         _["type"] = "compound_codon"
