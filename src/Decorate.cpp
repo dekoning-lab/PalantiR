@@ -76,6 +76,5 @@ void decorate_substitutions(List& substitutions, std::string type)
         substitutions["first_color"] = predicate(first_synonymous, "#16A35E", "#E84B2A");
         substitutions["second_color"] = predicate(second_synonymous, "#16A35E", "#E84B2A");
     } else {
-        stop("Unknown substitution history type");
     }
 }
