@@ -234,6 +234,7 @@ List simulate_with_nested_heterogeneity(
     uvec states = sequence["index"];
     uvec codons = Palantir::CompoundCodon::to_codon_index(states, g);
 
+    // One interval for each branch
     vector<Palantir::IntervalHistory> tree_intervals = Palantir::Simulate::switching_intervals(
         p, switching_transition, switching_sampling, start_mode, switching_rate);
     List intervals = interval_histories_to_list(tree_intervals, p);
@@ -320,18 +321,21 @@ List simulate_with_poisson_heterogeneity(
     string newick = tree["newick"];
     Palantir::Phylogeny p(newick);
 
-    mat switching_transition = switching_model["transition"];
     mat switching_sampling = switching_model["sampling"];
 
     uvec states = sequence["index"];
+    unsigned long long n_sites = sequence["length"];
     uvec codons = Palantir::CompoundCodon::to_codon_index(states, g);
 
-    vector<Palantir::IntervalHistory> tree_intervals = Palantir::Simulate::switching_intervals(
-        p, switching_transition, switching_sampling, start_mode, switching_rate);
-    List intervals = interval_histories_to_list(tree_intervals, p);
-
-    if(!compare_modes(substitution_models, intervals)) {
-        stop("The modes of the `switching_model` should index the elements in `substitution_models` list");
+    vector<vector<Palantir::IntervalHistory>> tree_intervals = Palantir::Simulate::switching_poisson(
+        p, switching_sampling, n_sites, start_mode, switching_rate);
+    List site_intervals;
+    for(unsigned long long site = 0; site < n_sites; site++) {
+        List intervals = interval_histories_to_list(tree_intervals[site], p);
+        site_intervals.push_back(DataFrame(intervals));
+        if(!compare_modes(substitution_models, intervals)) {
+            stop("The modes of the `switching_model` should index the elements in `substitution_models` list");
+        }
     }
 
     vector<vec> equilibrium;
@@ -345,8 +349,19 @@ List simulate_with_poisson_heterogeneity(
         sampling.push_back(substitution_model["sampling"]);
     }
 
-    vector<Palantir::SiteSimulation> sims = Palantir::Simulate::sequence_over_intervals(
-        p, tree_intervals, equilibrium, transition, sampling, codons, start_mode, g, rate, segment_length, tolerance);
+    vector<Palantir::SiteSimulation> sims;
+    for(unsigned long long site = 0; site < n_sites; site++) {
+        uvec seq(1);
+        seq[0] = codons[site];
+
+        vector<Palantir::SiteSimulation> sim = Palantir::Simulate::sequence_over_intervals(
+             p, tree_intervals[site], equilibrium, transition, sampling, seq, start_mode, g, rate, segment_length, tolerance);
+        if(sim.size() != 1) {
+            Rcout << sim.size() << endl;
+            stop("This should never happen!");
+        }
+        sims.push_back(sim[0]);
+    }
 
     List substitutions = site_simulations_to_list(sims, p);
 
@@ -359,7 +374,7 @@ List simulate_with_poisson_heterogeneity(
         _["models"] = substitution_models,
         _["substitutions"] = DataFrame(substitutions),
         _["alignment"] = alignment,
-        _["intervals"] = DataFrame(intervals),
+        _["intervals"] = site_intervals,
         _["type"] = "compound_codon"
     );
 
