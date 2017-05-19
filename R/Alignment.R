@@ -74,12 +74,13 @@ AlignmentPlotRender <- function(expr, env = parent.frame(), quoted = FALSE) {
     htmlwidgets::shinyRenderWidget(expr, AlignmentPlotOutput, env, quoted = TRUE)
 }
 
-as.fasta <- function(x) UseMethod("as.fasta")
-as.fasta.Alignment <- function(alignment) {
+as.fasta <- function(alignment, file) UseMethod("as.fasta")
+as.fasta.Alignment <- function(alignment, file = "") {
     taxa <- row.names(alignment)
+    cat("", sep = "", file = file, append = F)
     for(row in seq_len(nrow(alignment))) {
-        cat(">", taxa[row], "\n", sep = "")
-        cat(alignment[row, ], "\n", sep = "")
+        cat(">", taxa[row], "\n", sep = "", file = file, append = T)
+        cat(alignment[row, ], "\n", sep = "", file = file, append = T)
     }
 }
 

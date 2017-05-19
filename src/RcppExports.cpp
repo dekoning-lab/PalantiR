@@ -99,44 +99,44 @@ BEGIN_RCPP
 END_RCPP
 }
 // simulate_over_phylogeny
-List simulate_over_phylogeny(List tree, List substitution_model, List sequence, double rate);
-RcppExport SEXP PalantiR_simulate_over_phylogeny(SEXP treeSEXP, SEXP substitution_modelSEXP, SEXP sequenceSEXP, SEXP rateSEXP) {
+List simulate_over_phylogeny(List phylogeny, List model, List sequence, double rate);
+RcppExport SEXP PalantiR_simulate_over_phylogeny(SEXP phylogenySEXP, SEXP modelSEXP, SEXP sequenceSEXP, SEXP rateSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type tree(treeSEXP);
-    Rcpp::traits::input_parameter< List >::type substitution_model(substitution_modelSEXP);
+    Rcpp::traits::input_parameter< List >::type phylogeny(phylogenySEXP);
+    Rcpp::traits::input_parameter< List >::type model(modelSEXP);
     Rcpp::traits::input_parameter< List >::type sequence(sequenceSEXP);
     Rcpp::traits::input_parameter< double >::type rate(rateSEXP);
-    rcpp_result_gen = Rcpp::wrap(simulate_over_phylogeny(tree, substitution_model, sequence, rate));
+    rcpp_result_gen = Rcpp::wrap(simulate_over_phylogeny(phylogeny, model, sequence, rate));
     return rcpp_result_gen;
 END_RCPP
 }
 // simulate_over_interval_phylogeny
-List simulate_over_interval_phylogeny(List tree, List mode_tree, List substitution_models, List sequence, unsigned long long start_mode, double rate, double segment_length, double tolerance);
-RcppExport SEXP PalantiR_simulate_over_interval_phylogeny(SEXP treeSEXP, SEXP mode_treeSEXP, SEXP substitution_modelsSEXP, SEXP sequenceSEXP, SEXP start_modeSEXP, SEXP rateSEXP, SEXP segment_lengthSEXP, SEXP toleranceSEXP) {
+List simulate_over_interval_phylogeny(List phylogeny, List mode_phylogeny, List models, List sequence, unsigned long long start_mode, double rate, double segment_length, double tolerance);
+RcppExport SEXP PalantiR_simulate_over_interval_phylogeny(SEXP phylogenySEXP, SEXP mode_phylogenySEXP, SEXP modelsSEXP, SEXP sequenceSEXP, SEXP start_modeSEXP, SEXP rateSEXP, SEXP segment_lengthSEXP, SEXP toleranceSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type tree(treeSEXP);
-    Rcpp::traits::input_parameter< List >::type mode_tree(mode_treeSEXP);
-    Rcpp::traits::input_parameter< List >::type substitution_models(substitution_modelsSEXP);
+    Rcpp::traits::input_parameter< List >::type phylogeny(phylogenySEXP);
+    Rcpp::traits::input_parameter< List >::type mode_phylogeny(mode_phylogenySEXP);
+    Rcpp::traits::input_parameter< List >::type models(modelsSEXP);
     Rcpp::traits::input_parameter< List >::type sequence(sequenceSEXP);
     Rcpp::traits::input_parameter< unsigned long long >::type start_mode(start_modeSEXP);
     Rcpp::traits::input_parameter< double >::type rate(rateSEXP);
     Rcpp::traits::input_parameter< double >::type segment_length(segment_lengthSEXP);
     Rcpp::traits::input_parameter< double >::type tolerance(toleranceSEXP);
-    rcpp_result_gen = Rcpp::wrap(simulate_over_interval_phylogeny(tree, mode_tree, substitution_models, sequence, start_mode, rate, segment_length, tolerance));
+    rcpp_result_gen = Rcpp::wrap(simulate_over_interval_phylogeny(phylogeny, mode_phylogeny, models, sequence, start_mode, rate, segment_length, tolerance));
     return rcpp_result_gen;
 END_RCPP
 }
 // simulate_with_nested_heterogeneity
-List simulate_with_nested_heterogeneity(List tree, List switching_model, List substitution_models, List sequence, unsigned long long start_mode, double rate, double switching_rate, double segment_length, double tolerance);
-RcppExport SEXP PalantiR_simulate_with_nested_heterogeneity(SEXP treeSEXP, SEXP switching_modelSEXP, SEXP substitution_modelsSEXP, SEXP sequenceSEXP, SEXP start_modeSEXP, SEXP rateSEXP, SEXP switching_rateSEXP, SEXP segment_lengthSEXP, SEXP toleranceSEXP) {
+List simulate_with_nested_heterogeneity(List phylogeny, List switching_model, List substitution_models, List sequence, unsigned long long start_mode, double rate, double switching_rate, double segment_length, double tolerance);
+RcppExport SEXP PalantiR_simulate_with_nested_heterogeneity(SEXP phylogenySEXP, SEXP switching_modelSEXP, SEXP substitution_modelsSEXP, SEXP sequenceSEXP, SEXP start_modeSEXP, SEXP rateSEXP, SEXP switching_rateSEXP, SEXP segment_lengthSEXP, SEXP toleranceSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type tree(treeSEXP);
+    Rcpp::traits::input_parameter< List >::type phylogeny(phylogenySEXP);
     Rcpp::traits::input_parameter< List >::type switching_model(switching_modelSEXP);
     Rcpp::traits::input_parameter< List >::type substitution_models(substitution_modelsSEXP);
     Rcpp::traits::input_parameter< List >::type sequence(sequenceSEXP);
@@ -145,17 +145,17 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type switching_rate(switching_rateSEXP);
     Rcpp::traits::input_parameter< double >::type segment_length(segment_lengthSEXP);
     Rcpp::traits::input_parameter< double >::type tolerance(toleranceSEXP);
-    rcpp_result_gen = Rcpp::wrap(simulate_with_nested_heterogeneity(tree, switching_model, substitution_models, sequence, start_mode, rate, switching_rate, segment_length, tolerance));
+    rcpp_result_gen = Rcpp::wrap(simulate_with_nested_heterogeneity(phylogeny, switching_model, substitution_models, sequence, start_mode, rate, switching_rate, segment_length, tolerance));
     return rcpp_result_gen;
 END_RCPP
 }
 // simulate_with_poisson_heterogeneity
-List simulate_with_poisson_heterogeneity(List tree, List switching_model, List substitution_models, List sequence, unsigned long long start_mode, double rate, double switching_rate, double segment_length, double tolerance);
-RcppExport SEXP PalantiR_simulate_with_poisson_heterogeneity(SEXP treeSEXP, SEXP switching_modelSEXP, SEXP substitution_modelsSEXP, SEXP sequenceSEXP, SEXP start_modeSEXP, SEXP rateSEXP, SEXP switching_rateSEXP, SEXP segment_lengthSEXP, SEXP toleranceSEXP) {
+List simulate_with_poisson_heterogeneity(List phylogeny, List switching_model, List substitution_models, List sequence, unsigned long long start_mode, double rate, double switching_rate, double segment_length, double tolerance);
+RcppExport SEXP PalantiR_simulate_with_poisson_heterogeneity(SEXP phylogenySEXP, SEXP switching_modelSEXP, SEXP substitution_modelsSEXP, SEXP sequenceSEXP, SEXP start_modeSEXP, SEXP rateSEXP, SEXP switching_rateSEXP, SEXP segment_lengthSEXP, SEXP toleranceSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type tree(treeSEXP);
+    Rcpp::traits::input_parameter< List >::type phylogeny(phylogenySEXP);
     Rcpp::traits::input_parameter< List >::type switching_model(switching_modelSEXP);
     Rcpp::traits::input_parameter< List >::type substitution_models(substitution_modelsSEXP);
     Rcpp::traits::input_parameter< List >::type sequence(sequenceSEXP);
@@ -164,7 +164,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type switching_rate(switching_rateSEXP);
     Rcpp::traits::input_parameter< double >::type segment_length(segment_lengthSEXP);
     Rcpp::traits::input_parameter< double >::type tolerance(toleranceSEXP);
-    rcpp_result_gen = Rcpp::wrap(simulate_with_poisson_heterogeneity(tree, switching_model, substitution_models, sequence, start_mode, rate, switching_rate, segment_length, tolerance));
+    rcpp_result_gen = Rcpp::wrap(simulate_with_poisson_heterogeneity(phylogeny, switching_model, substitution_models, sequence, start_mode, rate, switching_rate, segment_length, tolerance));
     return rcpp_result_gen;
 END_RCPP
 }

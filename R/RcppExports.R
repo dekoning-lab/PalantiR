@@ -29,20 +29,20 @@ equilibrium_to_fitness <- function(equilibrium, population_size) {
     .Call('PalantiR_equilibrium_to_fitness', PACKAGE = 'PalantiR', equilibrium, population_size)
 }
 
-simulate_over_phylogeny <- function(tree, substitution_model, sequence, rate = 1) {
-    .Call('PalantiR_simulate_over_phylogeny', PACKAGE = 'PalantiR', tree, substitution_model, sequence, rate)
+simulate_over_phylogeny <- function(phylogeny, model, sequence, rate = 1) {
+    .Call('PalantiR_simulate_over_phylogeny', PACKAGE = 'PalantiR', phylogeny, model, sequence, rate)
 }
 
-simulate_over_interval_phylogeny <- function(tree, mode_tree, substitution_models, sequence, start_mode, rate = 1, segment_length = 0.001, tolerance = 0.001) {
-    .Call('PalantiR_simulate_over_interval_phylogeny', PACKAGE = 'PalantiR', tree, mode_tree, substitution_models, sequence, start_mode, rate, segment_length, tolerance)
+simulate_over_interval_phylogeny <- function(phylogeny, mode_phylogeny, models, sequence, start_mode, rate = 1, segment_length = 0.001, tolerance = 0.001) {
+    .Call('PalantiR_simulate_over_interval_phylogeny', PACKAGE = 'PalantiR', phylogeny, mode_phylogeny, models, sequence, start_mode, rate, segment_length, tolerance)
 }
 
-simulate_with_nested_heterogeneity <- function(tree, switching_model, substitution_models, sequence, start_mode, rate = 1, switching_rate = 1, segment_length = 0.001, tolerance = 0.001) {
-    .Call('PalantiR_simulate_with_nested_heterogeneity', PACKAGE = 'PalantiR', tree, switching_model, substitution_models, sequence, start_mode, rate, switching_rate, segment_length, tolerance)
+simulate_with_nested_heterogeneity <- function(phylogeny, switching_model, substitution_models, sequence, start_mode, rate = 1, switching_rate = 1, segment_length = 0.001, tolerance = 0.001) {
+    .Call('PalantiR_simulate_with_nested_heterogeneity', PACKAGE = 'PalantiR', phylogeny, switching_model, substitution_models, sequence, start_mode, rate, switching_rate, segment_length, tolerance)
 }
 
-simulate_with_poisson_heterogeneity <- function(tree, switching_model, substitution_models, sequence, start_mode, rate = 1, switching_rate = 1, segment_length = 0.001, tolerance = 0.001) {
-    .Call('PalantiR_simulate_with_poisson_heterogeneity', PACKAGE = 'PalantiR', tree, switching_model, substitution_models, sequence, start_mode, rate, switching_rate, segment_length, tolerance)
+simulate_with_poisson_heterogeneity <- function(phylogeny, switching_model, substitution_models, sequence, start_mode, rate = 1, switching_rate = 1, segment_length = 0.001, tolerance = 0.001) {
+    .Call('PalantiR_simulate_with_poisson_heterogeneity', PACKAGE = 'PalantiR', phylogeny, switching_model, substitution_models, sequence, start_mode, rate, switching_rate, segment_length, tolerance)
 }
 
 compare_modes <- function(substitution_models, intervals) {

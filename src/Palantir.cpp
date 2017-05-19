@@ -44,26 +44,26 @@ arma::vec equilibrium_to_fitness(arma::vec equilibrium, unsigned long long popul
 
 // [[Rcpp::export]]
 List simulate_over_phylogeny(
-    List tree,
-    List substitution_model,
+    List phylogeny,
+    List model,
     List sequence,
     double rate = 1)
 {
     // Type checking
-    if(!has_class(tree, "Phylogeny")) {
+    if(!has_class(phylogeny, "Phylogeny")) {
         stop("Argument `tree` should be of class `Phylogeny`");
     }
-    if(!has_class(substitution_model, "SubstitutionModel")) {
+    if(!has_class(model, "SubstitutionModel")) {
         stop("Argument `substitution_model` should be of class `SubstitutionModel`");
     }
     if(!has_class(sequence, "Sequence")) {
         stop("Argument `sequence` should be of class `Sequence`");
     }
 
-    arma::mat transition = substitution_model["transition"];
-    arma::mat sampling = substitution_model["sampling"];
+    arma::mat transition = model["transition"];
+    arma::mat sampling = model["sampling"];
 
-    string newick = tree["newick"];
+    string newick = phylogeny["newick"];
     Palantir::Phylogeny p(newick);
     uvec states = sequence["index"];
 
@@ -72,17 +72,17 @@ List simulate_over_phylogeny(
             p, transition, sampling, states, rate);
 
     List substitutions = site_simulations_to_list(sims, p);
-    decorate_substitutions(substitutions, substitution_model["type"]);
+    decorate_substitutions(substitutions, model["type"]);
 
-    CharacterMatrix alignment = get_alignment(sims, p, substitution_model["type"]);
+    CharacterMatrix alignment = get_alignment(sims, p, model["type"]);
 
     List simulation = List::create(
-        _["phylogeny"] = tree,
-        _["model"] = substitution_model,
+        _["phylogeny"] = phylogeny,
+        _["model"] = model,
         _["substitutions"] = DataFrame::create(substitutions, _["stringsAsFactors"] = false),
         _["alignment"] = alignment,
         _["intervals"] = NULL,
-        _["type"] = substitution_model["type"]
+        _["type"] = model["type"]
     );
 
     simulation.attr("class") = "Simulation";
@@ -92,9 +92,9 @@ List simulate_over_phylogeny(
 
 //[[Rcpp::export]]
 List simulate_over_interval_phylogeny(
-    List tree,
-    List mode_tree,
-    List substitution_models,
+    List phylogeny,
+    List mode_phylogeny,
+    List models,
     List sequence,
     unsigned long long start_mode,
     double rate = 1,
@@ -103,17 +103,17 @@ List simulate_over_interval_phylogeny(
 {
 
     //Type checking
-    List first_model = substitution_models[0];
+    List first_model = models[0];
     string model_type = get_attr(first_model, "type");
 
-    if(!has_class(tree, "Phylogeny")) {
+    if(!has_class(phylogeny, "Phylogeny")) {
         stop("Argument `tree` should be of class `Phylogeny`");
     }
-    if(!has_class(mode_tree, "Phylogeny")) {
+    if(!has_class(mode_phylogeny, "Phylogeny")) {
         stop("Argument `mode_tree` should be of class `Phylogeny`");
     }
-    for(ullong i = 0; i < substitution_models.size(); i++) {
-        List s = substitution_models[i];
+    for(ullong i = 0; i < models.size(); i++) {
+        List s = models[i];
         if(!has_class(s, "SubstitutionModel")) {
             stop("Each argument in `substitution_models` should be of class `SubstitutionModel`");
         }
@@ -134,16 +134,16 @@ List simulate_over_interval_phylogeny(
 
     Palantir::GeneticCode g(get_genetic_code_name());
 
-    string newick = tree["newick"];
+    string newick = phylogeny["newick"];
     Palantir::Phylogeny p(newick);
 
-    string mode_newick = mode_tree["newick"];
+    string mode_newick = mode_phylogeny["newick"];
     Palantir::Phylogeny pa(mode_newick);
 
     vector<Palantir::IntervalHistory> tree_intervals = p.to_intervals(pa);
     List intervals = interval_histories_to_list(tree_intervals, p);
 
-    if(!compare_modes(substitution_models, intervals)) {
+    if(!compare_modes(models, intervals)) {
         stop("The modes on the `mode_tree` phylogeny should index the elements in `substitution_models` list");
     }
 
@@ -154,8 +154,8 @@ List simulate_over_interval_phylogeny(
     vector<mat> transition;
     vector<mat> sampling;
 
-    for(ullong i = 0; i < substitution_models.size(); i++) {
-        List substitution_model = substitution_models[i];
+    for(ullong i = 0; i < models.size(); i++) {
+        List substitution_model = models[i];
         equilibrium.push_back(substitution_model["equilibrium"]);
         transition.push_back(substitution_model["transition"]);
         sampling.push_back(substitution_model["sampling"]);
@@ -171,8 +171,8 @@ List simulate_over_interval_phylogeny(
     CharacterMatrix alignment = get_alignment(sims, p, model_type);
 
     List simulation = List::create(
-        _["phylogeny"] = tree,
-        _["models"] = substitution_models,
+        _["phylogeny"] = phylogeny,
+        _["models"] = models,
         _["substitutions"] = DataFrame::create(substitutions, _["stringsAsFactors"] = false),
         _["alignment"] = alignment,
         _["intervals"] = DataFrame(intervals),
@@ -186,7 +186,7 @@ List simulate_over_interval_phylogeny(
 
 //[[Rcpp::export]]
 List simulate_with_nested_heterogeneity(
-    List tree,
+    List phylogeny,
     List switching_model,
     List substitution_models,
     List sequence,
@@ -200,7 +200,7 @@ List simulate_with_nested_heterogeneity(
     List first_model = substitution_models[0];
     string model_type = get_attr(first_model, "type");
 
-    if(!has_class(tree, "Phylogeny")) {
+    if(!has_class(phylogeny, "Phylogeny")) {
         stop("Argument `tree` should be of class `Phylogeny`");
     }
     for(ullong i = 0; i < substitution_models.size(); i++) {
@@ -225,7 +225,7 @@ List simulate_with_nested_heterogeneity(
 
     Palantir::GeneticCode g(get_genetic_code_name());
 
-    string newick = tree["newick"];
+    string newick = phylogeny["newick"];
     Palantir::Phylogeny p(newick);
 
     mat switching_transition = switching_model["transition"];
@@ -264,7 +264,7 @@ List simulate_with_nested_heterogeneity(
     CharacterMatrix alignment = get_alignment(sims, p, model_type);
 
     List simulation = List::create(
-        _["phylogeny"] = tree,
+        _["phylogeny"] = phylogeny,
         _["models"] = substitution_models,
         _["substitutions"] = DataFrame::create(substitutions, _["stringsAsFactors"] = false),
         _["alignment"] = alignment,
@@ -279,7 +279,7 @@ List simulate_with_nested_heterogeneity(
 
 //[[Rcpp::export]]
 List simulate_with_poisson_heterogeneity(
-    List tree,
+    List phylogeny,
     List switching_model,
     List substitution_models,
     List sequence,
@@ -293,7 +293,7 @@ List simulate_with_poisson_heterogeneity(
     List first_model = substitution_models[0];
     string model_type = get_attr(first_model, "type");
 
-    if(!has_class(tree, "Phylogeny")) {
+    if(!has_class(phylogeny, "Phylogeny")) {
         stop("Argument `tree` should be of class `Phylogeny`");
     }
     for(ullong i = 0; i < substitution_models.size(); i++) {
@@ -318,7 +318,7 @@ List simulate_with_poisson_heterogeneity(
 
     Palantir::GeneticCode g(get_genetic_code_name());
 
-    string newick = tree["newick"];
+    string newick = phylogeny["newick"];
     Palantir::Phylogeny p(newick);
 
     mat switching_sampling = switching_model["sampling"];
@@ -370,7 +370,7 @@ List simulate_with_poisson_heterogeneity(
     CharacterMatrix alignment = get_alignment(sims, p, model_type);
 
     List simulation = List::create(
-        _["phylogeny"] = tree,
+        _["phylogeny"] = phylogeny,
         _["models"] = substitution_models,
         _["substitutions"] = DataFrame::create(substitutions, _["stringsAsFactors"] = false),
         _["alignment"] = alignment,
