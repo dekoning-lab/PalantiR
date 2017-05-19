@@ -20,15 +20,13 @@ git clone --recursive https://github.com/dekoning-lab/PalantiR.git
 
 The dependencies for the `R` package can be istalled as follows:
 
-```{r}
+```R
 install.packages(c("RcppArmadillo", "htmlwidgets"))
 ```
 
-# Workflow
+# TL;DR
 
-## TL;DR
-
-```{r}
+```R
 # read phylogeny
 p <- Phylogeny("data/mammals.newick")
 # read amino acid fitness values
@@ -47,7 +45,7 @@ sim <- simulate_over_phylogeny(phylogeny = p, model = ms, sequence = s)
 
 We can view the resuling alignment:
 
-```
+```R
 # examine alignment
 plot(sim$alignment)
 # save alignment as fasta
@@ -58,7 +56,7 @@ as.fasta(sim$alignment, "PalantiR_ms.fa")
 
 We can also visualize the substitutions that have been simulated:
 
-```
+```R
 # examine substitutions
 plot(sim, sites = 1:10)
 # check specific substitution data
@@ -67,7 +65,7 @@ head(sim$substitutions)
 
 ![simulation](img/ms-simulation.png)
 
-## Longer version
+# Simulations in detail
 
 The `Palantir` workflow revolves around a `SubstitutionModel` object.
 There are several types of substitution models, detailed on the wiki pages.
@@ -80,18 +78,8 @@ We start by creating a new `Phylogeny` object.
 The phylogenies are constructed by loading `.newick` format trees.
 Several example trees are provided in `data/` directory.
 
-```{r}
+```R
 p <- Phylogeny("data/mammals.newick")
 ```
 
 This phylogeny object can be printed for a quick inspection
-
-## Model parameters
-
-The 
-
-A model is created with a set of parameters, such as a phylogeny, population size, and a fitness vector.
-
-
-
-We then create 
