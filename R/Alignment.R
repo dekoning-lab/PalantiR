@@ -74,6 +74,7 @@ AlignmentPlotRender <- function(expr, env = parent.frame(), quoted = FALSE) {
     htmlwidgets::shinyRenderWidget(expr, AlignmentPlotOutput, env, quoted = TRUE)
 }
 
+as.fasta <- function(x) UseMethod("as.fasta")
 as.fasta.Alignment <- function(alignment) {
     taxa <- row.names(alignment)
     for(row in seq_len(nrow(alignment))) {
