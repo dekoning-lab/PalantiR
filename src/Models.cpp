@@ -155,8 +155,8 @@ List MarkovModulatedMutationSelection(
     }
     vec switching_equilibrium = switching_model["equilibrium"];
     mat exchangeability = switching_model["exchangeability"];
-    vector<const vec> substitution_equilibrium;
-    vector<const mat> substitution_transition;
+    vector<vec> substitution_equilibrium;
+    vector<mat> substitution_transition;
 
     for(ullong i = 0; i < mutation_selection_models.size(); i++) {
         List ms_model = mutation_selection_models[i];

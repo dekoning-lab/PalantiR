@@ -1,11 +1,12 @@
 CXX_STD = CXX11
 PKG_CPPFLAGS += -Dis_R
+PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
 
-TEST_HEADERS = $(wildcard PalantiR_Core/test/*.hpp)
-TEST_SOURCES = $(wildcard PalantiR_Core/test/*.cpp)
+TEST_HEADERS = $(wildcard Palantir_Core/test/*.hpp)
+TEST_SOURCES = $(wildcard Palantir_Core/test/*.cpp)
 
-EXT_HEADERS = $(wildcard PalantiR_Core/*.hpp)
-EXT_SOURCES = $(wildcard PalantiR_Core/*.cpp)
+EXT_HEADERS = $(wildcard Palantir_Core/*.hpp)
+EXT_SOURCES = $(wildcard Palantir_Core/*.cpp)
 
 RCPP_SOURCES = $(wildcard *.cpp)
 
