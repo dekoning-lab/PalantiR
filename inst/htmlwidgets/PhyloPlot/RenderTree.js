@@ -144,7 +144,7 @@ var render_tree = function(plot, root) {
             "class": "node",
             "id": function(d) { return "node_" + d.data.index; },
             "transform": function(d) { return "translate(" + d.y + "," + d.x + ")"; },
-            "font-family": "Helvetica"
+            "font-family": "Helvetica, sans-serif"
         });
 
     // Leaf labels

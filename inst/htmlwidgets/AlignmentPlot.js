@@ -17,7 +17,7 @@ HTMLWidgets.widget({
             var scrollbar_width = get_scrollbar_width();
 
             var table_styles = {
-                "font-family": "Courier",
+                "font-family": "Courier, monospace",
                 "text-align": "center",
                 "border-collapse": "collapse"
             };

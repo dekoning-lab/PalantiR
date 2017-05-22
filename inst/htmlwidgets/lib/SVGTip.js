@@ -26,12 +26,11 @@ var SVGTip = function (options) {
         .attrs({
             "class": "svg-tooltip",
             "text-align": "center",
-            "font-size": "12px",
-            "font-family": "Helvetica",
             "fill": "black",
             "opacity": "0.8",
             "pointer-events": "none"
         });
+
     var tooltip_style = {
         "fill": "black",
         "opacity": "0.8",
@@ -50,11 +49,9 @@ var SVGTip = function (options) {
 
     tooltip.text = tooltip.append("text")
         .attrs({
-            "class": "text"
-        })
-        .attrs({
+            "class": "text",
             "font-size": "12px",
-            "font-family": "Helvetica",
+            "font-family": "Helvetica, sans-serif",
             "fill": "#eee",
             "stroke": "none",
             "text-anchor": "middle",
