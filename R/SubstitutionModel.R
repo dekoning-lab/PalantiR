@@ -20,3 +20,7 @@ plot.SubstitutionModel <- function(model, prop = 0.25, label_font_size = 12, axi
     print(eq_plot, position = c(0, 0, prop, 1), more = T)
     print(tr_plot, position = c(prop, 0, 1, 1))
 }
+
+print.SubstitutionModel <- function(model) {
+    cat("SubstitutionModel of type", model$type, "with", model$n_states, "states\n")
+}

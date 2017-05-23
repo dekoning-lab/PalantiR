@@ -76,13 +76,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // Phylogeny
-List Phylogeny(std::string newick_path);
-RcppExport SEXP PalantiR_Phylogeny(SEXP newick_pathSEXP) {
+List Phylogeny(std::string newick_path, std::string type);
+RcppExport SEXP PalantiR_Phylogeny(SEXP newick_pathSEXP, SEXP typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type newick_path(newick_pathSEXP);
-    rcpp_result_gen = Rcpp::wrap(Phylogeny(newick_path));
+    Rcpp::traits::input_parameter< std::string >::type type(typeSEXP);
+    rcpp_result_gen = Rcpp::wrap(Phylogeny(newick_path, type));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -109,6 +110,18 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< List >::type sequence(sequenceSEXP);
     Rcpp::traits::input_parameter< double >::type rate(rateSEXP);
     rcpp_result_gen = Rcpp::wrap(simulate_over_phylogeny(phylogeny, model, sequence, rate));
+    return rcpp_result_gen;
+END_RCPP
+}
+// phylogeny_to_intervals
+DataFrame phylogeny_to_intervals(List phylogeny, List mode_phylogeny);
+RcppExport SEXP PalantiR_phylogeny_to_intervals(SEXP phylogenySEXP, SEXP mode_phylogenySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type phylogeny(phylogenySEXP);
+    Rcpp::traits::input_parameter< List >::type mode_phylogeny(mode_phylogenySEXP);
+    rcpp_result_gen = Rcpp::wrap(phylogeny_to_intervals(phylogeny, mode_phylogeny));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -227,29 +240,4 @@ BEGIN_RCPP
     rcpp_result_gen = Rcpp::wrap(as_amino_acid(codons));
     return rcpp_result_gen;
 END_RCPP
-}
-
-static const R_CallMethodDef CallEntries[] = {
-    {"PalantiR_HasegawaKishinoYano", (DL_FUNC) &PalantiR_HasegawaKishinoYano, 3},
-    {"PalantiR_GeneralTimeReversible", (DL_FUNC) &PalantiR_GeneralTimeReversible, 2},
-    {"PalantiR_MutationSelection", (DL_FUNC) &PalantiR_MutationSelection, 5},
-    {"PalantiR_CoEvolution", (DL_FUNC) &PalantiR_CoEvolution, 7},
-    {"PalantiR_MarkovModulatedMutationSelection", (DL_FUNC) &PalantiR_MarkovModulatedMutationSelection, 2},
-    {"PalantiR_Phylogeny", (DL_FUNC) &PalantiR_Phylogeny, 1},
-    {"PalantiR_equilibrium_to_fitness", (DL_FUNC) &PalantiR_equilibrium_to_fitness, 2},
-    {"PalantiR_simulate_over_phylogeny", (DL_FUNC) &PalantiR_simulate_over_phylogeny, 4},
-    {"PalantiR_simulate_over_interval_phylogeny", (DL_FUNC) &PalantiR_simulate_over_interval_phylogeny, 8},
-    {"PalantiR_simulate_with_nested_heterogeneity", (DL_FUNC) &PalantiR_simulate_with_nested_heterogeneity, 9},
-    {"PalantiR_simulate_with_poisson_heterogeneity", (DL_FUNC) &PalantiR_simulate_with_poisson_heterogeneity, 9},
-    {"PalantiR_compare_modes", (DL_FUNC) &PalantiR_compare_modes, 2},
-    {"PalantiR_Sequence", (DL_FUNC) &PalantiR_Sequence, 3},
-    {"PalantiR_as_compound", (DL_FUNC) &PalantiR_as_compound, 2},
-    {"PalantiR_sample_sequence", (DL_FUNC) &PalantiR_sample_sequence, 2},
-    {"PalantiR_as_amino_acid", (DL_FUNC) &PalantiR_as_amino_acid, 1},
-    {NULL, NULL, 0}
-};
-
-RcppExport void R_init_PalantiR(DllInfo *dll) {
-    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
-    R_useDynamicSymbols(dll, FALSE);
 }

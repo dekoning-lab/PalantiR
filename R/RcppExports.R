@@ -21,8 +21,8 @@ MarkovModulatedMutationSelection <- function(mutation_selection_models, switchin
     .Call('PalantiR_MarkovModulatedMutationSelection', PACKAGE = 'PalantiR', mutation_selection_models, switching_model)
 }
 
-Phylogeny <- function(newick_path) {
-    .Call('PalantiR_Phylogeny', PACKAGE = 'PalantiR', newick_path)
+Phylogeny <- function(newick_path, type = "phylogeny") {
+    .Call('PalantiR_Phylogeny', PACKAGE = 'PalantiR', newick_path, type)
 }
 
 equilibrium_to_fitness <- function(equilibrium, population_size) {
@@ -31,6 +31,10 @@ equilibrium_to_fitness <- function(equilibrium, population_size) {
 
 simulate_over_phylogeny <- function(phylogeny, model, sequence, rate = 1) {
     .Call('PalantiR_simulate_over_phylogeny', PACKAGE = 'PalantiR', phylogeny, model, sequence, rate)
+}
+
+phylogeny_to_intervals <- function(phylogeny, mode_phylogeny) {
+    .Call('PalantiR_phylogeny_to_intervals', PACKAGE = 'PalantiR', phylogeny, mode_phylogeny)
 }
 
 simulate_over_interval_phylogeny <- function(phylogeny, mode_phylogeny, models, sequence, start_mode, rate = 1, segment_length = 0.001, tolerance = 0.001) {

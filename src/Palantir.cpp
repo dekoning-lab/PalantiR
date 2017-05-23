@@ -13,7 +13,7 @@ using namespace Rcpp;
 using namespace std;
 
 // [[Rcpp::export]]
-List Phylogeny(std::string newick_path)
+List Phylogeny(std::string newick_path, std::string type = "phylogeny")
 {
     string newick;
 
@@ -30,7 +30,8 @@ List Phylogeny(std::string newick_path)
         _["json"] = tree.to_JSON(),
         _["string"] = tree.to_string(),
         _["newick"] = newick,
-        _["n_nodes"] = tree.n_nodes
+        _["n_nodes"] = tree.n_nodes,
+        _["type"] = type
     );
     phylo.attr("class") = "Phylogeny";
     return phylo;
@@ -91,6 +92,21 @@ List simulate_over_phylogeny(
 }
 
 //[[Rcpp::export]]
+DataFrame phylogeny_to_intervals(List phylogeny, List mode_phylogeny)
+{
+    string newick = phylogeny["newick"];
+    Palantir::Phylogeny p(newick);
+
+    string mode_newick = mode_phylogeny["newick"];
+    Palantir::Phylogeny pa(mode_newick);
+
+    vector<Palantir::IntervalHistory> tree_intervals = p.to_intervals(pa);
+    List intervals = interval_histories_to_list(tree_intervals, p);
+
+    return DataFrame(intervals);
+}
+
+//[[Rcpp::export]]
 List simulate_over_interval_phylogeny(
     List phylogeny,
     List mode_phylogeny,
@@ -127,9 +143,6 @@ List simulate_over_interval_phylogeny(
     }
     if(!has_class(sequence, "Sequence")) {
         stop("Argument `sequence` should be of class `Sequence`");
-    }
-    if(get_attr(sequence, "type") != "compound_codon") {
-        stop("Argument `sequence` should be of type `compound_codon`");
     }
 
     Palantir::GeneticCode g(get_genetic_code_name());

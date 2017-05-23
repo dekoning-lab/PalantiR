@@ -1,4 +1,18 @@
-plot.Phylogeny <- function(phylogeny) PhyloPlot(phylogeny)
+plot.Phylogeny <- function(phylogeny, interval_phylogeny = NULL) {
+    if((phylogeny$type == "phylogeny") && is.null(interval_phylogeny)) {
+       PhyloPlot(phylogeny)
+    } else if (phylogeny$type == "interval") {
+        stop("To plot an interval phylogeny, use it as a second argument `plot(phylogeny, interval_phylogeny)`")
+    } else if (
+        (!is.null(interval_phylogeny)) &&
+        (phylogeny$type == "phylogeny") &&
+        (interval_phylogeny$type == "interval")) {
+        intervals <- phylogeny_to_intervals(phylogeny, interval_phylogeny)
+        PhyloPlot(phylogeny, intervals = intervals, plot_intervals = T)
+    } else {
+        stop("Unsupported phylogeny type")
+    }
+}
 
 print.Phylogeny <- function(phylogeny) cat(phylogeny$string)
 
