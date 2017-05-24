@@ -1,5 +1,7 @@
 #This script loads parameters common to all the examples
 
+# Load common paramters
+
 ## Load mammalian phylogeny
 mammals <- Phylogeny("data/mammals.newick")
 
