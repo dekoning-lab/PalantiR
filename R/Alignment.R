@@ -1,3 +1,4 @@
+#http://www.bioinformatics.nl/~berndb/aacolour.html - MAEditor color scheme
 .aa_colors <- list("A"="#77dd88",
                   "G"="#77aa88",
                   "C"="#99ee66",
@@ -19,10 +20,16 @@
                   "S"="#ff4455",
                   "T"="#ff4455")
 
+#http://www.jalview.org/help/html/colourSchemes/
+.nuc_colors <- list("A" = "#5CF659",
+                    "C" = "#FFB14F",
+                    "G" = "#F23C3F",
+                    "T" = "#038BE9")
+
 # Make sure the alignment is in "just codons"
-.normalize <- function(alignment) {
-    type = attr(alignment, "type")
-    if(type == "codon") {
+.normalize <- function(alignment, type) {
+
+    if(type == "codon" || type == "nucleotide") {
         return(alignment);
     } else if(type == "compound_codon") {
         return(apply(alignment, c(1, 2), function(x)
@@ -37,11 +44,17 @@
 }
 
 AlignmentPlot <- function(alignment, width = NULL, height = NULL) {
+    type <- attr(alignment, "type")
 
-    alignment <- .normalize(alignment)
+    alignment <- .normalize(alignment, type)
 
     taxa <- row.names(alignment)
-    colors <- apply(apply(alignment, 2, as_amino_acid), c(1,2), function(x) .aa_colors[[x]])
+
+    if (grepl("codon", type)) {
+        colors <- apply(apply(alignment, 2, as_amino_acid), c(1,2), function(x) .aa_colors[[x]])
+    } else if (grepl("nucleotide", type)) {
+        colors <- apply(alignment, c(1,2), function(x) .nuc_colors[[x]])
+    }
 
     sequences <- lapply(seq_len(nrow(alignment)), function(row) {
         list(index = row,

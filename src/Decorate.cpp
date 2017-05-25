@@ -6,7 +6,14 @@ void decorate_substitutions(List& substitutions, std::string type)
     arma::uvec state_from = substitutions["from"];
     arma::uvec state_to = substitutions["to"];
 
-    if (type == "codon") {
+    if (type == "nucleotide") {
+        substitutions["nucleotide_from"] = Palantir::Nucleotide::to_string(state_from);
+        substitutions["nucleotide_to"] = Palantir::Nucleotide::to_string(state_to);
+        arma::uvec transition = Palantir::Nucleotide::transition(state_from, state_to);
+        substitutions["transition"] = LogicalVector(transition.begin(), transition.end());
+        substitutions["color"] = predicate(transition, "#16A35E", "#E84B2A");
+    }
+    else if (type == "codon") {
         substitutions["codon_from"] = Palantir::Codon::to_string(state_from, g);
         substitutions["codon_to"] = Palantir::Codon::to_string(state_to, g);
         substitutions["amino_acid_from"] = Palantir::Codon::to_amino_acid(state_from, g);
