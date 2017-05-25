@@ -14,18 +14,10 @@ HTMLWidgets.widget({
 
             var sites = Array.apply(null, Array(data[0].sequence.length)).map(function (_, i) { return i; });
 
-            var scrollbar_width = get_scrollbar_width();
-
             var table_styles = {
                 "font-family": "Courier, monospace",
                 "text-align": "center",
                 "border-collapse": "collapse"
-            };
-
-            var div_styles = {
-                "position": "absolute",
-                "overflow-x": "scroll",
-                "overflow-y": "scroll",
             };
 
             plot.container = d3.select("#" + el.id)
@@ -41,7 +33,11 @@ HTMLWidgets.widget({
             plot.alignment = {};
             plot.alignment.div = plot.container
                 .append("div")
-                .styles(div_styles);
+                .styles({
+                    "position": "absolute",
+                    "overflow-x": "scroll",
+                    "overflow-y": "scroll"
+                });
 
             plot.alignment.table = plot.alignment.div
                 .append("table")
@@ -58,6 +54,7 @@ HTMLWidgets.widget({
                 .append("td")
                 .styles({
                     "border": "1px solid black",
+                    "padding": "3px",
                     "background-color": function(d) {
                         return d.color;
                     }
@@ -75,7 +72,10 @@ HTMLWidgets.widget({
             plot.taxa = {};
             plot.taxa.div = plot.container
                 .append("div")
-                .styles(div_styles);
+                .styles({
+                    "position": "absolute",
+                    "overflow": "hidden"
+                });
 
             plot.taxa.table = plot.taxa.div
                 .append("table")
@@ -102,15 +102,18 @@ HTMLWidgets.widget({
             plot.site = {};
             plot.site.div = plot.container
                 .append("div")
-                .styles(div_styles);
+                .styles({
+                    "position": "absolute",
+                    "overflow": "hidden"
+                });
 
             plot.site.table = plot.site.div
                 .append("table")
+                .styles(table_styles)
                 .styles({
                     "table-layout": "fixed",
                     "width": table_width + "px"
-                })
-                .styles(table_styles);
+                });
 
             plot.site.table
                 .append("tr")
@@ -120,7 +123,9 @@ HTMLWidgets.widget({
                 .append("td")
                 .styles({
                     "border": "1px solid black",
-                    "font-size": "10px"
+                    "font-size": "10px",
+                    "padding-bottom": "15px",
+                    "transform": "rotate(-90deg)  translate(0px, 5px)",
                 })
                 .text(function(d) {
                     return d;
@@ -132,21 +137,21 @@ HTMLWidgets.widget({
 
             plot.alignment.div
                 .styles({
-                    "left": taxa_width + scrollbar_width + "px",
-                    "top": site_height + scrollbar_width + "px",
+                    "left": taxa_width + "px",
+                    "top": site_height + "px",
                     "max-height": height - site_height + "px",
                     "max-width": width - taxa_width + "px",
                 });
 
             plot.site.div
                 .styles({
-                    "left": taxa_width + scrollbar_width + "px",
+                    "left": taxa_width + "px",
                     "max-width": width - taxa_width + "px",
                 });
 
             plot.taxa.div
                 .styles({
-                    "top": site_height + scrollbar_width + "px",
+                    "top": site_height + "px",
                     "max-height": height - site_height + "px",
                 });
 
@@ -155,21 +160,21 @@ HTMLWidgets.widget({
             var syncing_alignment_scroll = false;
             var syncing_site_scroll = false;
 
-            plot.taxa.div.on("scroll", function() {
-                if(!syncing_taxa_scroll) {
-                    syncing_alignment_scroll = true;
-                    plot.alignment.div.node().scrollTop = this.scrollTop;
-                }
-                syncing_taxa_scroll = false;
-            });
+            //plot.taxa.div.on("scroll", function() {
+            //    if(!syncing_taxa_scroll) {
+            //        syncing_alignment_scroll = true;
+            //        plot.alignment.div.node().scrollTop = this.scrollTop;
+            //    }
+            //    syncing_taxa_scroll = false;
+            //});
 
-            plot.site.div.on("scroll", function() {
-                if(!syncing_site_scroll) {
-                    syncing_alignment_scroll = true;
-                    plot.alignment.div.node().scrollLeft = this.scrollLeft;
-                }
-                syncing_site_scroll = false;
-            });
+            //plot.site.div.on("scroll", function() {
+            //    if(!syncing_site_scroll) {
+            //        syncing_alignment_scroll = true;
+            //        plot.alignment.div.node().scrollLeft = this.scrollLeft;
+            //    }
+            //    syncing_site_scroll = false;
+            //});
 
             plot.alignment.div.on("scroll", function() {
                 if(!syncing_alignment_scroll) {
