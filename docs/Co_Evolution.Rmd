@@ -1,0 +1,120 @@
+---
+output:
+  html_document:
+    self_contained: no
+---
+
+```{r, include=F}
+library(PalantiR)
+library(knitr)
+```
+
+# Co-Evolution
+
+Co-Evolution is an extension of a Mutation-Selection codon model, which considers pairs of codons.
+
+The model adds an amino-acid correlation matrix $\delta$, which expresses how "linked" two amino acid states are within a pair. 
+
+For example, $\delta_{A, K} > 1$ means that $AK$ is a favoured pair, while $\delta_{W, Y} < 1$ means $WY$ is disfavoured. $\delta = 1$ signifies lack of association.
+
+The selection coefficient is calculated for a pair of sites, assuming additive fitness.
+
+For a substitution from codon pair $ij$ to codon pair $kl$:
+
+$$
+s_{ij, kl} = (\psi_k + \psi_l)\delta_{kl} - (\psi_i + \psi_j)\delta_{ij} \\
+Q_{ij, kl} = 2N_e \mu_{ik} \mu_{jl} \frac{1-e ^ {s_{ij, kl}}}{1-e^{-2 N_e s_{ij, kl}}}
+$$
+Only codons differing in one nucleotide positions are considered. Rates of transitions for multiple codon differences are $0$.
+
+* $N_e$ is the effective population size
+* $\mu_{ij}$ is the mutation rate between a pair of nucleotides. This rate is taken from a nucleotide substitution model, such as Hasegawa Kishino Yano [[1](https://www.ncbi.nlm.nih.gov/pubmed/3934395)].
+* $\psi_i$ is the absolute fitness of amino acid for codon $i$. Values of $\psi$ for the first and second pair can be specified from different fitness vectors.
+* $s_{ij, kl}$ is selection coefficient for a pair substitution. If either substitution in a pair is synonymous, the second term of the product will be equal to $1$.
+
+# Example
+
+## Setup
+
+Load model parameters:
+
+```{r}
+# Load phylogeny
+mammals <- Phylogeny("../data/mammals.newick")
+
+# Load nucleotide equilibrium distribution
+# Nucleotide order is T,C,A,G
+nuc_pi <- c(.3, .2, .25, .25)
+
+# Load amino acid fitness vector
+# Amino acid order is:
+# A, C, D, E, F, G, H, I, K, L, M, N, P, Q, R, S, T, V, W, Y
+aa_psi <- as.matrix(read.csv("../data/amino_acid_fitness_N_1000.csv"))
+
+# Create a "flat" delta matrix - all pairs are independent
+delta <- matrix(rep(1, 20 * 20), nrow = 20)
+```
+
+Create model:
+
+```{r}
+# Create nucleotide substitution model
+hky <- HasegawaKishinoYano(nuc_pi)
+
+# Create codon pair substitution model
+co <- CoEvolution(
+    population_size = 1000,
+    mutation_rate = 1e-8,
+    nucleotide_mode = hky,
+    fitness_1 = aa_psi[1,],
+    fitness_2 = aa_psi[2,],
+    delta = delta)
+```
+
+Sample sequence from model equilibrium distribution to start at root:
+
+```{r}
+s <- sample_sequence(model = co, length = 100)
+```
+
+Simulate:
+
+```{r}
+sim <- simulate_over_phylogeny(
+    phylogeny = mammals,
+    model = co,
+    sequence = s)
+```
+
+## Substitution history
+
+Plot substitution history:
+
+```{r}
+plot(sim, sites = 0:20)
+```
+
+Synonymous substiutions are shown in green, non-synonymous in red.
+
+Check substitution history table:
+
+```{r, results='hide'}
+head(sim$substitutions)
+```
+```{r, echo=F, results='asis'}
+kable(head(sim$substitutions))
+```
+
+## Alignment
+
+Show alignment in a viewer:
+
+```{r}
+plot(sim$alignment)
+```
+
+To export `FASTA` sequence:
+
+```{r, eval="F"}
+as.fasta(sim$alignment, file = "palantir_sim.fa")
+```

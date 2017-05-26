@@ -1,0 +1,39 @@
+---
+output:
+  html_document:
+    self_contained: no
+---
+
+# Rate Matrix Scaling
+
+`PalantiR` scales codon substitution rates to assign particular meanings to branches on a phylogeny.
+
+## Scaling types
+
+There are 3 scaling schemes implemented:
+
+* `synonymous` is the default scaling. This forces the branch length to be proportional to the expected number of _synonymous_ substitutions per site.
+* `non-synonymous` scaling forces the branch length to be equivalent to the expected number of _non-synonymous_ substitutions per site.
+* `substitution` scaling forces the branch length to be equivalent to the expected number of _both_ types of substitutions per site.
+* `none` can be specified to leave the substitution rates unscaled.
+
+Scaling type is specified as an optional parameter to substitution model constructors, _e.g._:
+
+```{r, eval=F}
+MutationSelection(..., scaling_type = "synonymous")
+```
+
+## Implementation
+
+Scaling rate is calculated as:
+
+$$
+S(Q, \pi, t) = \sum \sum_{ij}\pi_i Q_{ij}^{(t)}
+$$
+
+* $Q$ is the substitution rate matrix
+* $\pi$ is the equilibrium distribution for $Q$
+* $t$ is the scaling type (outlined above)
+
+The inner summation is over all the substitutions from each state (codon) $i$ to each state $j$.
+$Q^{(t)}$ means substitution rate for a substitution of type $t$ (e.g. synonymous substitution).

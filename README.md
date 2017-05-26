@@ -81,7 +81,7 @@ plot(sim$alignment)
 as.fasta(sim$alignment, "PalantiR_ms.fa")
 ```
 
-![alignment](img/PalantiR-alignment.gif)
+![alignment](docs/img/PalantiR-alignment.gif)
 
 We can also visualize the substitutions that have been simulated:
 
@@ -93,4 +93,4 @@ plot(sim, sites = 1:10)
 head(sim$substitutions)
 ```
 
-![simulation](img/PalantiR-simulation.gif)
+![simulation](docs/img/PalantiR-simulation.gif)

@@ -1,0 +1,124 @@
+---
+output:
+  html_document:
+    self_contained: no
+---
+
+```{r, include=F}
+library(PalantiR)
+library(knitr)
+```
+
+# Branch Heterogeneity
+
+Branch heterogeneous simulations allow to specify different models (called `modes`) for each branch on a phylogeny. 
+This is done by providing a newick tree with model indexes instead of branch length, and a list of models.
+
+For more details on time-heterogeneous simulation, see [[Tempral Heterogeneity Rescaling]].
+
+Here is an example file, which represents a model switch on the primate lineage in the mammalian phylogeny:
+```{r}
+scan("../data/mammals_switch.newick", what = character(), quiet = T)
+```
+
+# Example
+
+In the example below, we simulate on a mammalian phylogeny with a population size expansion on the primate lineage.
+
+## Setup
+
+Load model parameters:
+
+```{r}
+# Load phylogeny
+mammals <- Phylogeny("../data/mammals.newick")
+
+# Load branch modes
+mammal_switches <- Phylogeny("../data/mammals_switch.newick", type = "mode")
+
+# Load nucleotide equilibrium distribution
+# Nucleotide order is T,C,A,G
+nuc_pi <- c(.3, .2, .25, .25)
+
+# Load amino acid equilibrium frequencies
+# These will be converted to population-specific fitness vectors
+aa_pi <- as.matrix(read.table("../data/psi-c50-1.txt"))
+
+psi <- equilibrium_to_fitness(aa_pi[1, ], 10000)
+```
+
+Create models:
+
+```{r}
+# Create nucleotide substitution model
+hky <- HasegawaKishinoYano(nuc_pi)
+
+# Create codon models
+
+# Small population size
+ms_1k <- MutationSelection(
+    population_size = 10000, 
+    mutation_rate = 1e-8, 
+    nucleotide_model = hky,
+    fitness = psi)
+
+# Large population size
+ms_20k <- MutationSelection(
+    population_size = 1000,
+    mutation_rate = 1e-8, 
+    nucleotide_model = hky,
+    fitness = psi)
+
+```
+
+Sample sequence from model equilibrium distribution to start at root:
+```{r sample_sequence}
+s <- sample_sequence(ms_1k, 1)
+as_amino_acid(s$sequence)
+```
+
+Simulate:
+```{r simulate}
+sim <- simulate_over_interval_phylogeny(
+    phylogeny = mammals,
+    mode_phylogeny = mammal_switches,
+    models = list(ms_1k, ms_20k),
+    sequence = s,
+    start_mode = 0,
+    segment_length = 0.0001)
+```
+
+Note that we have to specify which mode the root starts with using `start_mode` argument.
+
+## Substitution history
+
+Plot substitution history:
+
+```{r plot_sim}
+plot(sim, sites = 0:10)
+```
+
+Synonymous substiutions are shown in green, non-synonymous in red. Branch modes are shown as colored branches.
+
+Check substitution history table:
+
+```{r, results='hide'}
+head(sim$substitutions)
+```
+```{r, echo=F, results='asis'}
+kable(head(sim$substitutions))
+```
+
+## Alignment
+
+Show alignment in a viewer:
+
+```{r}
+plot(sim$alignment)
+```
+
+To export `FASTA` sequence:
+
+```{r, eval="F"}
+as.fasta(sim$alignment, file = "palantir_sim.fa")
+```

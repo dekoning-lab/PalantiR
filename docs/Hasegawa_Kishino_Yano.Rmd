@@ -1,0 +1,102 @@
+---
+output: 
+  html_document: 
+    self_contained: no
+---
+
+```{r, include=F}
+library(PalantiR)
+library(knitr)
+```
+
+# Hasegawa-Kishino-Yano
+
+Hasegawa Kishino Yano (HKY) [[1](https://www.ncbi.nlm.nih.gov/pubmed/3934395)] is a nucleotide substitution model which accounts for nucleotide equilibrium distribution rates of transitions ($\alpha$) and transversions($\beta$).
+
+$$
+Q_{ij} =
+\begin{bmatrix}
+    .            & \alpha \pi_C & \beta \pi_A  & \beta \pi_G  \\
+    \alpha \pi_T & .            & \beta \pi_A  & \beta \pi_G  \\
+    \beta \pi_T  & \beta \pi_C  & .            & \alpha \pi_G \\
+    \beta \pi_T  & \beta \pi_C  & \alpha \pi_A & .            \\
+\end{bmatrix}
+$$
+In `PalantiR` The HKY model is most commonly used to define nucleotide transition rates for Mutation Selection model, but it can also be used as a stand-alone simulation model.
+
+# Example
+
+Load model parameters:
+
+```{r}
+# Load phylogeny
+mammals <- Phylogeny("../data/mammals.newick")
+
+# Load nucleotide equilibrium distribution
+# Nucleotide order is T,C,A,G
+pi <- c(.3, .2, .25, .25)
+```
+
+Create model:
+
+```{r}
+hky <- HasegawaKishinoYano(
+    equilibrium = pi,
+    transition_rate = 2,
+    transversion_rate = 1)
+```
+
+Sample sequence from model equilibrium distribution to start at root:
+
+```{r}
+s <- sample_sequence(model = hky, length = 100)
+```
+
+Simulate:
+
+```{r}
+sim <- simulate_over_phylogeny(
+    phylogeny = mammals, 
+    model = hky, 
+    sequence = s)
+```
+
+## Substitution history
+
+Plot substitution history:
+
+```{r}
+plot(sim, sites = 0:10)
+```
+
+Transition substitutions are shown in green, transversions in red.
+
+Check substitution history table:
+
+```{r, results='hide'}
+head(sim$substitutions)
+```
+```{r, echo=F, results='asis'}
+kable(head(sim$substitutions))
+```
+
+## Alignment
+
+Show alignment in a viewer:
+
+```{r}
+plot(sim$alignment)
+```
+
+To export `FASTA` sequence:
+
+```{r, eval="F"}
+as.fasta(sim$alignment, file = "palantir_sim.fa")
+```
+
+# References
+
+1. Hasegawa, M., Kishino, H. and Yano, T. (1985). _Dating of the human-ape splitting by a molecular clock of mitochondrial DNA_. Journal of Molecular Evolution 22:160-174.
+
+
+

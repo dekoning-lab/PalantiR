@@ -1,0 +1,119 @@
+---
+output: 
+  html_document: 
+    self_contained: no
+---
+
+```{r, include=F}
+library(PalantiR)
+library(knitr)
+```
+
+# Mutation-Selection
+
+Mutation Selection (MS) model ([1](https://www.ncbi.nlm.nih.gov/pubmed/18178545), [2](http://link.springer.com/article/10.1007/BF02102078)) is the core model implemented in `PalantiR`.
+Mutation Selection is a codon substitution model that describes the interplay between mutation rate, selection strength, and population size.
+
+For a substitution from codon $i$ to codon $j$:
+$$
+s_{ij} = \psi_j - \psi_i \\
+Q_{ij} = 2N_e \mu_{ij} \frac{1-e^{s_{ij}}}{1-e^{-2N_es_{ij}}}
+$$
+Only codons differing in one nucleotide positions are considered. Rates of transitions for multiple codon differences are $0$.
+
+* $N_e$ is the effective population size
+* $\mu_{ij}$ is the mutation rate between a pair of nucleotides. This rate is taken from a nucleotide substitution model, such as Hasegawa Kishino Yano [[1](https://www.ncbi.nlm.nih.gov/pubmed/3934395)].
+* $\psi_i$ is the absolute fitness of amino acid for codon $i$.
+* $s_{ij}$ is selection coefficient of a substitution. For synonymous substitutions, the second term of the product will be equal to $1$.
+
+The substitution rates are also scaled to assign particular meaning to branch length of a phylogeny. For more detail, see [[Rate Scaling]].
+
+# Example
+
+## Setup
+
+Load model parameters:
+
+```{r}
+# Load phylogeny
+mammals <- Phylogeny("../data/mammals.newick")
+
+# Load nucleotide equilibrium distribution
+# Nucleotide order is T,C,A,G
+nuc_pi <- c(.3, .2, .25, .25)
+
+# Load amino acid fitness vector
+# Amino acid order is:
+# A, C, D, E, F, G, H, I, K, L, M, N, P, Q, R, S, T, V, W, Y
+aa_psi <- as.matrix(read.csv("../data/amino_acid_fitness_N_1000.csv"))
+```
+
+Create model:
+
+```{r}
+# Create nucleotide substitution model
+hky <- HasegawaKishinoYano(nuc_pi)
+
+# Create codon substitution model
+ms <- MutationSelection(
+    population_size = 1000,
+    mutation_rate = 1e-8,
+    nucleotide_model = hky,
+    fitness = aa_psi[1,])
+```
+
+Sample sequence from model equilibrium distribution to start at root:
+
+```{r}
+s <- sample_sequence(model = ms, length = 100)
+```
+
+Simulate:
+
+```{r}
+sim <- simulate_over_phylogeny(
+    phylogeny = mammals,
+    model = ms,
+    sequence = s)
+```
+
+## Substitution history
+
+Plot substitution history:
+
+```{r}
+plot(sim, sites = 0:10)
+```
+
+Synonymous substiutions are shown in green, non-synonymous in red.
+
+Check substitution history table:
+
+```{r, results='hide'}
+head(sim$substitutions)
+```
+```{r, echo=F, results='asis'}
+kable(head(sim$substitutions))
+```
+
+## Alignment
+
+Show alignment in a viewer:
+
+```{r}
+plot(sim$alignment)
+```
+
+To export `FASTA` sequence:
+
+```{r, eval="F"}
+as.fasta(sim$alignment, file = "palantir_sim.fa")
+```
+
+
+# References
+
+1. Golding, B. and Felsenstein, J. (1990). _A maximum likelihood approach to the detection of selection from a phylogeny_. Journal of Molecular Evolution, 31(6):511–523.
+2. Yang, Z. and Nielsen, R. (2008). _Mutation-Selection Models of Codon Substitution and Their Use to Estimate
+Selective Strengths on Codon Usage_. Molecular Biology and Evolution. 25(3):568-579.
+3. Hasegawa, M., Kishino, H. and Yano, T. (1985). _Dating of the human-ape splitting by a molecular clock of mitochondrial DNA_. Journal of Molecular Evolution 22:160-174.
