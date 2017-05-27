@@ -105,7 +105,7 @@ plot(sim$alignment)
 
 To export `FASTA` sequence:
 
-```{r, eval="F"}
+```{r, eval=F}
 as.fasta(sim$alignment, file = "palantir_sim.fa")
 ```
 
