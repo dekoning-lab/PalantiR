@@ -198,7 +198,7 @@ List simulate_over_interval_phylogeny(
 }
 
 //[[Rcpp::export]]
-List simulate_with_nested_heterogeneity(
+List simulate_with_shared_substitution_heterogeneity(
     List phylogeny,
     List switching_model,
     List substitution_models,
@@ -291,7 +291,7 @@ List simulate_with_nested_heterogeneity(
 }
 
 //[[Rcpp::export]]
-List simulate_with_poisson_heterogeneity(
+List simulate_with_shared_time_heterogeneity(
     List phylogeny,
     List switching_model,
     List substitution_models,
