@@ -9,13 +9,13 @@ library(PalantiR)
 library(knitr)
 ```
 
-# Shared Substitution History
+# Shared Substitution Times
 
-Shared substitution history is a switching simulation type similar to [[Markov-Modulated Mutation Selection]]. However, instead of simulating each site with independent switching in the parent model, the switches are shared across sites. In essense, this is a conditioned simulation, given _identities_ and _times_ of parent model switches.
+Shared substitution times is a switching simulation type similar to [[Markov-Modulated Mutation Selection]]. However, instead of simulating each site with independent switching in the parent model, the switch times are shared across sites. In essense, this is a conditioned simulation, given _times_ of parent model switches.
 
-Unlike [[Shared Substitution Times]], this simulation shares times and indetities.
+Unlike [[Shared Substitution History]], this simulation does not share switch identity.
 
-This type of simulation is useful to emulate population size switches, such that population size change is common for all sites in the alignment.
+This type of simulation is useful to emulate fitness switches, such that fitness changes at every site at the same time. However, the identity of the fitness switch might differ.
 
 # Example
 
@@ -35,7 +35,8 @@ nuc_pi <- c(.3, .2, .25, .25)
 # These will be converted to population-specific fitness vectors
 aa_pi <- as.matrix(read.table("../data/psi-c50-1.txt"))
 
-psi <- equilibrium_to_fitness(aa_pi[1, ], 1000)
+psi_1 <- equilibrium_to_fitness(aa_pi[1, ], 1000)
+psi_2 <- equilibrium_to_fitness(aa_pi[2, ], 1000)
 ```
 
 Create models:
@@ -51,34 +52,34 @@ gtr <- GeneralTimeReversible(
 
 # Create codon models
 
-# Small population size
-ms_1k <- MutationSelection(
+# First fitness vector
+ms_1 <- MutationSelection(
     population_size = 1000, 
     mutation_rate = 1e-8, 
     nucleotide_model = hky,
-    fitness = psi)
+    fitness = psi_1)
 
-# Large population size
-ms_20k <- MutationSelection(
-    population_size = 20000,
+# Second fitness vector
+ms_2 <- MutationSelection(
+    population_size = 1000,
     mutation_rate = 1e-8, 
     nucleotide_model = hky,
-    fitness = psi)
+    fitness = psi_2)
 
 ```
 
 Sample sequence from model equilibrium distribution to start at root:
 ```{r sample_sequence}
-s <- sample_sequence(ms_1k, 100)
+s <- sample_sequence(ms_1, 10)
 ```
 
 Simulate:
 ```{r simulate}
-sim <- simulate_with_shared_substitution_heterogeneity(
+sim <- simulate_with_shared_time_heterogeneity(
     phylogeny = mammals,
     switching_model = gtr,
-    switching_rate = 10,
-    substitution_models = list(ms_1k, ms_20k),
+    switching_rate = 1,
+    substitution_models = list(ms_1, ms_2),
     sequence = s,
     start_mode = 0)
 ```
@@ -94,7 +95,8 @@ Plot substitution history:
 plot(sim, circle_opacity = 0.1)
 ```
 
-Synonymous substiutions are shown in green, non-synonymous in red. Branch modes are shown as colored branches. Each mode has its own color. After every model switch, there is a burst of non-synonymous substitutions.
+Synonymous substiutions are shown in green, non-synonymous in red. Since the switch types differ across sites, they are not shown on the phylogeny.
+After every model switch, there is a burst of non-synonymous substitutions.
 
 Check substitution history table:
 
@@ -105,13 +107,13 @@ head(sim$substitutions)
 kable(head(sim$substitutions))
 ```
 
-Check model sswitching history table. Each row corresponds to a tree node (branch). `state` is the index of the model, `from` and `to` are branch time points where the model applies:
+Check model sswitching history table. Each site will have its own set of intervals. Each row corresponds to a tree node (branch). `state` is the index of the model, `from` and `to` are branch time points where the model applies:
 
 ```{r, results='hide'}
-head(sim$intervals)
+head(sim$intervals[[1]])
 ```
 ```{r, echo=F, results='asis'}
-kable(head(sim$intervals))
+kable(head(sim$intervals[[1]]))
 ```
 
 

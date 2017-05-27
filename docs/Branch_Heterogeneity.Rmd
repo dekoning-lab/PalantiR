@@ -92,8 +92,7 @@ sim <- simulate_over_interval_phylogeny(
     mode_phylogeny = mammal_switches,
     models = list(ms_1k, ms_20k),
     sequence = s,
-    start_mode = 0,
-    segment_length = 0.0001)
+    start_mode = 0)
 ```
 
 Note that we have to specify which mode the root starts with using `start_mode` argument.

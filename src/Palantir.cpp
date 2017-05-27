@@ -114,7 +114,7 @@ List simulate_over_interval_phylogeny(
     List sequence,
     unsigned long long start_mode,
     double rate = 1,
-    double segment_length = 0.001,
+    double segment_length = 0.0001,
     double tolerance = 0.001)
 {
 
@@ -206,7 +206,7 @@ List simulate_with_shared_substitution_heterogeneity(
     unsigned long long start_mode,
     double rate = 1,
     double switching_rate = 1,
-    double segment_length = 0.001,
+    double segment_length = 0.0001,
     double tolerance = 0.001)
 {
     //Type checking
@@ -299,7 +299,7 @@ List simulate_with_shared_time_heterogeneity(
     unsigned long long start_mode,
     double rate = 1,
     double switching_rate = 1,
-    double segment_length = 0.001,
+    double segment_length = 0.0001,
     double tolerance = 0.001)
 {
     //Type checking
