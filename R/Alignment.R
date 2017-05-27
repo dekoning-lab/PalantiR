@@ -35,7 +35,7 @@
         return(apply(alignment, c(1, 2), function(x)
             strsplit(x, ",")[[1]][[1]]))
     } else if(type == "codon_pair") {
-        return(t(apply(sim_co$alignment, 1, function(col)
+        return(t(apply(sim$alignment, 1, function(col)
             vapply(col, function(x)
                 strsplit(x, ",")[[1]], character(2)))))
     } else {
