@@ -21,6 +21,21 @@ Here is an example file, which represents a model switch on the primate lineage 
 scan("../data/mammals_switch.newick", what = character(), quiet = T)
 ```
 
+This phylogeny can be loaded with the `Phylogeny` constructor, with an additional `type = "mode"` argument.
+
+```{r}
+# Load phylogeny
+mammals <- Phylogeny("../data/mammals.newick")
+
+# Load branch modes
+mammal_switches <- Phylogeny("../data/mammals_switch.newick", type = "mode")
+```
+
+We can view the phylogeny and the assigned modes:
+
+```{r}
+plot(mammals, mammal_switches)
+```
 # Example
 
 In the example below, we simulate on a mammalian phylogeny with a population size expansion on the primate lineage.
@@ -30,11 +45,6 @@ In the example below, we simulate on a mammalian phylogeny with a population siz
 Load model parameters:
 
 ```{r}
-# Load phylogeny
-mammals <- Phylogeny("../data/mammals.newick")
-
-# Load branch modes
-mammal_switches <- Phylogeny("../data/mammals_switch.newick", type = "mode")
 
 # Load nucleotide equilibrium distribution
 # Nucleotide order is T,C,A,G
@@ -44,7 +54,7 @@ nuc_pi <- c(.3, .2, .25, .25)
 # These will be converted to population-specific fitness vectors
 aa_pi <- as.matrix(read.table("../data/psi-c50-1.txt"))
 
-psi <- equilibrium_to_fitness(aa_pi[1, ], 10000)
+psi <- equilibrium_to_fitness(aa_pi[1, ], 1000)
 ```
 
 Create models:
@@ -57,14 +67,14 @@ hky <- HasegawaKishinoYano(nuc_pi)
 
 # Small population size
 ms_1k <- MutationSelection(
-    population_size = 10000, 
+    population_size = 1000, 
     mutation_rate = 1e-8, 
     nucleotide_model = hky,
     fitness = psi)
 
 # Large population size
 ms_20k <- MutationSelection(
-    population_size = 1000,
+    population_size = 20000,
     mutation_rate = 1e-8, 
     nucleotide_model = hky,
     fitness = psi)
@@ -73,8 +83,7 @@ ms_20k <- MutationSelection(
 
 Sample sequence from model equilibrium distribution to start at root:
 ```{r sample_sequence}
-s <- sample_sequence(ms_1k, 1)
-as_amino_acid(s$sequence)
+s <- sample_sequence(ms_1k, 100)
 ```
 
 Simulate:
@@ -95,10 +104,12 @@ Note that we have to specify which mode the root starts with using `start_mode` 
 Plot substitution history:
 
 ```{r plot_sim}
-plot(sim, sites = 0:10)
+plot(sim, circle_opacity = 0.1)
 ```
 
 Synonymous substiutions are shown in green, non-synonymous in red. Branch modes are shown as colored branches.
+According to expectation, we observe a burst of non-synonymous substitutions at the start of the population size shift.
+As time progresses, the number of non-synonymous substitutions goes down.
 
 Check substitution history table:
 
@@ -119,6 +130,6 @@ plot(sim$alignment)
 
 To export `FASTA` sequence:
 
-```{r, eval="F"}
+```{r, eval=F}
 as.fasta(sim$alignment, file = "palantir_sim.fa")
 ```

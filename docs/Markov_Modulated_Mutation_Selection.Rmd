@@ -1,0 +1,136 @@
+---
+output:
+  html_document:
+    self_contained: no
+---
+
+```{r, include=F}
+library(PalantiR)
+library(knitr)
+```
+
+# Markov-Modulated Mutation Selection
+
+Markov-modulated Mutation Selection (MMMS) is a multi-model extension of the Mutation Selection model. The model contains several mutation selection models, and is allowed to _switch_ between them according to a Markov process. In essence, the MS models are nested within the larger parent Markov process.
+
+The transition rates matrix $S$ of the MMMS model can be written as:
+
+$$
+S = Q^* + R =
+\begin{bmatrix}
+Q_1 & 0   & 0   & 0   \\
+0   & Q_2 & 0   & 0   \\
+0   & 0   & Q_3 & 0   \\
+0   & 0   & 0   & Q_4 \\
+\end{bmatrix}
++ \left \{
+\begin{bmatrix}
+.        & \alpha I   & \beta I  & \gamma I   \\
+\alpha I & .          & \delta I & \epsilon I \\
+\beta I  & \delta I   & .        & \zeta I    \\
+\gamma I & \epsilon I & \zeta I  & .          \\
+\end{bmatrix}
+\begin{bmatrix}
+\pi_1 & 0 & 0 & 0 \\
+0 & \pi_2 & 0 & 0 \\
+0 & 0 & \pi_3 & 0\\
+0 & 0 & 0 &\pi_4 \\
+\end{bmatrix}
+\right \}
+$$
+
+$Q_i$ are the individual Mutation Selection models. The term in curly brackets is the GTR model, which is the parent model, governing the switches between the individual MS models. While GTR is used here, any switching scheme can be applied.
+
+Markov-Modulated processes can be used to model temporal heterogeneity in MS parameters. For example, we can model changing population size by assigning a different population size parameter to each of the sub-models. It is possible to simulate fitness heterogeneity in the same way.
+
+# Example
+
+We will simulate switching between models of four different population sizes: ${100, 1000, 10000, 10000}$.
+
+## Setup
+
+Load model parameters:
+
+```{r}
+# Load phylogeny
+mammals <- Phylogeny("../data/mammals.newick")
+
+# Load nucleotide equilibrium distribution
+# Nucleotide order is T,C,A,G
+nuc_pi <- c(.3, .2, .25, .25)
+
+# Load amino acid equilibrium vector
+# Amino acid order is:
+# A, C, D, E, F, G, H, I, K, L, M, N, P, Q, R, S, T, V, W, Y
+aa_pi <- as.matrix(read.csv("../data/amino_acid_equilibrium.csv"))
+```
+
+Create model:
+
+```{r}
+# Create nucleotide substitution model
+hky <- HasegawaKishinoYano(nuc_pi)
+
+# Parent switching model
+gtr <- GeneralTimeReversible(
+    equilibrium = rep(1/4, 4),
+    exchangeability = matrix(rep(1/16, 16), nrow = 4))
+
+# Create codon substitution models
+pop_sizes <- c(100, 1000, 10000, 10000)
+pop_models <- lapply(pop_sizes, function(pop_size) {
+    psi <- equilibrium_to_fitness(aa_pi[5,], pop_size)
+    MutationSelection(pop_size, 1e-8, hky, psi)
+})
+
+# Markov-Modulated MS
+mmms <- MarkovModulatedMutationSelection(pop_models, gtr)
+```
+
+Sample sequence from model equilibrium distribution to start at root:
+
+```{r}
+s <- sample_sequence(model = mmms, length = 100)
+```
+
+Simulate:
+
+```{r}
+sim <- simulate_over_phylogeny(
+    phylogeny = mammals,
+    model = mmms,
+    sequence = s)
+```
+
+## Substitution history
+
+Plot substitution history:
+
+```{r}
+plot(sim, sites = 0:10)
+```
+
+Synonymous substiutions are shown in green, non-synonymous in red. Switches between models shown in blue.
+
+Check substitution history table:
+
+```{r, results='hide'}
+head(sim$substitutions)
+```
+```{r, echo=F, results='asis'}
+kable(head(sim$substitutions))
+```
+
+## Alignment
+
+Show alignment in a viewer:
+
+```{r}
+plot(sim$alignment)
+```
+
+To export `FASTA` sequence:
+
+```{r, eval=F}
+as.fasta(sim$alignment, file = "palantir_sim.fa")
+```
