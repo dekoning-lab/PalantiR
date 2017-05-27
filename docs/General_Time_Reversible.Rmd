@@ -1,0 +1,114 @@
+---
+output: 
+  html_document: 
+    self_contained: no
+---
+
+```{r, include=F}
+library(PalantiR)
+library(knitr)
+```
+
+# General Time-Reversible
+
+General Time-Reversible (GTR) [[1](http://www.damtp.cam.ac.uk/user/st321/CV_&_Publications_files/STpapers-pdf/T86.pdf)] is the most general nucleotide substitution model which holds the time-reversibility property.
+
+$$
+Q_{ij} =
+\begin{bmatrix}
+.        & \alpha I   & \beta I  & \gamma I   \\
+\alpha I & .          & \delta I & \epsilon I \\
+\beta I  & \delta I   & .        & \zeta I    \\
+\gamma I & \epsilon I & \zeta I  & .          \\
+\end{bmatrix}
+\begin{bmatrix}
+\pi_1 & 0 & 0 & 0 \\
+0 & \pi_2 & 0 & 0 \\
+0 & 0 & \pi_3 & 0\\
+0 & 0 & 0 &\pi_4 \\
+\end{bmatrix}
+$$
+In `PalantiR`, GTR is used as a general state-transition model. It can also be simulated from directly.
+
+# Example
+
+Load model parameters:
+
+```{r}
+# Load phylogeny
+mammals <- Phylogeny("../data/mammals.newick")
+
+# Load nucleotide equilibrium distribution
+# Nucleotide order is T,C,A,G
+pi <- c(.3, .2, .25, .25)
+
+# Load exchangeability parameters
+e <- c(a = 1, b = 2, g = 2, d = 1, e = 1, z = 2)
+ex <- matrix(c(0,      e["a"], e["b"], e["g"],
+               e["a"], 0     , e["d"], e["e"],
+               e["b"], e["d"], 0     , e["z"],
+               e["g"], e["e"], e["z"], 0), nrow = 4)
+```
+
+Create model:
+
+```{r}
+gtr <- GeneralTimeReversible(
+    equilibrium = pi,
+    exchangeability = ex)
+
+# To simulate from GTR as a nucleotide model, model type needs to be set manually:
+gtr$type <- "nucleotide"
+```
+
+Sample sequence from model equilibrium distribution to start at root:
+
+```{r}
+s <- sample_sequence(model = gtr, length = 100)
+```
+
+Simulate:
+
+```{r}
+sim <- simulate_over_phylogeny(
+    phylogeny = mammals, 
+    model = gtr, 
+    sequence = s)
+```
+
+## Substitution history
+
+Plot substitution history:
+
+```{r}
+plot(sim, sites = 0:10)
+```
+
+Transition substitutions are shown in green, transversions in red.
+
+Check substitution history table:
+
+```{r, results='hide'}
+head(sim$substitutions)
+```
+```{r, echo=F, results='asis'}
+kable(head(sim$substitutions))
+```
+
+## Alignment
+
+Show alignment in a viewer:
+
+```{r}
+plot(sim$alignment)
+```
+
+To export `FASTA` sequence:
+
+```{r, eval="F"}
+as.fasta(sim$alignment, file = "palantir_sim.fa")
+```
+
+# References
+
+1. Tavaré, S. (1986). _Some Probabilistic and Statistical Problems in the Analysis of DNA Sequences_ (PDF). Lectures on Mathematics in the Life Sciences. American Mathematical Society 17:57–86.
