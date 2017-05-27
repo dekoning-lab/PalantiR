@@ -11,7 +11,7 @@ var render_pair_substitutions = function(plot, substitutions) {
             if (plot.options.sites === "none") { return false; }
             return plot.options.sites.indexOf(s.site) !== -1;
         });
-        var subs = d3.select("#node_" + node.data.index)
+        var subs = plot.svg.select("#node_" + node.data.index)
             .selectAll(".substitution")
             .data(node_substitutions)
             .enter()

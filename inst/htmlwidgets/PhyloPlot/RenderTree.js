@@ -35,15 +35,17 @@ var render_tree = function(plot, root) {
     var options = plot.options;
 
     // Initialize plot
-    d3.select("#" + plot.container.id).selectAll("svg").remove();
+    console.log(plot.container);
+    //d3.select("#" + plot.container.id).select("svg").remove();
 
     plot.svg = d3.select("#" + plot.container.id)
         .append("svg")
         .attrs({
             "width": options.width,
             "height": options.height,
-            "id": "phylogram"
+            "class": "phylogram"
         });
+    console.log(plot.svg.node());
 
     plot.vis =  plot.svg.append("g")
         .attr("transform", "translate(" + options.padding + "," + options.padding + ")");

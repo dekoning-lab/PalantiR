@@ -9,7 +9,7 @@ var render_intervals = function(plot, intervals) {
                 return i.node === node.data.index;
             });
 
-            d3.select("#node_" + node.data.index)
+            plot.svg.select("#node_" + node.data.index)
                 .selectAll(".interval")
                 .data(node_intervals)
                 .enter()

@@ -12,7 +12,7 @@ var render_substitutions = function(plot, substitutions) {
                 return plot.options.sites.indexOf(s.site) !== -1;
             });
 
-        d3.select("#node_" + node.data.index)
+        plot.svg.select("#node_" + node.data.index)
             .selectAll(".substitution")
             .data(node_substitutions)
             .enter()
