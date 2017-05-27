@@ -41,12 +41,12 @@ simulate_over_interval_phylogeny <- function(phylogeny, mode_phylogeny, models, 
     .Call('PalantiR_simulate_over_interval_phylogeny', PACKAGE = 'PalantiR', phylogeny, mode_phylogeny, models, sequence, start_mode, rate, segment_length, tolerance)
 }
 
-simulate_with_nested_heterogeneity <- function(phylogeny, switching_model, substitution_models, sequence, start_mode, rate = 1, switching_rate = 1, segment_length = 0.001, tolerance = 0.001) {
-    .Call('PalantiR_simulate_with_nested_heterogeneity', PACKAGE = 'PalantiR', phylogeny, switching_model, substitution_models, sequence, start_mode, rate, switching_rate, segment_length, tolerance)
+simulate_with_shared_substitution_heterogeneity <- function(phylogeny, switching_model, substitution_models, sequence, start_mode, rate = 1, switching_rate = 1, segment_length = 0.001, tolerance = 0.001) {
+    .Call('PalantiR_simulate_with_shared_substitution_heterogeneity', PACKAGE = 'PalantiR', phylogeny, switching_model, substitution_models, sequence, start_mode, rate, switching_rate, segment_length, tolerance)
 }
 
-simulate_with_poisson_heterogeneity <- function(phylogeny, switching_model, substitution_models, sequence, start_mode, rate = 1, switching_rate = 1, segment_length = 0.001, tolerance = 0.001) {
-    .Call('PalantiR_simulate_with_poisson_heterogeneity', PACKAGE = 'PalantiR', phylogeny, switching_model, substitution_models, sequence, start_mode, rate, switching_rate, segment_length, tolerance)
+simulate_with_shared_time_heterogeneity <- function(phylogeny, switching_model, substitution_models, sequence, start_mode, rate = 1, switching_rate = 1, segment_length = 0.001, tolerance = 0.001) {
+    .Call('PalantiR_simulate_with_shared_time_heterogeneity', PACKAGE = 'PalantiR', phylogeny, switching_model, substitution_models, sequence, start_mode, rate, switching_rate, segment_length, tolerance)
 }
 
 compare_modes <- function(substitution_models, intervals) {
