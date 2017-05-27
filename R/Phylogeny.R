@@ -1,13 +1,13 @@
-plot.Phylogeny <- function(phylogeny, interval_phylogeny = NULL) {
-    if((phylogeny$type == "phylogeny") && is.null(interval_phylogeny)) {
+plot.Phylogeny <- function(phylogeny, mode_phylogeny = NULL) {
+    if((phylogeny$type == "phylogeny") && is.null(mode_phylogeny)) {
        PhyloPlot(phylogeny)
-    } else if (phylogeny$type == "interval") {
-        stop("To plot an interval phylogeny, use it as a second argument `plot(phylogeny, interval_phylogeny)`")
+    } else if (phylogeny$type == "mode") {
+        stop("To plot a mode phylogeny, use it as a second argument `plot(phylogeny, mode_phylogeny)`")
     } else if (
-        (!is.null(interval_phylogeny)) &&
+        (!is.null(mode_phylogeny)) &&
         (phylogeny$type == "phylogeny") &&
-        (interval_phylogeny$type == "interval")) {
-        intervals <- phylogeny_to_intervals(phylogeny, interval_phylogeny)
+        (mode_phylogeny$type == "mode")) {
+        intervals <- phylogeny_to_intervals(phylogeny, mode_phylogeny)
         PhyloPlot(phylogeny, intervals = intervals, plot_intervals = T)
     } else {
         stop("Unsupported phylogeny type")
