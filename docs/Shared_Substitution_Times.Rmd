@@ -7,7 +7,6 @@ output:
 ```{r, include=F}
 library(PalantiR)
 library(knitr)
-knitr::opts_chunk$set(cache=TRUE)
 ```
 
 # Shared Substitution Times
@@ -71,7 +70,7 @@ ms_2 <- MutationSelection(
 
 Sample sequence from model equilibrium distribution to start at root:
 ```{r sample_sequence}
-s <- sample_sequence(ms_1, 10)
+s <- sample_sequence(ms_1, 20)
 ```
 
 Simulate:

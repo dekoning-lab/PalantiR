@@ -66,6 +66,7 @@ PhyloPlot <- function(
         package = "PalantiR",
         sizingPolicy = htmlwidgets::sizingPolicy(
             viewer.padding = 0,
+            viewer.fill = T,
             browser.fill = T
         )
     )

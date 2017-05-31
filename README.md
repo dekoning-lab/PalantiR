@@ -2,6 +2,8 @@
 
 `PalantiR` is a framework for phylogenetic simulation and visualization.
 
+See the documentation at [dekoning-lab.github.io/PalantiR](https://dekoning-lab.github.io/PalantiR)
+
 The framework focuses on Mutation-Selection codon models and temporal heterogeneity.
 
 `PalantiR` is implemented as an `R` package, with a `C++` backend, and interactive `js` visualizations.
@@ -10,10 +12,10 @@ The framework focuses on Mutation-Selection codon models and temporal heterogene
 
 ## Downloading
 
-`PalantiR` uses git submodules, and should be cloned with `--recursive` flag:
+First, clone the `PalantiR` repo:
 
 ```
-git clone --recursive https://github.com/dekoning-lab/PalantiR.git
+git clone https://github.com/dekoning-lab/PalantiR.git
 ```
 
 ## Dependencies
