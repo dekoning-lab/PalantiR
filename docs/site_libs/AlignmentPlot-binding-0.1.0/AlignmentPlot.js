@@ -23,6 +23,7 @@ HTMLWidgets.widget({
             plot.container = d3.select("#" + el.id)
                 .append("div")
                 .styles({
+                    "border": "1px dashed grey",
                     "position": "relative",
                     "overflow": "hidden",
                     "width": width + "px",

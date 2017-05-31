@@ -21,7 +21,7 @@ Peruse the following pages for details on particular models and simulation types
 
 # Temporal Heterogeneity
 
-* [Branch heterogeneity](Branch_Heterogeneity.html)
+* [Branch Heterogeneity](Branch_Heterogeneity.html)
 * [Shared Model Substitution History](Shared_Substitution_History.html)
 * [Shared Model Time History](Shared_Substitution_Times.html)
 

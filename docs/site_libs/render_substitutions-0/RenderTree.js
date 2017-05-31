@@ -35,8 +35,6 @@ var render_tree = function(plot, root) {
     var options = plot.options;
 
     // Initialize plot
-    console.log(plot.container);
-    //d3.select("#" + plot.container.id).select("svg").remove();
 
     plot.svg = d3.select("#" + plot.container.id)
         .append("svg")
@@ -45,7 +43,6 @@ var render_tree = function(plot, root) {
             "height": options.height,
             "class": "phylogram"
         });
-    console.log(plot.svg.node());
 
     plot.vis =  plot.svg.append("g")
         .attr("transform", "translate(" + options.padding + "," + options.padding + ")");

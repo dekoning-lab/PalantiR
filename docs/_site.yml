@@ -24,7 +24,7 @@ navbar:
     - text: "Simulation Types"
       menu:
         - text: "Branch Heterogeneity"
-          href: Branch Heterogeneity.html
+          href: Branch_Heterogeneity.html
         - text: "Shared Model Substitution History"
           href: Shared_Substitution_History.html
         - text: Shared Model Time History

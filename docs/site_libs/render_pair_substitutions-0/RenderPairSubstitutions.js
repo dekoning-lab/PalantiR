@@ -43,7 +43,7 @@ var render_pair_substitutions = function(plot, substitutions) {
                 "r": plot.options.circle_size,
                 "cy": plot.options.circle_size,
                 "fill": function(d) {
-                    if (d.hasOwnProperty("first_color")) return(d.first_color);
+                    if (d.hasOwnProperty("second_color")) return(d.second_color);
                     else return("#FC571F");
                 }
             });
