@@ -7,7 +7,10 @@ output:
 ```{r, include=F}
 library(PalantiR)
 library(knitr)
+knitr::opts_chunk$set(cache=TRUE)
 ```
+
+# Temporal Rate Rescaling
 
 `PalantiR` uses a rescaling strategy to simulate smooth transitions in temporal heterogeneity simulations.
 Temporal heterogeneity simulations have a "switch point" from one substitution model to another. This can correspond to a fitness shift or a population size change.

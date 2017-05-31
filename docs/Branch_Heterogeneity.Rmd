@@ -7,6 +7,7 @@ output:
 ```{r, include=F}
 library(PalantiR)
 library(knitr)
+knitr::opts_chunk$set(cache=TRUE)
 ```
 
 # Branch Heterogeneity
@@ -14,7 +15,7 @@ library(knitr)
 Branch heterogeneous simulations allow to specify different models (called `modes`) for each branch on a phylogeny. 
 This is done by providing a newick tree with model indexes instead of branch length, and a list of models.
 
-For more details on time-heterogeneous simulation, see [[Tempral Heterogeneity Rescaling]].
+For more details on time-heterogeneous simulation, see [Temporal Heterogeneity Rescaling](Temporal_Heterogeneity_Rescaling.html).
 
 Here is an example file, which represents a model switch on the primate lineage in the mammalian phylogeny:
 ```{r}

@@ -1,0 +1,22 @@
+---
+title: "PalantíR Modelling Workbench"
+---
+
+# Authors
+
+Ivan Krukov (1,3), Nathan Escandor (2,3), Aaron Mathankeri (1,3), and Jason de Koning (3).
+
+1. Biochemisty and Molecular Biology Graduate Program in Bioinformatics
+2. Bachelor of Health Sciences Bioinformatics Program
+3. [de Koning Lab, University of Calgary](http://lab.jasondk.io)
+
+# Source code
+
+The source code is available on `github` at https://github.com/dekoning-lab/PalantiR
+
+# Citation
+
+Prior to publication please cite: 
+
+*Kryukov I, Escandor N, Mathankeri A and APJ de Koning (2017). **Simulation and Visualization of Phylogenetic Substitution Histories under Models of Heterogeneous Molecular Function**. de Koning Lab, University of Calgary.*
+

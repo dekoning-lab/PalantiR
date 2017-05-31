@@ -7,6 +7,7 @@ output:
 ```{r, include=F}
 library(PalantiR)
 library(knitr)
+knitr::opts_chunk$set(cache=TRUE)
 ```
 
 # Mutation-Selection
@@ -26,7 +27,7 @@ Only codons differing in one nucleotide positions are considered. Rates of trans
 * $\psi_i$ is the absolute fitness of amino acid for codon $i$.
 * $s_{ij}$ is selection coefficient of a substitution. For synonymous substitutions, the second term of the product will be equal to $1$.
 
-The substitution rates are also scaled to assign particular meaning to branch length of a phylogeny. For more detail, see [[Rate Scaling]].
+The substitution rates are also scaled to assign particular meaning to branch length of a phylogeny. For more detail, see [Rate Scaling](Rate_Scaling.html).
 
 # Example
 

@@ -1,0 +1,31 @@
+---
+title: "PalantiR"
+---
+
+Welcome to `PalantiR` documentation.
+
+For installation notes, consider [this page](installation.html)
+
+Peruse the following pages for details on particular models and simulation types:
+
+# Nucleotide Models
+
+* [Hasegawa-Kishino-Yano](Hasegawa_Kishino_Yano.html)
+* [General Time Reversible](General_Time_Reversible.html)
+
+# Codon Models
+
+* [Mutation-Selection](Mutation_Selection.html)
+* [Co-evolution](Co_Evolution.html)
+* [Markov-Modulated Mutation-Selection](Markov_Modulated_Mutation_Selection.html)
+
+# Temporal Heterogeneity
+
+* [Branch heterogeneity](Branch_Heterogeneity.html)
+* [Shared Model Substitution History](Shared_Substitution_History.html)
+* [Shared Model Time History](Shared_Substitution_Times.html)
+
+# Features
+
+* [Rate Scaling](Rate_Scaling.html)
+* [Temporal Heterogeneity Rescaling](Temporal_Heterogeneity_Rescaling.html)

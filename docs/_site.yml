@@ -1,0 +1,39 @@
+name: "PalantiR-doc"
+output_dir: "."
+navbar:
+  title: "PalantiR"
+  left:
+    - text: "Home"
+      href: index.html
+    - text: "Installation"
+      href: installation.html
+    - text: "Nucleotide Models"
+      menu:
+        - text: "Hasegawa-Kishino-Yano"
+          href: Hasegawa_Kishino_Yano.html
+        - text: "General Time Reversible"
+          href: General_Time_Reversible.html
+    - text: "Codon Models"
+      menu:
+        - text: "Mutation-Selection"
+          href: Mutation_Selection.html
+        - text: "Co-Evolution"
+          href: Co_Evolution.html
+        - text: "Markov-Modulated Mutation Selection"
+          href: Markov_Modulated_Mutation_Selection.html
+    - text: "Simulation Types"
+      menu:
+        - text: "Branch Heterogeneity"
+          href: Branch Heterogeneity.html
+        - text: "Shared Model Substitution History"
+          href: Shared_Substitution_History.html
+        - text: Shared Model Time History
+          href: Shared_Substitution_Times.html
+    - text: "About"
+      href: about.html
+output:
+  html_document:
+    theme: flatly
+    highlight: tango
+    include:
+      after_body: footer.html

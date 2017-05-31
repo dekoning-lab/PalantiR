@@ -1,0 +1,41 @@
+---
+title: "Installation"
+---
+
+# Automatic installation
+
+Using `devtools` package, we can install from `github` directly:
+
+```R
+devtools::install_github("dekoning-lab/PalantiR")
+```
+
+# Manual installation
+
+First, clone the repository:
+
+```bash
+git clone https://github.com/dekoning-lab/PalantiR.git
+```
+
+Install the dependencies:
+
+```R
+install.packages(c("RcppArmadillo", "htmlwidgets"))
+```
+
+## Building
+
+If using RStudio, hit "Build & Reload".
+
+Otherwise, navigate to one directory above PalantiR, and run:
+
+```bash
+R CMD INSTALL --preclean --no-multiarch --with-keep.source PalantiR
+```
+
+Then, in a new R session, run:
+
+```R
+library(PalantiR)
+```

@@ -7,13 +7,14 @@ output:
 ```{r, include=F}
 library(PalantiR)
 library(knitr)
+knitr::opts_chunk$set(cache=TRUE)
 ```
 
 # Shared Substitution History
 
-Shared substitution history is a switching simulation type similar to [[Markov-Modulated Mutation Selection]]. However, instead of simulating each site with independent switching in the parent model, the switches are shared across sites. In essense, this is a conditioned simulation, given _identities_ and _times_ of parent model switches.
+Shared substitution history is a switching simulation type similar to [Markov-Modulated Mutation-Selection](Markov_Modulated_Mutation_Selection.html). However, instead of simulating each site with independent switching in the parent model, the switches are shared across sites. In essense, this is a conditioned simulation, given _identities_ and _times_ of parent model switches.
 
-Unlike [[Shared Substitution Times]], this simulation shares times and indetities.
+Unlike [Shared Model Time History](Shared_Substitution_Times.html), this simulation shares times and indetities.
 
 This type of simulation is useful to emulate population size switches, such that population size change is common for all sites in the alignment.
 
@@ -47,7 +48,7 @@ hky <- HasegawaKishinoYano(nuc_pi)
 # Parent switching model
 gtr <- GeneralTimeReversible(
     equilibrium = rep(1/2, 2),
-    exchangeability = matrix(rep(1/4, 4), nrow = 2))
+    exchangeability = matrix(rep(1, 4), nrow = 2))
 
 # Create codon models
 

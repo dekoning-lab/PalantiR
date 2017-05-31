@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title></title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/htmlwidgets-0.8/htmlwidgets.js"></script>
+<script src="site_libs/d3-4.8.0/d3.min.js"></script>
+<script src="site_libs/d3-selection-multi-1.0.1/d3-selection-multi.min.js"></script>
+<script src="site_libs/Util-0/Util.js"></script>
+<script src="site_libs/downloadSVG-0/downloadSVG.js"></script>
+<script src="site_libs/Tooltip-0/Tooltip.js"></script>
+<script src="site_libs/render_tree-0/RenderTree.js"></script>
+<script src="site_libs/render_substitutions-0/RenderSubstitutions.js"></script>
+<script src="site_libs/render_pair_substitutions-0/RenderPairSubstitutions.js"></script>
+<script src="site_libs/render_intervals-0/RenderIntervals.js"></script>
+<script src="site_libs/SVGTip-0.0.2/SVGTip.js"></script>
+<script src="site_libs/stringBoundingBox-0/stringBoundingBox.js"></script>
+<script src="site_libs/PhyloPlot-binding-0.1.0/PhyloPlot.js"></script>
+<script src="site_libs/AlignmentPlot-binding-0.1.0/AlignmentPlot.js"></script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; background-color: #f8f8f8; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+pre, code { background-color: #f8f8f8; }
+code > span.kw { color: #204a87; font-weight: bold; } /* Keyword */
+code > span.dt { color: #204a87; } /* DataType */
+code > span.dv { color: #0000cf; } /* DecVal */
+code > span.bn { color: #0000cf; } /* BaseN */
+code > span.fl { color: #0000cf; } /* Float */
+code > span.ch { color: #4e9a06; } /* Char */
+code > span.st { color: #4e9a06; } /* String */
+code > span.co { color: #8f5902; font-style: italic; } /* Comment */
+code > span.ot { color: #8f5902; } /* Other */
+code > span.al { color: #ef2929; } /* Alert */
+code > span.fu { color: #000000; } /* Function */
+code > span.er { color: #a40000; font-weight: bold; } /* Error */
+code > span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #000000; } /* Constant */
+code > span.sc { color: #000000; } /* SpecialChar */
+code > span.vs { color: #4e9a06; } /* VerbatimString */
+code > span.ss { color: #4e9a06; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #000000; } /* Variable */
+code > span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #ce5c00; font-weight: bold; } /* Operator */
+code > span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
+code > span.ex { } /* Extension */
+code > span.at { color: #c4a000; } /* Attribute */
+code > span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
+code > span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 60px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+
+.section h2 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h3 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h4 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h5 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h6 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">PalantiR</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="installation.html">Installation</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Nucleotide Models
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Hasegawa_Kishino_Yano.html">Hasegawa-Kishino-Yano</a>
+    </li>
+    <li>
+      <a href="General_Time_Reversible.html">General Time Reversible</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Codon Models
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Mutation_Selection.html">Mutation-Selection</a>
+    </li>
+    <li>
+      <a href="Co_Evolution.html">Co-Evolution</a>
+    </li>
+    <li>
+      <a href="Markov_Modulated_Mutation_Selection.html">Markov-Modulated Mutation Selection</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Simulation Types
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Branch Heterogeneity.html">Branch Heterogeneity</a>
+    </li>
+    <li>
+      <a href="Shared_Substitution_History.html">Shared Model Substitution History</a>
+    </li>
+    <li>
+      <a href="Shared_Substitution_Times.html">Shared Model Time History</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+
+</div>
+
+
+<div id="shared-substitution-times" class="section level1">
+<h1>Shared Substitution Times</h1>
+<p>Shared substitution times is a switching simulation type similar to <a href="Markov_Modulated_Mutation_Selection.html">Markov-Modulated Mutation-Selection</a>. However, instead of simulating each site with independent switching in the parent model, the switch times are shared across sites. In essense, this is a conditioned simulation, given <em>times</em> of parent model switches.</p>
+<p>Unlike <a href="Shared_Substitution_History.html">Shared Model Substitution History</a>, this simulation does not share switch identity.</p>
+<p>This type of simulation is useful to emulate fitness switches, such that fitness changes at every site at the same time. However, the identity of the fitness switch might differ.</p>
+</div>
+<div id="example" class="section level1">
+<h1>Example</h1>
+<div id="setup" class="section level2">
+<h2>Setup</h2>
+<p>Load model parameters:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Load phylogeny</span>
+mammals &lt;-<span class="st"> </span><span class="kw">Phylogeny</span>(<span class="st">&quot;../data/mammals.newick&quot;</span>)
+
+<span class="co"># Load nucleotide equilibrium distribution</span>
+<span class="co"># Nucleotide order is T,C,A,G</span>
+nuc_pi &lt;-<span class="st"> </span><span class="kw">c</span>(.<span class="dv">3</span>, .<span class="dv">2</span>, .<span class="dv">25</span>, .<span class="dv">25</span>)
+
+<span class="co"># Load amino acid equilibrium frequencies</span>
+<span class="co"># These will be converted to population-specific fitness vectors</span>
+aa_pi &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(<span class="kw">read.table</span>(<span class="st">&quot;../data/psi-c50-1.txt&quot;</span>))
+
+psi_1 &lt;-<span class="st"> </span><span class="kw">equilibrium_to_fitness</span>(aa_pi[<span class="dv">1</span>, ], <span class="dv">1000</span>)
+psi_2 &lt;-<span class="st"> </span><span class="kw">equilibrium_to_fitness</span>(aa_pi[<span class="dv">2</span>, ], <span class="dv">1000</span>)</code></pre></div>
+<p>Create models:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Create nucleotide substitution model</span>
+hky &lt;-<span class="st"> </span><span class="kw">HasegawaKishinoYano</span>(nuc_pi)
+
+<span class="co"># Parent switching model</span>
+gtr &lt;-<span class="st"> </span><span class="kw">GeneralTimeReversible</span>(
+    <span class="dt">equilibrium =</span> <span class="kw">rep</span>(<span class="dv">1</span>/<span class="dv">2</span>, <span class="dv">2</span>),
+    <span class="dt">exchangeability =</span> <span class="kw">matrix</span>(<span class="kw">rep</span>(<span class="dv">1</span>/<span class="dv">4</span>, <span class="dv">4</span>), <span class="dt">nrow =</span> <span class="dv">2</span>))
+
+<span class="co"># Create codon models</span>
+
+<span class="co"># First fitness vector</span>
+ms_1 &lt;-<span class="st"> </span><span class="kw">MutationSelection</span>(
+    <span class="dt">population_size =</span> <span class="dv">1000</span>, 
+    <span class="dt">mutation_rate =</span> <span class="fl">1e-8</span>, 
+    <span class="dt">nucleotide_model =</span> hky,
+    <span class="dt">fitness =</span> psi_1)
+
+<span class="co"># Second fitness vector</span>
+ms_2 &lt;-<span class="st"> </span><span class="kw">MutationSelection</span>(
+    <span class="dt">population_size =</span> <span class="dv">1000</span>,
+    <span class="dt">mutation_rate =</span> <span class="fl">1e-8</span>, 
+    <span class="dt">nucleotide_model =</span> hky,
+    <span class="dt">fitness =</span> psi_2)</code></pre></div>
+<p>Sample sequence from model equilibrium distribution to start at root:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">s &lt;-<span class="st"> </span><span class="kw">sample_sequence</span>(ms_1, <span class="dv">10</span>)</code></pre></div>
+<p>Simulate:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim &lt;-<span class="st"> </span><span class="kw">simulate_with_shared_time_heterogeneity</span>(
+    <span class="dt">phylogeny =</span> mammals,
+    <span class="dt">switching_model =</span> gtr,
+    <span class="dt">switching_rate =</span> <span class="dv">1</span>,
+    <span class="dt">substitution_models =</span> <span class="kw">list</span>(ms_1, ms_2),
+    <span class="dt">sequence =</span> s,
+    <span class="dt">start_mode =</span> <span class="dv">0</span>)</code></pre></div>
+<p>Note that we have to specify which mode the root starts with using <code>start_mode</code> argument. We can additionally accelerate switching model substitution rate with <code>switching_rate</code>.</p>
+</div>
+<div id="substitution-history" class="section level2">
+<h2>Substitution history</h2>
+<p>Plot substitution history:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(sim, <span class="dt">circle_opacity =</span> <span class="fl">0.1</span>)</code></pre></div>
+<div id="htmlwidget-afaa9a14dd3da7f8724d" style="width:672px;height:480px;" class="PhyloPlot html-widget"></div>
+<script type="application/json" data-for="htmlwidget-afaa9a14dd3da7f8724d">{"x":{"tree":{"index":0,"label":"root","length":0,"children":[{"index":1,"label":"1","length":0.0717,"children":[{"index":2,"label":"2","length":0.2347,"children":[{"index":3,"label":"3","length":0.0237,"children":[{"index":4,"label":"4","length":0.0206,"children":[{"index":5,"label":"5","length":0.0049,"children":[{"index":6,"label":"6","length":0.0155,"children":[{"index":7,"label":"7","length":0.0111,"children":[{"index":8,"label":"8","length":0.0576,"children":[{"index":9,"label":"9","length":0.022,"children":[{"index":10,"label":"10","length":0.0072,"children":[{"index":11,"label":"11","length":0.0072,"children":[{"index":12,"label":"12","length":0.0097,"children":[{"index":13,"label":"13","length":0.0022,"children":[{"index":14,"label":"Human","length":0.0067},{"index":15,"label":"Pan_troglodytes","length":0.0067}]},{"index":16,"label":"Gorilla_gorilla","length":0.0088}]},{"index":17,"label":"Pongo_abelii","length":0.0183}]},{"index":18,"label":"Nomascus_leucogenys","length":0.0255}]},{"index":19,"label":"19","length":0.0296,"children":[{"index":20,"label":"Macaca_mulatta","length":0.0079},{"index":21,"label":"Papio_hamadryas","length":0.0076}]}]},{"index":22,"label":"Callithrix_jacchus","length":0.0661}]},{"index":23,"label":"Tarsius_syrichta","length":0.1378}]},{"index":24,"label":"24","length":0.0355,"children":[{"index":25,"label":"Microcebus_murinus","length":0.0927},{"index":26,"label":"Otolemur_garnettii","length":0.1297}]}]},{"index":27,"label":"Tupaia_belangeri","length":0.1862}]},{"index":28,"label":"28","length":0.0153,"children":[{"index":29,"label":"29","length":0.0257,"children":[{"index":30,"label":"30","length":0.0102,"children":[{"index":31,"label":"31","length":0.023,"children":[{"index":32,"label":"32","length":0.1978,"children":[{"index":33,"label":"Mus_musculus","length":0.0845},{"index":34,"label":"Rattus_norvegicus","length":0.0916}]},{"index":35,"label":"Dipodomys_ordii","length":0.2116}]},{"index":36,"label":"Cavia_porcellus","length":0.2256}]},{"index":37,"label":"Ictidomys_tridecemlineatus","length":0.1485}]},{"index":38,"label":"38","length":0.1015,"children":[{"index":39,"label":"Oryctolagus_cuniculus","length":0.1142},{"index":40,"label":"Ochotona_princeps","length":0.2011}]}]}]},{"index":41,"label":"41","length":0.0212,"children":[{"index":42,"label":"42","length":0.0117,"children":[{"index":43,"label":"43","length":0.0202,"children":[{"index":44,"label":"44","length":0.0202,"children":[{"index":45,"label":"Vicugna_pacos","length":0.1073},{"index":46,"label":"46","length":0.0252,"children":[{"index":47,"label":"Tursiops_truncatus","length":0.0647},{"index":48,"label":"48","length":0.0618,"children":[{"index":49,"label":"Bos_taurus","length":0.0618},{"index":50,"label":"Ovis_aries","length":0.0618}]}]}]},{"index":51,"label":"Sus_scrofa","length":0.079}]},{"index":52,"label":"52","length":0.0045,"children":[{"index":53,"label":"53","length":0.0062,"children":[{"index":54,"label":"Equus_caballus","length":0.1094},{"index":55,"label":"55","length":0.0498,"children":[{"index":56,"label":"Felis_catus","length":0.0986},{"index":57,"label":"57","length":0.0512,"children":[{"index":58,"label":"58","length":0.0256,"children":[{"index":59,"label":"Ailuropoda_melanoleuca","length":0.0256},{"index":60,"label":"Mustela_putorius_furo","length":0.0256}]},{"index":61,"label":"Canis_familiaris","length":0.0512}]}]}]},{"index":62,"label":"62","length":0.0337,"children":[{"index":63,"label":"Myotis_lucifugus","length":0.1425},{"index":64,"label":"Pteropus_vampyrus","length":0.1134}]}]}]},{"index":65,"label":"65","length":0.0564,"children":[{"index":66,"label":"Erinaceus_europaeus","length":0.2218},{"index":67,"label":"Sorex_araneus","length":0.2696}]}]}]},{"index":68,"label":"68","length":0.0067,"children":[{"index":69,"label":"69","length":0.0497,"children":[{"index":70,"label":"70","length":0.027,"children":[{"index":71,"label":"Loxodonta_africana","length":0.0822},{"index":72,"label":"Procavia_capensis","length":0.1554}]},{"index":73,"label":"Echinops_telfairi","length":0.2459}]},{"index":74,"label":"74","length":0.0531,"children":[{"index":75,"label":"Dasypus_novemcinctus","length":0.1167},{"index":76,"label":"Choloepus_hoffmanni","length":0.0964}]}]}]},{"index":77,"label":"77","length":0.2151,"children":[{"index":78,"label":"Monodelphis_domestica","length":0.1257},{"index":79,"label":"79","length":0.021,"children":[{"index":80,"label":"Macropus_eugenii","length":0.101},{"index":81,"label":"Sarcophilus_harrisii","length":0.101}]}]}]},{"index":82,"label":"Ornithorhynchus_anatinus","length":0.4566}]},"substitutions":[{"site":0,"node":22,"time":0.0535,"from":60,"to":44,"codon_from":"GGG","codon_to":"AGG","amino_acid_from":"G","amino_acid_to":"R","synonymous":false,"color":"#E84B2A"},{"site":0,"node":32,"time":0.0395,"from":60,"to":57,"codon_from":"GGG","codon_to":"GGT","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":0,"node":38,"time":0.0486,"from":60,"to":52,"codon_from":"GGG","codon_to":"GCG","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":0,"node":49,"time":0.0309,"from":60,"to":57,"codon_from":"GGG","codon_to":"GGT","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":0,"node":51,"time":0.06,"from":60,"to":59,"codon_from":"GGG","codon_to":"GGA","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":0,"node":56,"time":0.0194,"from":60,"to":52,"codon_from":"GGG","codon_to":"GCG","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":0,"node":59,"time":0.0134,"from":60,"to":58,"codon_from":"GGG","codon_to":"GGC","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":0,"node":63,"time":0.0967,"from":60,"to":12,"codon_from":"GGG","codon_to":"TGG","amino_acid_from":"G","amino_acid_to":"W","synonymous":false,"color":"#E84B2A"},{"site":0,"node":64,"time":0.0423,"from":60,"to":12,"codon_from":"GGG","codon_to":"TGG","amino_acid_from":"G","amino_acid_to":"W","synonymous":false,"color":"#E84B2A"},{"site":0,"node":67,"time":0.0134,"from":60,"to":57,"codon_from":"GGG","codon_to":"GGT","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":0,"node":67,"time":0.1516,"from":57,"to":49,"codon_from":"GGT","codon_to":"GCT","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":0,"node":75,"time":0.0618,"from":60,"to":59,"codon_from":"GGG","codon_to":"GGA","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":0,"node":75,"time":0.0964,"from":59,"to":58,"codon_from":"GGA","codon_to":"GGC","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":0,"node":76,"time":0.0221,"from":60,"to":59,"codon_from":"GGG","codon_to":"GGA","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":1,"node":2,"time":0.15,"from":55,"to":59,"codon_from":"GAA","codon_to":"GGA","amino_acid_from":"E","amino_acid_to":"G","synonymous":false,"color":"#E84B2A"},{"site":1,"node":27,"time":0.0223,"from":59,"to":60,"codon_from":"GGA","codon_to":"GGG","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":1,"node":27,"time":0.1282,"from":60,"to":59,"codon_from":"GGG","codon_to":"GGA","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":1,"node":32,"time":0.0027,"from":59,"to":58,"codon_from":"GGA","codon_to":"GGC","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":1,"node":34,"time":0.0462,"from":58,"to":60,"codon_from":"GGC","codon_to":"GGG","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":1,"node":37,"time":0.1411,"from":59,"to":58,"codon_from":"GGA","codon_to":"GGC","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":1,"node":38,"time":0.0473,"from":59,"to":51,"codon_from":"GGA","codon_to":"GCA","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":1,"node":40,"time":0.0496,"from":51,"to":49,"codon_from":"GCA","codon_to":"GCT","amino_acid_from":"A","amino_acid_to":"A","synonymous":true,"color":"#16A35E"},{"site":1,"node":56,"time":0.0194,"from":59,"to":51,"codon_from":"GGA","codon_to":"GCA","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":1,"node":56,"time":0.0813,"from":51,"to":52,"codon_from":"GCA","codon_to":"GCG","amino_acid_from":"A","amino_acid_to":"A","synonymous":true,"color":"#16A35E"},{"site":1,"node":63,"time":0.0976,"from":59,"to":51,"codon_from":"GGA","codon_to":"GCA","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":1,"node":64,"time":0.0416,"from":59,"to":51,"codon_from":"GGA","codon_to":"GCA","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":1,"node":67,"time":0.1542,"from":59,"to":51,"codon_from":"GGA","codon_to":"GCA","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":1,"node":71,"time":0.0565,"from":59,"to":60,"codon_from":"GGA","codon_to":"GGG","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":1,"node":74,"time":0.0289,"from":59,"to":57,"codon_from":"GGA","codon_to":"GGT","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":1,"node":74,"time":0.0294,"from":57,"to":53,"codon_from":"GGT","codon_to":"GAT","amino_acid_from":"G","amino_acid_to":"D","synonymous":false,"color":"#E84B2A"},{"site":1,"node":76,"time":0.0506,"from":53,"to":54,"codon_from":"GAT","codon_to":"GAC","amino_acid_from":"D","amino_acid_to":"D","synonymous":true,"color":"#16A35E"},{"site":1,"node":82,"time":0.2157,"from":55,"to":59,"codon_from":"GAA","codon_to":"GGA","amino_acid_from":"E","amino_acid_to":"G","synonymous":false,"color":"#E84B2A"},{"site":2,"node":1,"time":0.0025,"from":58,"to":60,"codon_from":"GGC","codon_to":"GGG","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":2,"node":2,"time":0.1246,"from":60,"to":58,"codon_from":"GGG","codon_to":"GGC","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":2,"node":7,"time":0.003,"from":58,"to":57,"codon_from":"GGC","codon_to":"GGT","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":2,"node":18,"time":0.0247,"from":57,"to":59,"codon_from":"GGT","codon_to":"GGA","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":2,"node":26,"time":0.1086,"from":58,"to":59,"codon_from":"GGC","codon_to":"GGA","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":2,"node":36,"time":0.0323,"from":58,"to":59,"codon_from":"GGC","codon_to":"GGA","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":2,"node":37,"time":0.0135,"from":58,"to":60,"codon_from":"GGC","codon_to":"GGG","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":2,"node":38,"time":0.031,"from":58,"to":60,"codon_from":"GGC","codon_to":"GGG","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":2,"node":38,"time":0.0451,"from":60,"to":12,"codon_from":"GGG","codon_to":"TGG","amino_acid_from":"G","amino_acid_to":"W","synonymous":false,"color":"#E84B2A"},{"site":2,"node":39,"time":0.0008,"from":12,"to":60,"codon_from":"TGG","codon_to":"GGG","amino_acid_from":"W","amino_acid_to":"G","synonymous":false,"color":"#E84B2A"},{"site":2,"node":40,"time":0.0008,"from":12,"to":60,"codon_from":"TGG","codon_to":"GGG","amino_acid_from":"W","amino_acid_to":"G","synonymous":false,"color":"#E84B2A"},{"site":2,"node":40,"time":0.0425,"from":60,"to":59,"codon_from":"GGG","codon_to":"GGA","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":2,"node":40,"time":0.0742,"from":59,"to":58,"codon_from":"GGA","codon_to":"GGC","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":2,"node":56,"time":0.0344,"from":58,"to":50,"codon_from":"GGC","codon_to":"GCC","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":2,"node":63,"time":0.0977,"from":58,"to":50,"codon_from":"GGC","codon_to":"GCC","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":2,"node":64,"time":0.043,"from":58,"to":50,"codon_from":"GGC","codon_to":"GCC","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":2,"node":67,"time":0.1547,"from":58,"to":50,"codon_from":"GGC","codon_to":"GCC","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":2,"node":79,"time":0.0133,"from":60,"to":57,"codon_from":"GGG","codon_to":"GGT","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":2,"node":82,"time":0.2993,"from":58,"to":59,"codon_from":"GGC","codon_to":"GGA","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":3,"node":8,"time":0.0543,"from":7,"to":4,"codon_from":"TCG","codon_to":"TCT","amino_acid_from":"S","amino_acid_to":"S","synonymous":true,"color":"#16A35E"},{"site":3,"node":36,"time":0.1963,"from":7,"to":52,"codon_from":"TCG","codon_to":"GCG","amino_acid_from":"S","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":3,"node":38,"time":0.0455,"from":7,"to":12,"codon_from":"TCG","codon_to":"TGG","amino_acid_from":"S","amino_acid_to":"W","synonymous":false,"color":"#E84B2A"},{"site":3,"node":39,"time":0.0004,"from":12,"to":60,"codon_from":"TGG","codon_to":"GGG","amino_acid_from":"W","amino_acid_to":"G","synonymous":false,"color":"#E84B2A"},{"site":3,"node":40,"time":0,"from":12,"to":7,"codon_from":"TGG","codon_to":"TCG","amino_acid_from":"W","amino_acid_to":"S","synonymous":false,"color":"#E84B2A"},{"site":3,"node":56,"time":0.019,"from":7,"to":36,"codon_from":"TCG","codon_to":"ACG","amino_acid_from":"S","amino_acid_to":"T","synonymous":false,"color":"#E84B2A"},{"site":3,"node":63,"time":0.0971,"from":7,"to":3,"codon_from":"TCG","codon_to":"TTG","amino_acid_from":"S","amino_acid_to":"L","synonymous":false,"color":"#E84B2A"},{"site":3,"node":63,"time":0.1089,"from":3,"to":12,"codon_from":"TTG","codon_to":"TGG","amino_acid_from":"L","amino_acid_to":"W","synonymous":false,"color":"#E84B2A"},{"site":3,"node":64,"time":0.0436,"from":7,"to":12,"codon_from":"TCG","codon_to":"TGG","amino_acid_from":"S","amino_acid_to":"W","synonymous":false,"color":"#E84B2A"},{"site":3,"node":66,"time":0.1513,"from":7,"to":20,"codon_from":"TCG","codon_to":"CCG","amino_acid_from":"S","amino_acid_to":"P","synonymous":false,"color":"#E84B2A"},{"site":3,"node":67,"time":0.0809,"from":7,"to":4,"codon_from":"TCG","codon_to":"TCT","amino_acid_from":"S","amino_acid_to":"S","synonymous":true,"color":"#16A35E"},{"site":3,"node":67,"time":0.1515,"from":4,"to":0,"codon_from":"TCT","codon_to":"TTT","amino_acid_from":"S","amino_acid_to":"F","synonymous":false,"color":"#E84B2A"},{"site":3,"node":73,"time":0.0969,"from":7,"to":4,"codon_from":"TCG","codon_to":"TCT","amino_acid_from":"S","amino_acid_to":"S","synonymous":true,"color":"#16A35E"},{"site":3,"node":76,"time":0.0041,"from":7,"to":52,"codon_from":"TCG","codon_to":"GCG","amino_acid_from":"S","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":3,"node":81,"time":0.0077,"from":7,"to":52,"codon_from":"TCG","codon_to":"GCG","amino_acid_from":"S","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":3,"node":82,"time":0.2033,"from":7,"to":20,"codon_from":"TCG","codon_to":"CCG","amino_acid_from":"S","amino_acid_to":"P","synonymous":false,"color":"#E84B2A"},{"site":4,"node":34,"time":0.0195,"from":57,"to":60,"codon_from":"GGT","codon_to":"GGG","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":4,"node":38,"time":0.0476,"from":57,"to":49,"codon_from":"GGT","codon_to":"GCT","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":4,"node":39,"time":0.1135,"from":49,"to":4,"codon_from":"GCT","codon_to":"TCT","amino_acid_from":"A","amino_acid_to":"S","synonymous":false,"color":"#E84B2A"},{"site":4,"node":42,"time":0.0028,"from":57,"to":59,"codon_from":"GGT","codon_to":"GGA","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":4,"node":56,"time":0.0196,"from":59,"to":51,"codon_from":"GGA","codon_to":"GCA","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":4,"node":61,"time":0.0338,"from":59,"to":60,"codon_from":"GGA","codon_to":"GGG","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":4,"node":63,"time":0.1047,"from":59,"to":51,"codon_from":"GGA","codon_to":"GCA","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":4,"node":64,"time":0.0447,"from":59,"to":51,"codon_from":"GGA","codon_to":"GCA","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":4,"node":66,"time":0.011,"from":57,"to":59,"codon_from":"GGT","codon_to":"GGA","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":4,"node":67,"time":0.131,"from":57,"to":59,"codon_from":"GGT","codon_to":"GGA","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":4,"node":67,"time":0.1531,"from":59,"to":51,"codon_from":"GGA","codon_to":"GCA","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":4,"node":72,"time":0.0781,"from":57,"to":59,"codon_from":"GGT","codon_to":"GGA","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":4,"node":73,"time":0.1519,"from":57,"to":59,"codon_from":"GGT","codon_to":"GGA","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":4,"node":75,"time":0.0948,"from":57,"to":53,"codon_from":"GGT","codon_to":"GAT","amino_acid_from":"G","amino_acid_to":"D","synonymous":false,"color":"#E84B2A"},{"site":5,"node":25,"time":0.0489,"from":59,"to":27,"codon_from":"GGA","codon_to":"CGA","amino_acid_from":"G","amino_acid_to":"R","synonymous":false,"color":"#E84B2A"},{"site":5,"node":25,"time":0.0884,"from":27,"to":59,"codon_from":"CGA","codon_to":"GGA","amino_acid_from":"R","amino_acid_to":"G","synonymous":false,"color":"#E84B2A"},{"site":5,"node":26,"time":0.0075,"from":59,"to":55,"codon_from":"GGA","codon_to":"GAA","amino_acid_from":"G","amino_acid_to":"E","synonymous":false,"color":"#E84B2A"},{"site":5,"node":33,"time":0.0244,"from":59,"to":55,"codon_from":"GGA","codon_to":"GAA","amino_acid_from":"G","amino_acid_to":"E","synonymous":false,"color":"#E84B2A"},{"site":5,"node":33,"time":0.0757,"from":55,"to":59,"codon_from":"GAA","codon_to":"GGA","amino_acid_from":"E","amino_acid_to":"G","synonymous":false,"color":"#E84B2A"},{"site":5,"node":35,"time":0.1498,"from":59,"to":27,"codon_from":"GGA","codon_to":"CGA","amino_acid_from":"G","amino_acid_to":"R","synonymous":false,"color":"#E84B2A"},{"site":5,"node":36,"time":0.1218,"from":59,"to":58,"codon_from":"GGA","codon_to":"GGC","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":5,"node":37,"time":0.0311,"from":59,"to":60,"codon_from":"GGA","codon_to":"GGG","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":5,"node":38,"time":0.0467,"from":59,"to":51,"codon_from":"GGA","codon_to":"GCA","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":5,"node":39,"time":0.015,"from":51,"to":59,"codon_from":"GCA","codon_to":"GGA","amino_acid_from":"A","amino_acid_to":"G","synonymous":false,"color":"#E84B2A"},{"site":5,"node":40,"time":0.1089,"from":51,"to":59,"codon_from":"GCA","codon_to":"GGA","amino_acid_from":"A","amino_acid_to":"G","synonymous":false,"color":"#E84B2A"},{"site":5,"node":50,"time":0.0353,"from":59,"to":57,"codon_from":"GGA","codon_to":"GGT","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":5,"node":53,"time":0.0001,"from":59,"to":57,"codon_from":"GGA","codon_to":"GGT","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":5,"node":56,"time":0.0269,"from":57,"to":49,"codon_from":"GGT","codon_to":"GCT","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":5,"node":63,"time":0.1018,"from":59,"to":51,"codon_from":"GGA","codon_to":"GCA","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":5,"node":64,"time":0.0435,"from":59,"to":51,"codon_from":"GGA","codon_to":"GCA","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":5,"node":66,"time":0.0364,"from":59,"to":57,"codon_from":"GGA","codon_to":"GGT","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":5,"node":66,"time":0.038,"from":57,"to":53,"codon_from":"GGT","codon_to":"GAT","amino_acid_from":"G","amino_acid_to":"D","synonymous":false,"color":"#E84B2A"},{"site":5,"node":67,"time":0.0769,"from":59,"to":43,"codon_from":"GGA","codon_to":"AGA","amino_acid_from":"G","amino_acid_to":"R","synonymous":false,"color":"#E84B2A"},{"site":5,"node":67,"time":0.1528,"from":43,"to":31,"codon_from":"AGA","codon_to":"ATA","amino_acid_from":"R","amino_acid_to":"I","synonymous":false,"color":"#E84B2A"},{"site":6,"node":4,"time":0.0039,"from":58,"to":60,"codon_from":"GGC","codon_to":"GGG","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":6,"node":27,"time":0.0755,"from":60,"to":59,"codon_from":"GGG","codon_to":"GGA","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":6,"node":32,"time":0.0263,"from":60,"to":57,"codon_from":"GGG","codon_to":"GGT","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":6,"node":38,"time":0.0448,"from":60,"to":52,"codon_from":"GGG","codon_to":"GCG","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":6,"node":44,"time":0.0168,"from":58,"to":57,"codon_from":"GGC","codon_to":"GGT","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":6,"node":48,"time":0.0363,"from":57,"to":53,"codon_from":"GGT","codon_to":"GAT","amino_acid_from":"G","amino_acid_to":"D","synonymous":false,"color":"#E84B2A"},{"site":6,"node":50,"time":0.016,"from":53,"to":55,"codon_from":"GAT","codon_to":"GAA","amino_acid_from":"D","amino_acid_to":"E","synonymous":false,"color":"#E84B2A"},{"site":6,"node":56,"time":0.0427,"from":58,"to":50,"codon_from":"GGC","codon_to":"GCC","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":6,"node":63,"time":0.0972,"from":58,"to":50,"codon_from":"GGC","codon_to":"GCC","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":6,"node":64,"time":0.0409,"from":58,"to":50,"codon_from":"GGC","codon_to":"GCC","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":6,"node":67,"time":0.0419,"from":58,"to":60,"codon_from":"GGC","codon_to":"GGG","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":6,"node":67,"time":0.156,"from":60,"to":12,"codon_from":"GGG","codon_to":"TGG","amino_acid_from":"G","amino_acid_to":"W","synonymous":false,"color":"#E84B2A"},{"site":6,"node":67,"time":0.1689,"from":12,"to":3,"codon_from":"TGG","codon_to":"TTG","amino_acid_from":"W","amino_acid_to":"L","synonymous":false,"color":"#E84B2A"},{"site":7,"node":19,"time":0.0258,"from":50,"to":49,"codon_from":"GCC","codon_to":"GCT","amino_acid_from":"A","amino_acid_to":"A","synonymous":true,"color":"#16A35E"},{"site":7,"node":23,"time":0.0091,"from":50,"to":49,"codon_from":"GCC","codon_to":"GCT","amino_acid_from":"A","amino_acid_to":"A","synonymous":true,"color":"#16A35E"},{"site":7,"node":27,"time":0.0442,"from":50,"to":49,"codon_from":"GCC","codon_to":"GCT","amino_acid_from":"A","amino_acid_to":"A","synonymous":true,"color":"#16A35E"},{"site":7,"node":27,"time":0.089,"from":49,"to":52,"codon_from":"GCT","codon_to":"GCG","amino_acid_from":"A","amino_acid_to":"A","synonymous":true,"color":"#16A35E"},{"site":7,"node":34,"time":0.0377,"from":50,"to":51,"codon_from":"GCC","codon_to":"GCA","amino_acid_from":"A","amino_acid_to":"A","synonymous":true,"color":"#16A35E"},{"site":7,"node":35,"time":0.1001,"from":50,"to":5,"codon_from":"GCC","codon_to":"TCC","amino_acid_from":"A","amino_acid_to":"S","synonymous":false,"color":"#E84B2A"},{"site":7,"node":36,"time":0.0698,"from":50,"to":51,"codon_from":"GCC","codon_to":"GCA","amino_acid_from":"A","amino_acid_to":"A","synonymous":true,"color":"#16A35E"},{"site":7,"node":37,"time":0.1034,"from":50,"to":5,"codon_from":"GCC","codon_to":"TCC","amino_acid_from":"A","amino_acid_to":"S","synonymous":false,"color":"#E84B2A"},{"site":7,"node":37,"time":0.1361,"from":5,"to":7,"codon_from":"TCC","codon_to":"TCG","amino_acid_from":"S","amino_acid_to":"S","synonymous":true,"color":"#16A35E"},{"site":7,"node":45,"time":0.0986,"from":50,"to":49,"codon_from":"GCC","codon_to":"GCT","amino_acid_from":"A","amino_acid_to":"A","synonymous":true,"color":"#16A35E"},{"site":7,"node":48,"time":0.0187,"from":50,"to":54,"codon_from":"GCC","codon_to":"GAC","amino_acid_from":"A","amino_acid_to":"D","synonymous":false,"color":"#E84B2A"},{"site":7,"node":51,"time":0.0559,"from":50,"to":54,"codon_from":"GCC","codon_to":"GAC","amino_acid_from":"A","amino_acid_to":"D","synonymous":false,"color":"#E84B2A"},{"site":7,"node":63,"time":0.0253,"from":50,"to":52,"codon_from":"GCC","codon_to":"GCG","amino_acid_from":"A","amino_acid_to":"A","synonymous":true,"color":"#16A35E"},{"site":7,"node":64,"time":0.0021,"from":50,"to":49,"codon_from":"GCC","codon_to":"GCT","amino_acid_from":"A","amino_acid_to":"A","synonymous":true,"color":"#16A35E"},{"site":7,"node":66,"time":0.1846,"from":50,"to":58,"codon_from":"GCC","codon_to":"GGC","amino_acid_from":"A","amino_acid_to":"G","synonymous":false,"color":"#E84B2A"},{"site":7,"node":72,"time":0.0416,"from":50,"to":51,"codon_from":"GCC","codon_to":"GCA","amino_acid_from":"A","amino_acid_to":"A","synonymous":true,"color":"#16A35E"},{"site":7,"node":72,"time":0.1053,"from":51,"to":50,"codon_from":"GCA","codon_to":"GCC","amino_acid_from":"A","amino_acid_to":"A","synonymous":true,"color":"#16A35E"},{"site":7,"node":73,"time":0.0709,"from":50,"to":58,"codon_from":"GCC","codon_to":"GGC","amino_acid_from":"A","amino_acid_to":"G","synonymous":false,"color":"#E84B2A"},{"site":7,"node":73,"time":0.143,"from":58,"to":42,"codon_from":"GGC","codon_to":"AGC","amino_acid_from":"G","amino_acid_to":"S","synonymous":false,"color":"#E84B2A"},{"site":7,"node":74,"time":0.0478,"from":50,"to":49,"codon_from":"GCC","codon_to":"GCT","amino_acid_from":"A","amino_acid_to":"A","synonymous":true,"color":"#16A35E"},{"site":7,"node":77,"time":0.1266,"from":50,"to":34,"codon_from":"GCC","codon_to":"ACC","amino_acid_from":"A","amino_acid_to":"T","synonymous":false,"color":"#E84B2A"},{"site":7,"node":77,"time":0.1602,"from":34,"to":42,"codon_from":"ACC","codon_to":"AGC","amino_acid_from":"T","amino_acid_to":"S","synonymous":false,"color":"#E84B2A"},{"site":7,"node":81,"time":0.1002,"from":42,"to":41,"codon_from":"AGC","codon_to":"AGT","amino_acid_from":"S","amino_acid_to":"S","synonymous":true,"color":"#16A35E"},{"site":8,"node":2,"time":0.0058,"from":57,"to":58,"codon_from":"GGT","codon_to":"GGC","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":8,"node":2,"time":0.0548,"from":58,"to":57,"codon_from":"GGC","codon_to":"GGT","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":8,"node":2,"time":0.1589,"from":57,"to":59,"codon_from":"GGT","codon_to":"GGA","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":8,"node":25,"time":0.0004,"from":59,"to":58,"codon_from":"GGA","codon_to":"GGC","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":8,"node":27,"time":0.1066,"from":59,"to":57,"codon_from":"GGA","codon_to":"GGT","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":8,"node":38,"time":0.0464,"from":59,"to":51,"codon_from":"GGA","codon_to":"GCA","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":8,"node":40,"time":0.0637,"from":51,"to":6,"codon_from":"GCA","codon_to":"TCA","amino_acid_from":"A","amino_acid_to":"S","synonymous":false,"color":"#E84B2A"},{"site":8,"node":53,"time":0.0019,"from":59,"to":57,"codon_from":"GGA","codon_to":"GGT","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":8,"node":56,"time":0.0228,"from":57,"to":49,"codon_from":"GGT","codon_to":"GCT","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":8,"node":63,"time":0.1044,"from":59,"to":51,"codon_from":"GGA","codon_to":"GCA","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":8,"node":64,"time":0.0508,"from":59,"to":51,"codon_from":"GGA","codon_to":"GCA","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":8,"node":67,"time":0.154,"from":59,"to":51,"codon_from":"GGA","codon_to":"GCA","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":8,"node":73,"time":0.0659,"from":59,"to":55,"codon_from":"GGA","codon_to":"GAA","amino_acid_from":"G","amino_acid_to":"E","synonymous":false,"color":"#E84B2A"},{"site":8,"node":73,"time":0.2071,"from":55,"to":56,"codon_from":"GAA","codon_to":"GAG","amino_acid_from":"E","amino_acid_to":"E","synonymous":true,"color":"#16A35E"},{"site":9,"node":11,"time":0.0021,"from":58,"to":59,"codon_from":"GGC","codon_to":"GGA","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":9,"node":23,"time":0.1188,"from":58,"to":59,"codon_from":"GGC","codon_to":"GGA","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":9,"node":27,"time":0.1191,"from":58,"to":60,"codon_from":"GGC","codon_to":"GGG","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":9,"node":38,"time":0.0648,"from":58,"to":50,"codon_from":"GGC","codon_to":"GCC","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":9,"node":40,"time":0.0853,"from":50,"to":18,"codon_from":"GCC","codon_to":"CCC","amino_acid_from":"A","amino_acid_to":"P","synonymous":false,"color":"#E84B2A"},{"site":9,"node":56,"time":0.0237,"from":58,"to":50,"codon_from":"GGC","codon_to":"GCC","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":9,"node":63,"time":0.097,"from":58,"to":50,"codon_from":"GGC","codon_to":"GCC","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":9,"node":64,"time":0.043,"from":58,"to":50,"codon_from":"GGC","codon_to":"GCC","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":9,"node":67,"time":0.1587,"from":58,"to":50,"codon_from":"GGC","codon_to":"GCC","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":9,"node":73,"time":0.0892,"from":58,"to":50,"codon_from":"GGC","codon_to":"GCC","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":9,"node":73,"time":0.1487,"from":50,"to":58,"codon_from":"GCC","codon_to":"GGC","amino_acid_from":"A","amino_acid_to":"G","synonymous":false,"color":"#E84B2A"},{"site":9,"node":73,"time":0.2136,"from":58,"to":60,"codon_from":"GGC","codon_to":"GGG","amino_acid_from":"G","amino_acid_to":"G","synonymous":true,"color":"#16A35E"},{"site":9,"node":81,"time":0.0482,"from":58,"to":50,"codon_from":"GGC","codon_to":"GCC","amino_acid_from":"G","amino_acid_to":"A","synonymous":false,"color":"#E84B2A"},{"site":9,"node":81,"time":0.0729,"from":50,"to":52,"codon_from":"GCC","codon_to":"GCG","amino_acid_from":"A","amino_acid_to":"A","synonymous":true,"color":"#16A35E"}],"intervals":[[{"node":1,"state":0,"from":0,"to":0.0717},{"node":2,"state":0,"from":0,"to":0.2347},{"node":3,"state":0,"from":0,"to":0.0237},{"node":4,"state":0,"from":0,"to":0.0206},{"node":5,"state":0,"from":0,"to":0.0049},{"node":6,"state":0,"from":0,"to":0.0155},{"node":7,"state":0,"from":0,"to":0.0111},{"node":8,"state":0,"from":0,"to":0.0576},{"node":9,"state":0,"from":0,"to":0.022},{"node":10,"state":0,"from":0,"to":0.0072},{"node":11,"state":0,"from":0,"to":0.0072},{"node":12,"state":0,"from":0,"to":0.0097},{"node":13,"state":0,"from":0,"to":0.0022},{"node":14,"state":0,"from":0,"to":0.0067},{"node":15,"state":0,"from":0,"to":0.0067},{"node":16,"state":0,"from":0,"to":0.0088},{"node":17,"state":0,"from":0,"to":0.0183},{"node":18,"state":0,"from":0,"to":0.0255},{"node":19,"state":0,"from":0,"to":0.0296},{"node":20,"state":0,"from":0,"to":0.0079},{"node":21,"state":0,"from":0,"to":0.0076},{"node":22,"state":0,"from":0,"to":0.0661},{"node":23,"state":0,"from":0,"to":0.1378},{"node":24,"state":0,"from":0,"to":0.0355},{"node":25,"state":0,"from":0,"to":0.0927},{"node":26,"state":0,"from":0,"to":0.1297},{"node":27,"state":0,"from":0,"to":0.1862},{"node":28,"state":0,"from":0,"to":0.0153},{"node":29,"state":0,"from":0,"to":0.0257},{"node":30,"state":0,"from":0,"to":0.0102},{"node":31,"state":0,"from":0,"to":0.023},{"node":32,"state":0,"from":0,"to":0.1978},{"node":33,"state":0,"from":0,"to":0.0845},{"node":34,"state":0,"from":0,"to":0.0916},{"node":35,"state":0,"from":0,"to":0.2116},{"node":36,"state":0,"from":0,"to":0.2256},{"node":37,"state":0,"from":0,"to":0.1485},{"node":38,"state":0,"from":0,"to":0.044},{"node":38,"state":1,"from":0.044,"to":0.1015},{"node":39,"state":0,"from":0,"to":0.1142},{"node":40,"state":0,"from":0,"to":0.2011},{"node":41,"state":0,"from":0,"to":0.0212},{"node":42,"state":0,"from":0,"to":0.0117},{"node":43,"state":0,"from":0,"to":0.0202},{"node":44,"state":0,"from":0,"to":0.0202},{"node":45,"state":0,"from":0,"to":0.1073},{"node":46,"state":0,"from":0,"to":0.0252},{"node":47,"state":0,"from":0,"to":0.0647},{"node":48,"state":0,"from":0,"to":0.0618},{"node":49,"state":0,"from":0,"to":0.0618},{"node":50,"state":0,"from":0,"to":0.0618},{"node":51,"state":0,"from":0,"to":0.079},{"node":52,"state":0,"from":0,"to":0.0045},{"node":53,"state":0,"from":0,"to":0.0062},{"node":54,"state":0,"from":0,"to":0.1094},{"node":55,"state":0,"from":0,"to":0.0498},{"node":56,"state":0,"from":0,"to":0.0183},{"node":56,"state":1,"from":0.0183,"to":0.0986},{"node":57,"state":0,"from":0,"to":0.0512},{"node":58,"state":0,"from":0,"to":0.0256},{"node":59,"state":0,"from":0,"to":0.0256},{"node":60,"state":0,"from":0,"to":0.0256},{"node":61,"state":0,"from":0,"to":0.0512},{"node":62,"state":0,"from":0,"to":0.0337},{"node":63,"state":0,"from":0,"to":0.0963},{"node":63,"state":1,"from":0.0963,"to":0.1425},{"node":64,"state":0,"from":0,"to":0.0407},{"node":64,"state":1,"from":0.0407,"to":0.1134},{"node":65,"state":0,"from":0,"to":0.0564},{"node":66,"state":0,"from":0,"to":0.2218},{"node":67,"state":0,"from":0,"to":0.1514},{"node":67,"state":1,"from":0.1514,"to":0.2696},{"node":68,"state":0,"from":0,"to":0.0067},{"node":69,"state":0,"from":0,"to":0.0497},{"node":70,"state":0,"from":0,"to":0.027},{"node":71,"state":0,"from":0,"to":0.0822},{"node":72,"state":0,"from":0,"to":0.1554},{"node":73,"state":0,"from":0,"to":0.2459},{"node":74,"state":0,"from":0,"to":0.0531},{"node":75,"state":0,"from":0,"to":0.1167},{"node":76,"state":0,"from":0,"to":0.0964},{"node":77,"state":0,"from":0,"to":0.2151},{"node":78,"state":0,"from":0,"to":0.1257},{"node":79,"state":0,"from":0,"to":0.021},{"node":80,"state":0,"from":0,"to":0.101},{"node":81,"state":0,"from":0,"to":0.101},{"node":82,"state":0,"from":0,"to":0.4566}],[{"node":1,"state":0,"from":0,"to":0.0717},{"node":2,"state":0,"from":0,"to":0.2347},{"node":3,"state":0,"from":0,"to":0.0237},{"node":4,"state":0,"from":0,"to":0.0206},{"node":5,"state":0,"from":0,"to":0.0049},{"node":6,"state":0,"from":0,"to":0.0155},{"node":7,"state":0,"from":0,"to":0.0111},{"node":8,"state":0,"from":0,"to":0.0576},{"node":9,"state":0,"from":0,"to":0.022},{"node":10,"state":0,"from":0,"to":0.0072},{"node":11,"state":0,"from":0,"to":0.0072},{"node":12,"state":0,"from":0,"to":0.0097},{"node":13,"state":0,"from":0,"to":0.0022},{"node":14,"state":0,"from":0,"to":0.0067},{"node":15,"state":0,"from":0,"to":0.0067},{"node":16,"state":0,"from":0,"to":0.0088},{"node":17,"state":0,"from":0,"to":0.0183},{"node":18,"state":0,"from":0,"to":0.0255},{"node":19,"state":0,"from":0,"to":0.0296},{"node":20,"state":0,"from":0,"to":0.0079},{"node":21,"state":0,"from":0,"to":0.0076},{"node":22,"state":0,"from":0,"to":0.0661},{"node":23,"state":0,"from":0,"to":0.1378},{"node":24,"state":0,"from":0,"to":0.0355},{"node":25,"state":0,"from":0,"to":0.0927},{"node":26,"state":0,"from":0,"to":0.1297},{"node":27,"state":0,"from":0,"to":0.1862},{"node":28,"state":0,"from":0,"to":0.0153},{"node":29,"state":0,"from":0,"to":0.0257},{"node":30,"state":0,"from":0,"to":0.0102},{"node":31,"state":0,"from":0,"to":0.023},{"node":32,"state":0,"from":0,"to":0.1978},{"node":33,"state":0,"from":0,"to":0.0845},{"node":34,"state":0,"from":0,"to":0.0916},{"node":35,"state":0,"from":0,"to":0.2116},{"node":36,"state":0,"from":0,"to":0.2256},{"node":37,"state":0,"from":0,"to":0.1485},{"node":38,"state":0,"from":0,"to":0.044},{"node":38,"state":1,"from":0.044,"to":0.1015},{"node":39,"state":0,"from":0,"to":0.1142},{"node":40,"state":0,"from":0,"to":0.2011},{"node":41,"state":0,"from":0,"to":0.0212},{"node":42,"state":0,"from":0,"to":0.0117},{"node":43,"state":0,"from":0,"to":0.0202},{"node":44,"state":0,"from":0,"to":0.0202},{"node":45,"state":0,"from":0,"to":0.1073},{"node":46,"state":0,"from":0,"to":0.0252},{"node":47,"state":0,"from":0,"to":0.0647},{"node":48,"state":0,"from":0,"to":0.0618},{"node":49,"state":0,"from":0,"to":0.0618},{"node":50,"state":0,"from":0,"to":0.0618},{"node":51,"state":0,"from":0,"to":0.079},{"node":52,"state":0,"from":0,"to":0.0045},{"node":53,"state":0,"from":0,"to":0.0062},{"node":54,"state":0,"from":0,"to":0.1094},{"node":55,"state":0,"from":0,"to":0.0498},{"node":56,"state":0,"from":0,"to":0.0183},{"node":56,"state":1,"from":0.0183,"to":0.0986},{"node":57,"state":0,"from":0,"to":0.0512},{"node":58,"state":0,"from":0,"to":0.0256},{"node":59,"state":0,"from":0,"to":0.0256},{"node":60,"state":0,"from":0,"to":0.0256},{"node":61,"state":0,"from":0,"to":0.0512},{"node":62,"state":0,"from":0,"to":0.0337},{"node":63,"state":0,"from":0,"to":0.0963},{"node":63,"state":1,"from":0.0963,"to":0.1425},{"node":64,"state":0,"from":0,"to":0.0407},{"node":64,"state":1,"from":0.0407,"to":0.1134},{"node":65,"state":0,"from":0,"to":0.0564},{"node":66,"state":0,"from":0,"to":0.2218},{"node":67,"state":0,"from":0,"to":0.1514},{"node":67,"state":1,"from":0.1514,"to":0.2696},{"node":68,"state":0,"from":0,"to":0.0067},{"node":69,"state":0,"from":0,"to":0.0497},{"node":70,"state":0,"from":0,"to":0.027},{"node":71,"state":0,"from":0,"to":0.0822},{"node":72,"state":0,"from":0,"to":0.1554},{"node":73,"state":0,"from":0,"to":0.2459},{"node":74,"state":0,"from":0,"to":0.0531},{"node":75,"state":0,"from":0,"to":0.1167},{"node":76,"state":0,"from":0,"to":0.0964},{"node":77,"state":0,"from":0,"to":0.2151},{"node":78,"state":0,"from":0,"to":0.1257},{"node":79,"state":0,"from":0,"to":0.021},{"node":80,"state":0,"from":0,"to":0.101},{"node":81,"state":0,"from":0,"to":0.101},{"node":82,"state":0,"from":0,"to":0.4566}],[{"node":1,"state":0,"from":0,"to":0.0717},{"node":2,"state":0,"from":0,"to":0.2347},{"node":3,"state":0,"from":0,"to":0.0237},{"node":4,"state":0,"from":0,"to":0.0206},{"node":5,"state":0,"from":0,"to":0.0049},{"node":6,"state":0,"from":0,"to":0.0155},{"node":7,"state":0,"from":0,"to":0.0111},{"node":8,"state":0,"from":0,"to":0.0576},{"node":9,"state":0,"from":0,"to":0.022},{"node":10,"state":0,"from":0,"to":0.0072},{"node":11,"state":0,"from":0,"to":0.0072},{"node":12,"state":0,"from":0,"to":0.0097},{"node":13,"state":0,"from":0,"to":0.0022},{"node":14,"state":0,"from":0,"to":0.0067},{"node":15,"state":0,"from":0,"to":0.0067},{"node":16,"state":0,"from":0,"to":0.0088},{"node":17,"state":0,"from":0,"to":0.0183},{"node":18,"state":0,"from":0,"to":0.0255},{"node":19,"state":0,"from":0,"to":0.0296},{"node":20,"state":0,"from":0,"to":0.0079},{"node":21,"state":0,"from":0,"to":0.0076},{"node":22,"state":0,"from":0,"to":0.0661},{"node":23,"state":0,"from":0,"to":0.1378},{"node":24,"state":0,"from":0,"to":0.0355},{"node":25,"state":0,"from":0,"to":0.0927},{"node":26,"state":0,"from":0,"to":0.1297},{"node":27,"state":0,"from":0,"to":0.1862},{"node":28,"state":0,"from":0,"to":0.0153},{"node":29,"state":0,"from":0,"to":0.0257},{"node":30,"state":0,"from":0,"to":0.0102},{"node":31,"state":0,"from":0,"to":0.023},{"node":32,"state":0,"from":0,"to":0.1978},{"node":33,"state":0,"from":0,"to":0.0845},{"node":34,"state":0,"from":0,"to":0.0916},{"node":35,"state":0,"from":0,"to":0.2116},{"node":36,"state":0,"from":0,"to":0.2256},{"node":37,"state":0,"from":0,"to":0.1485},{"node":38,"state":0,"from":0,"to":0.044},{"node":38,"state":1,"from":0.044,"to":0.1015},{"node":39,"state":0,"from":0,"to":0.1142},{"node":40,"state":0,"from":0,"to":0.2011},{"node":41,"state":0,"from":0,"to":0.0212},{"node":42,"state":0,"from":0,"to":0.0117},{"node":43,"state":0,"from":0,"to":0.0202},{"node":44,"state":0,"from":0,"to":0.0202},{"node":45,"state":0,"from":0,"to":0.1073},{"node":46,"state":0,"from":0,"to":0.0252},{"node":47,"state":0,"from":0,"to":0.0647},{"node":48,"state":0,"from":0,"to":0.0618},{"node":49,"state":0,"from":0,"to":0.0618},{"node":50,"state":0,"from":0,"to":0.0618},{"node":51,"state":0,"from":0,"to":0.079},{"node":52,"state":0,"from":0,"to":0.0045},{"node":53,"state":0,"from":0,"to":0.0062},{"node":54,"state":0,"from":0,"to":0.1094},{"node":55,"state":0,"from":0,"to":0.0498},{"node":56,"state":0,"from":0,"to":0.0183},{"node":56,"state":1,"from":0.0183,"to":0.0986},{"node":57,"state":0,"from":0,"to":0.0512},{"node":58,"state":0,"from":0,"to":0.0256},{"node":59,"state":0,"from":0,"to":0.0256},{"node":60,"state":0,"from":0,"to":0.0256},{"node":61,"state":0,"from":0,"to":0.0512},{"node":62,"state":0,"from":0,"to":0.0337},{"node":63,"state":0,"from":0,"to":0.0963},{"node":63,"state":1,"from":0.0963,"to":0.1425},{"node":64,"state":0,"from":0,"to":0.0407},{"node":64,"state":1,"from":0.0407,"to":0.1134},{"node":65,"state":0,"from":0,"to":0.0564},{"node":66,"state":0,"from":0,"to":0.2218},{"node":67,"state":0,"from":0,"to":0.1514},{"node":67,"state":1,"from":0.1514,"to":0.2696},{"node":68,"state":0,"from":0,"to":0.0067},{"node":69,"state":0,"from":0,"to":0.0497},{"node":70,"state":0,"from":0,"to":0.027},{"node":71,"state":0,"from":0,"to":0.0822},{"node":72,"state":0,"from":0,"to":0.1554},{"node":73,"state":0,"from":0,"to":0.2459},{"node":74,"state":0,"from":0,"to":0.0531},{"node":75,"state":0,"from":0,"to":0.1167},{"node":76,"state":0,"from":0,"to":0.0964},{"node":77,"state":0,"from":0,"to":0.2151},{"node":78,"state":0,"from":0,"to":0.1257},{"node":79,"state":0,"from":0,"to":0.021},{"node":80,"state":0,"from":0,"to":0.101},{"node":81,"state":0,"from":0,"to":0.101},{"node":82,"state":0,"from":0,"to":0.4566}],[{"node":1,"state":0,"from":0,"to":0.0717},{"node":2,"state":0,"from":0,"to":0.2347},{"node":3,"state":0,"from":0,"to":0.0237},{"node":4,"state":0,"from":0,"to":0.0206},{"node":5,"state":0,"from":0,"to":0.0049},{"node":6,"state":0,"from":0,"to":0.0155},{"node":7,"state":0,"from":0,"to":0.0111},{"node":8,"state":0,"from":0,"to":0.0576},{"node":9,"state":0,"from":0,"to":0.022},{"node":10,"state":0,"from":0,"to":0.0072},{"node":11,"state":0,"from":0,"to":0.0072},{"node":12,"state":0,"from":0,"to":0.0097},{"node":13,"state":0,"from":0,"to":0.0022},{"node":14,"state":0,"from":0,"to":0.0067},{"node":15,"state":0,"from":0,"to":0.0067},{"node":16,"state":0,"from":0,"to":0.0088},{"node":17,"state":0,"from":0,"to":0.0183},{"node":18,"state":0,"from":0,"to":0.0255},{"node":19,"state":0,"from":0,"to":0.0296},{"node":20,"state":0,"from":0,"to":0.0079},{"node":21,"state":0,"from":0,"to":0.0076},{"node":22,"state":0,"from":0,"to":0.0661},{"node":23,"state":0,"from":0,"to":0.1378},{"node":24,"state":0,"from":0,"to":0.0355},{"node":25,"state":0,"from":0,"to":0.0927},{"node":26,"state":0,"from":0,"to":0.1297},{"node":27,"state":0,"from":0,"to":0.1862},{"node":28,"state":0,"from":0,"to":0.0153},{"node":29,"state":0,"from":0,"to":0.0257},{"node":30,"state":0,"from":0,"to":0.0102},{"node":31,"state":0,"from":0,"to":0.023},{"node":32,"state":0,"from":0,"to":0.1978},{"node":33,"state":0,"from":0,"to":0.0845},{"node":34,"state":0,"from":0,"to":0.0916},{"node":35,"state":0,"from":0,"to":0.2116},{"node":36,"state":0,"from":0,"to":0.2256},{"node":37,"state":0,"from":0,"to":0.1485},{"node":38,"state":0,"from":0,"to":0.044},{"node":38,"state":1,"from":0.044,"to":0.1015},{"node":39,"state":0,"from":0,"to":0.1142},{"node":40,"state":0,"from":0,"to":0.2011},{"node":41,"state":0,"from":0,"to":0.0212},{"node":42,"state":0,"from":0,"to":0.0117},{"node":43,"state":0,"from":0,"to":0.0202},{"node":44,"state":0,"from":0,"to":0.0202},{"node":45,"state":0,"from":0,"to":0.1073},{"node":46,"state":0,"from":0,"to":0.0252},{"node":47,"state":0,"from":0,"to":0.0647},{"node":48,"state":0,"from":0,"to":0.0618},{"node":49,"state":0,"from":0,"to":0.0618},{"node":50,"state":0,"from":0,"to":0.0618},{"node":51,"state":0,"from":0,"to":0.079},{"node":52,"state":0,"from":0,"to":0.0045},{"node":53,"state":0,"from":0,"to":0.0062},{"node":54,"state":0,"from":0,"to":0.1094},{"node":55,"state":0,"from":0,"to":0.0498},{"node":56,"state":0,"from":0,"to":0.0183},{"node":56,"state":1,"from":0.0183,"to":0.0986},{"node":57,"state":0,"from":0,"to":0.0512},{"node":58,"state":0,"from":0,"to":0.0256},{"node":59,"state":0,"from":0,"to":0.0256},{"node":60,"state":0,"from":0,"to":0.0256},{"node":61,"state":0,"from":0,"to":0.0512},{"node":62,"state":0,"from":0,"to":0.0337},{"node":63,"state":0,"from":0,"to":0.0963},{"node":63,"state":1,"from":0.0963,"to":0.1425},{"node":64,"state":0,"from":0,"to":0.0407},{"node":64,"state":1,"from":0.0407,"to":0.1134},{"node":65,"state":0,"from":0,"to":0.0564},{"node":66,"state":0,"from":0,"to":0.2218},{"node":67,"state":0,"from":0,"to":0.1514},{"node":67,"state":1,"from":0.1514,"to":0.2696},{"node":68,"state":0,"from":0,"to":0.0067},{"node":69,"state":0,"from":0,"to":0.0497},{"node":70,"state":0,"from":0,"to":0.027},{"node":71,"state":0,"from":0,"to":0.0822},{"node":72,"state":0,"from":0,"to":0.1554},{"node":73,"state":0,"from":0,"to":0.2459},{"node":74,"state":0,"from":0,"to":0.0531},{"node":75,"state":0,"from":0,"to":0.1167},{"node":76,"state":0,"from":0,"to":0.0964},{"node":77,"state":0,"from":0,"to":0.2151},{"node":78,"state":0,"from":0,"to":0.1257},{"node":79,"state":0,"from":0,"to":0.021},{"node":80,"state":0,"from":0,"to":0.101},{"node":81,"state":0,"from":0,"to":0.101},{"node":82,"state":0,"from":0,"to":0.4566}],[{"node":1,"state":0,"from":0,"to":0.0717},{"node":2,"state":0,"from":0,"to":0.2347},{"node":3,"state":0,"from":0,"to":0.0237},{"node":4,"state":0,"from":0,"to":0.0206},{"node":5,"state":0,"from":0,"to":0.0049},{"node":6,"state":0,"from":0,"to":0.0155},{"node":7,"state":0,"from":0,"to":0.0111},{"node":8,"state":0,"from":0,"to":0.0576},{"node":9,"state":0,"from":0,"to":0.022},{"node":10,"state":0,"from":0,"to":0.0072},{"node":11,"state":0,"from":0,"to":0.0072},{"node":12,"state":0,"from":0,"to":0.0097},{"node":13,"state":0,"from":0,"to":0.0022},{"node":14,"state":0,"from":0,"to":0.0067},{"node":15,"state":0,"from":0,"to":0.0067},{"node":16,"state":0,"from":0,"to":0.0088},{"node":17,"state":0,"from":0,"to":0.0183},{"node":18,"state":0,"from":0,"to":0.0255},{"node":19,"state":0,"from":0,"to":0.0296},{"node":20,"state":0,"from":0,"to":0.0079},{"node":21,"state":0,"from":0,"to":0.0076},{"node":22,"state":0,"from":0,"to":0.0661},{"node":23,"state":0,"from":0,"to":0.1378},{"node":24,"state":0,"from":0,"to":0.0355},{"node":25,"state":0,"from":0,"to":0.0927},{"node":26,"state":0,"from":0,"to":0.1297},{"node":27,"state":0,"from":0,"to":0.1862},{"node":28,"state":0,"from":0,"to":0.0153},{"node":29,"state":0,"from":0,"to":0.0257},{"node":30,"state":0,"from":0,"to":0.0102},{"node":31,"state":0,"from":0,"to":0.023},{"node":32,"state":0,"from":0,"to":0.1978},{"node":33,"state":0,"from":0,"to":0.0845},{"node":34,"state":0,"from":0,"to":0.0916},{"node":35,"state":0,"from":0,"to":0.2116},{"node":36,"state":0,"from":0,"to":0.2256},{"node":37,"state":0,"from":0,"to":0.1485},{"node":38,"state":0,"from":0,"to":0.044},{"node":38,"state":1,"from":0.044,"to":0.1015},{"node":39,"state":0,"from":0,"to":0.1142},{"node":40,"state":0,"from":0,"to":0.2011},{"node":41,"state":0,"from":0,"to":0.0212},{"node":42,"state":0,"from":0,"to":0.0117},{"node":43,"state":0,"from":0,"to":0.0202},{"node":44,"state":0,"from":0,"to":0.0202},{"node":45,"state":0,"from":0,"to":0.1073},{"node":46,"state":0,"from":0,"to":0.0252},{"node":47,"state":0,"from":0,"to":0.0647},{"node":48,"state":0,"from":0,"to":0.0618},{"node":49,"state":0,"from":0,"to":0.0618},{"node":50,"state":0,"from":0,"to":0.0618},{"node":51,"state":0,"from":0,"to":0.079},{"node":52,"state":0,"from":0,"to":0.0045},{"node":53,"state":0,"from":0,"to":0.0062},{"node":54,"state":0,"from":0,"to":0.1094},{"node":55,"state":0,"from":0,"to":0.0498},{"node":56,"state":0,"from":0,"to":0.0183},{"node":56,"state":1,"from":0.0183,"to":0.0986},{"node":57,"state":0,"from":0,"to":0.0512},{"node":58,"state":0,"from":0,"to":0.0256},{"node":59,"state":0,"from":0,"to":0.0256},{"node":60,"state":0,"from":0,"to":0.0256},{"node":61,"state":0,"from":0,"to":0.0512},{"node":62,"state":0,"from":0,"to":0.0337},{"node":63,"state":0,"from":0,"to":0.0963},{"node":63,"state":1,"from":0.0963,"to":0.1425},{"node":64,"state":0,"from":0,"to":0.0407},{"node":64,"state":1,"from":0.0407,"to":0.1134},{"node":65,"state":0,"from":0,"to":0.0564},{"node":66,"state":0,"from":0,"to":0.2218},{"node":67,"state":0,"from":0,"to":0.1514},{"node":67,"state":1,"from":0.1514,"to":0.2696},{"node":68,"state":0,"from":0,"to":0.0067},{"node":69,"state":0,"from":0,"to":0.0497},{"node":70,"state":0,"from":0,"to":0.027},{"node":71,"state":0,"from":0,"to":0.0822},{"node":72,"state":0,"from":0,"to":0.1554},{"node":73,"state":0,"from":0,"to":0.2459},{"node":74,"state":0,"from":0,"to":0.0531},{"node":75,"state":0,"from":0,"to":0.1167},{"node":76,"state":0,"from":0,"to":0.0964},{"node":77,"state":0,"from":0,"to":0.2151},{"node":78,"state":0,"from":0,"to":0.1257},{"node":79,"state":0,"from":0,"to":0.021},{"node":80,"state":0,"from":0,"to":0.101},{"node":81,"state":0,"from":0,"to":0.101},{"node":82,"state":0,"from":0,"to":0.4566}],[{"node":1,"state":0,"from":0,"to":0.0717},{"node":2,"state":0,"from":0,"to":0.2347},{"node":3,"state":0,"from":0,"to":0.0237},{"node":4,"state":0,"from":0,"to":0.0206},{"node":5,"state":0,"from":0,"to":0.0049},{"node":6,"state":0,"from":0,"to":0.0155},{"node":7,"state":0,"from":0,"to":0.0111},{"node":8,"state":0,"from":0,"to":0.0576},{"node":9,"state":0,"from":0,"to":0.022},{"node":10,"state":0,"from":0,"to":0.0072},{"node":11,"state":0,"from":0,"to":0.0072},{"node":12,"state":0,"from":0,"to":0.0097},{"node":13,"state":0,"from":0,"to":0.0022},{"node":14,"state":0,"from":0,"to":0.0067},{"node":15,"state":0,"from":0,"to":0.0067},{"node":16,"state":0,"from":0,"to":0.0088},{"node":17,"state":0,"from":0,"to":0.0183},{"node":18,"state":0,"from":0,"to":0.0255},{"node":19,"state":0,"from":0,"to":0.0296},{"node":20,"state":0,"from":0,"to":0.0079},{"node":21,"state":0,"from":0,"to":0.0076},{"node":22,"state":0,"from":0,"to":0.0661},{"node":23,"state":0,"from":0,"to":0.1378},{"node":24,"state":0,"from":0,"to":0.0355},{"node":25,"state":0,"from":0,"to":0.0927},{"node":26,"state":0,"from":0,"to":0.1297},{"node":27,"state":0,"from":0,"to":0.1862},{"node":28,"state":0,"from":0,"to":0.0153},{"node":29,"state":0,"from":0,"to":0.0257},{"node":30,"state":0,"from":0,"to":0.0102},{"node":31,"state":0,"from":0,"to":0.023},{"node":32,"state":0,"from":0,"to":0.1978},{"node":33,"state":0,"from":0,"to":0.0845},{"node":34,"state":0,"from":0,"to":0.0916},{"node":35,"state":0,"from":0,"to":0.2116},{"node":36,"state":0,"from":0,"to":0.2256},{"node":37,"state":0,"from":0,"to":0.1485},{"node":38,"state":0,"from":0,"to":0.044},{"node":38,"state":1,"from":0.044,"to":0.1015},{"node":39,"state":0,"from":0,"to":0.1142},{"node":40,"state":0,"from":0,"to":0.2011},{"node":41,"state":0,"from":0,"to":0.0212},{"node":42,"state":0,"from":0,"to":0.0117},{"node":43,"state":0,"from":0,"to":0.0202},{"node":44,"state":0,"from":0,"to":0.0202},{"node":45,"state":0,"from":0,"to":0.1073},{"node":46,"state":0,"from":0,"to":0.0252},{"node":47,"state":0,"from":0,"to":0.0647},{"node":48,"state":0,"from":0,"to":0.0618},{"node":49,"state":0,"from":0,"to":0.0618},{"node":50,"state":0,"from":0,"to":0.0618},{"node":51,"state":0,"from":0,"to":0.079},{"node":52,"state":0,"from":0,"to":0.0045},{"node":53,"state":0,"from":0,"to":0.0062},{"node":54,"state":0,"from":0,"to":0.1094},{"node":55,"state":0,"from":0,"to":0.0498},{"node":56,"state":0,"from":0,"to":0.0183},{"node":56,"state":1,"from":0.0183,"to":0.0986},{"node":57,"state":0,"from":0,"to":0.0512},{"node":58,"state":0,"from":0,"to":0.0256},{"node":59,"state":0,"from":0,"to":0.0256},{"node":60,"state":0,"from":0,"to":0.0256},{"node":61,"state":0,"from":0,"to":0.0512},{"node":62,"state":0,"from":0,"to":0.0337},{"node":63,"state":0,"from":0,"to":0.0963},{"node":63,"state":1,"from":0.0963,"to":0.1425},{"node":64,"state":0,"from":0,"to":0.0407},{"node":64,"state":1,"from":0.0407,"to":0.1134},{"node":65,"state":0,"from":0,"to":0.0564},{"node":66,"state":0,"from":0,"to":0.2218},{"node":67,"state":0,"from":0,"to":0.1514},{"node":67,"state":1,"from":0.1514,"to":0.2696},{"node":68,"state":0,"from":0,"to":0.0067},{"node":69,"state":0,"from":0,"to":0.0497},{"node":70,"state":0,"from":0,"to":0.027},{"node":71,"state":0,"from":0,"to":0.0822},{"node":72,"state":0,"from":0,"to":0.1554},{"node":73,"state":0,"from":0,"to":0.2459},{"node":74,"state":0,"from":0,"to":0.0531},{"node":75,"state":0,"from":0,"to":0.1167},{"node":76,"state":0,"from":0,"to":0.0964},{"node":77,"state":0,"from":0,"to":0.2151},{"node":78,"state":0,"from":0,"to":0.1257},{"node":79,"state":0,"from":0,"to":0.021},{"node":80,"state":0,"from":0,"to":0.101},{"node":81,"state":0,"from":0,"to":0.101},{"node":82,"state":0,"from":0,"to":0.4566}],[{"node":1,"state":0,"from":0,"to":0.0717},{"node":2,"state":0,"from":0,"to":0.2347},{"node":3,"state":0,"from":0,"to":0.0237},{"node":4,"state":0,"from":0,"to":0.0206},{"node":5,"state":0,"from":0,"to":0.0049},{"node":6,"state":0,"from":0,"to":0.0155},{"node":7,"state":0,"from":0,"to":0.0111},{"node":8,"state":0,"from":0,"to":0.0576},{"node":9,"state":0,"from":0,"to":0.022},{"node":10,"state":0,"from":0,"to":0.0072},{"node":11,"state":0,"from":0,"to":0.0072},{"node":12,"state":0,"from":0,"to":0.0097},{"node":13,"state":0,"from":0,"to":0.0022},{"node":14,"state":0,"from":0,"to":0.0067},{"node":15,"state":0,"from":0,"to":0.0067},{"node":16,"state":0,"from":0,"to":0.0088},{"node":17,"state":0,"from":0,"to":0.0183},{"node":18,"state":0,"from":0,"to":0.0255},{"node":19,"state":0,"from":0,"to":0.0296},{"node":20,"state":0,"from":0,"to":0.0079},{"node":21,"state":0,"from":0,"to":0.0076},{"node":22,"state":0,"from":0,"to":0.0661},{"node":23,"state":0,"from":0,"to":0.1378},{"node":24,"state":0,"from":0,"to":0.0355},{"node":25,"state":0,"from":0,"to":0.0927},{"node":26,"state":0,"from":0,"to":0.1297},{"node":27,"state":0,"from":0,"to":0.1862},{"node":28,"state":0,"from":0,"to":0.0153},{"node":29,"state":0,"from":0,"to":0.0257},{"node":30,"state":0,"from":0,"to":0.0102},{"node":31,"state":0,"from":0,"to":0.023},{"node":32,"state":0,"from":0,"to":0.1978},{"node":33,"state":0,"from":0,"to":0.0845},{"node":34,"state":0,"from":0,"to":0.0916},{"node":35,"state":0,"from":0,"to":0.2116},{"node":36,"state":0,"from":0,"to":0.2256},{"node":37,"state":0,"from":0,"to":0.1485},{"node":38,"state":0,"from":0,"to":0.044},{"node":38,"state":1,"from":0.044,"to":0.1015},{"node":39,"state":0,"from":0,"to":0.1142},{"node":40,"state":0,"from":0,"to":0.2011},{"node":41,"state":0,"from":0,"to":0.0212},{"node":42,"state":0,"from":0,"to":0.0117},{"node":43,"state":0,"from":0,"to":0.0202},{"node":44,"state":0,"from":0,"to":0.0202},{"node":45,"state":0,"from":0,"to":0.1073},{"node":46,"state":0,"from":0,"to":0.0252},{"node":47,"state":0,"from":0,"to":0.0647},{"node":48,"state":0,"from":0,"to":0.0618},{"node":49,"state":0,"from":0,"to":0.0618},{"node":50,"state":0,"from":0,"to":0.0618},{"node":51,"state":0,"from":0,"to":0.079},{"node":52,"state":0,"from":0,"to":0.0045},{"node":53,"state":0,"from":0,"to":0.0062},{"node":54,"state":0,"from":0,"to":0.1094},{"node":55,"state":0,"from":0,"to":0.0498},{"node":56,"state":0,"from":0,"to":0.0183},{"node":56,"state":1,"from":0.0183,"to":0.0986},{"node":57,"state":0,"from":0,"to":0.0512},{"node":58,"state":0,"from":0,"to":0.0256},{"node":59,"state":0,"from":0,"to":0.0256},{"node":60,"state":0,"from":0,"to":0.0256},{"node":61,"state":0,"from":0,"to":0.0512},{"node":62,"state":0,"from":0,"to":0.0337},{"node":63,"state":0,"from":0,"to":0.0963},{"node":63,"state":1,"from":0.0963,"to":0.1425},{"node":64,"state":0,"from":0,"to":0.0407},{"node":64,"state":1,"from":0.0407,"to":0.1134},{"node":65,"state":0,"from":0,"to":0.0564},{"node":66,"state":0,"from":0,"to":0.2218},{"node":67,"state":0,"from":0,"to":0.1514},{"node":67,"state":1,"from":0.1514,"to":0.2696},{"node":68,"state":0,"from":0,"to":0.0067},{"node":69,"state":0,"from":0,"to":0.0497},{"node":70,"state":0,"from":0,"to":0.027},{"node":71,"state":0,"from":0,"to":0.0822},{"node":72,"state":0,"from":0,"to":0.1554},{"node":73,"state":0,"from":0,"to":0.2459},{"node":74,"state":0,"from":0,"to":0.0531},{"node":75,"state":0,"from":0,"to":0.1167},{"node":76,"state":0,"from":0,"to":0.0964},{"node":77,"state":0,"from":0,"to":0.2151},{"node":78,"state":0,"from":0,"to":0.1257},{"node":79,"state":0,"from":0,"to":0.021},{"node":80,"state":0,"from":0,"to":0.101},{"node":81,"state":0,"from":0,"to":0.101},{"node":82,"state":0,"from":0,"to":0.4566}],[{"node":1,"state":0,"from":0,"to":0.0717},{"node":2,"state":0,"from":0,"to":0.2347},{"node":3,"state":0,"from":0,"to":0.0237},{"node":4,"state":0,"from":0,"to":0.0206},{"node":5,"state":0,"from":0,"to":0.0049},{"node":6,"state":0,"from":0,"to":0.0155},{"node":7,"state":0,"from":0,"to":0.0111},{"node":8,"state":0,"from":0,"to":0.0576},{"node":9,"state":0,"from":0,"to":0.022},{"node":10,"state":0,"from":0,"to":0.0072},{"node":11,"state":0,"from":0,"to":0.0072},{"node":12,"state":0,"from":0,"to":0.0097},{"node":13,"state":0,"from":0,"to":0.0022},{"node":14,"state":0,"from":0,"to":0.0067},{"node":15,"state":0,"from":0,"to":0.0067},{"node":16,"state":0,"from":0,"to":0.0088},{"node":17,"state":0,"from":0,"to":0.0183},{"node":18,"state":0,"from":0,"to":0.0255},{"node":19,"state":0,"from":0,"to":0.0296},{"node":20,"state":0,"from":0,"to":0.0079},{"node":21,"state":0,"from":0,"to":0.0076},{"node":22,"state":0,"from":0,"to":0.0661},{"node":23,"state":0,"from":0,"to":0.1378},{"node":24,"state":0,"from":0,"to":0.0355},{"node":25,"state":0,"from":0,"to":0.0927},{"node":26,"state":0,"from":0,"to":0.1297},{"node":27,"state":0,"from":0,"to":0.1862},{"node":28,"state":0,"from":0,"to":0.0153},{"node":29,"state":0,"from":0,"to":0.0257},{"node":30,"state":0,"from":0,"to":0.0102},{"node":31,"state":0,"from":0,"to":0.023},{"node":32,"state":0,"from":0,"to":0.1978},{"node":33,"state":0,"from":0,"to":0.0845},{"node":34,"state":0,"from":0,"to":0.0916},{"node":35,"state":0,"from":0,"to":0.2116},{"node":36,"state":0,"from":0,"to":0.2256},{"node":37,"state":0,"from":0,"to":0.1485},{"node":38,"state":0,"from":0,"to":0.044},{"node":38,"state":1,"from":0.044,"to":0.1015},{"node":39,"state":0,"from":0,"to":0.1142},{"node":40,"state":0,"from":0,"to":0.2011},{"node":41,"state":0,"from":0,"to":0.0212},{"node":42,"state":0,"from":0,"to":0.0117},{"node":43,"state":0,"from":0,"to":0.0202},{"node":44,"state":0,"from":0,"to":0.0202},{"node":45,"state":0,"from":0,"to":0.1073},{"node":46,"state":0,"from":0,"to":0.0252},{"node":47,"state":0,"from":0,"to":0.0647},{"node":48,"state":0,"from":0,"to":0.0618},{"node":49,"state":0,"from":0,"to":0.0618},{"node":50,"state":0,"from":0,"to":0.0618},{"node":51,"state":0,"from":0,"to":0.079},{"node":52,"state":0,"from":0,"to":0.0045},{"node":53,"state":0,"from":0,"to":0.0062},{"node":54,"state":0,"from":0,"to":0.1094},{"node":55,"state":0,"from":0,"to":0.0498},{"node":56,"state":0,"from":0,"to":0.0183},{"node":56,"state":1,"from":0.0183,"to":0.0986},{"node":57,"state":0,"from":0,"to":0.0512},{"node":58,"state":0,"from":0,"to":0.0256},{"node":59,"state":0,"from":0,"to":0.0256},{"node":60,"state":0,"from":0,"to":0.0256},{"node":61,"state":0,"from":0,"to":0.0512},{"node":62,"state":0,"from":0,"to":0.0337},{"node":63,"state":0,"from":0,"to":0.0963},{"node":63,"state":1,"from":0.0963,"to":0.1425},{"node":64,"state":0,"from":0,"to":0.0407},{"node":64,"state":1,"from":0.0407,"to":0.1134},{"node":65,"state":0,"from":0,"to":0.0564},{"node":66,"state":0,"from":0,"to":0.2218},{"node":67,"state":0,"from":0,"to":0.1514},{"node":67,"state":1,"from":0.1514,"to":0.2696},{"node":68,"state":0,"from":0,"to":0.0067},{"node":69,"state":0,"from":0,"to":0.0497},{"node":70,"state":0,"from":0,"to":0.027},{"node":71,"state":0,"from":0,"to":0.0822},{"node":72,"state":0,"from":0,"to":0.1554},{"node":73,"state":0,"from":0,"to":0.2459},{"node":74,"state":0,"from":0,"to":0.0531},{"node":75,"state":0,"from":0,"to":0.1167},{"node":76,"state":0,"from":0,"to":0.0964},{"node":77,"state":0,"from":0,"to":0.2151},{"node":78,"state":0,"from":0,"to":0.1257},{"node":79,"state":0,"from":0,"to":0.021},{"node":80,"state":0,"from":0,"to":0.101},{"node":81,"state":0,"from":0,"to":0.101},{"node":82,"state":0,"from":0,"to":0.4566}],[{"node":1,"state":0,"from":0,"to":0.0717},{"node":2,"state":0,"from":0,"to":0.2347},{"node":3,"state":0,"from":0,"to":0.0237},{"node":4,"state":0,"from":0,"to":0.0206},{"node":5,"state":0,"from":0,"to":0.0049},{"node":6,"state":0,"from":0,"to":0.0155},{"node":7,"state":0,"from":0,"to":0.0111},{"node":8,"state":0,"from":0,"to":0.0576},{"node":9,"state":0,"from":0,"to":0.022},{"node":10,"state":0,"from":0,"to":0.0072},{"node":11,"state":0,"from":0,"to":0.0072},{"node":12,"state":0,"from":0,"to":0.0097},{"node":13,"state":0,"from":0,"to":0.0022},{"node":14,"state":0,"from":0,"to":0.0067},{"node":15,"state":0,"from":0,"to":0.0067},{"node":16,"state":0,"from":0,"to":0.0088},{"node":17,"state":0,"from":0,"to":0.0183},{"node":18,"state":0,"from":0,"to":0.0255},{"node":19,"state":0,"from":0,"to":0.0296},{"node":20,"state":0,"from":0,"to":0.0079},{"node":21,"state":0,"from":0,"to":0.0076},{"node":22,"state":0,"from":0,"to":0.0661},{"node":23,"state":0,"from":0,"to":0.1378},{"node":24,"state":0,"from":0,"to":0.0355},{"node":25,"state":0,"from":0,"to":0.0927},{"node":26,"state":0,"from":0,"to":0.1297},{"node":27,"state":0,"from":0,"to":0.1862},{"node":28,"state":0,"from":0,"to":0.0153},{"node":29,"state":0,"from":0,"to":0.0257},{"node":30,"state":0,"from":0,"to":0.0102},{"node":31,"state":0,"from":0,"to":0.023},{"node":32,"state":0,"from":0,"to":0.1978},{"node":33,"state":0,"from":0,"to":0.0845},{"node":34,"state":0,"from":0,"to":0.0916},{"node":35,"state":0,"from":0,"to":0.2116},{"node":36,"state":0,"from":0,"to":0.2256},{"node":37,"state":0,"from":0,"to":0.1485},{"node":38,"state":0,"from":0,"to":0.044},{"node":38,"state":1,"from":0.044,"to":0.1015},{"node":39,"state":0,"from":0,"to":0.1142},{"node":40,"state":0,"from":0,"to":0.2011},{"node":41,"state":0,"from":0,"to":0.0212},{"node":42,"state":0,"from":0,"to":0.0117},{"node":43,"state":0,"from":0,"to":0.0202},{"node":44,"state":0,"from":0,"to":0.0202},{"node":45,"state":0,"from":0,"to":0.1073},{"node":46,"state":0,"from":0,"to":0.0252},{"node":47,"state":0,"from":0,"to":0.0647},{"node":48,"state":0,"from":0,"to":0.0618},{"node":49,"state":0,"from":0,"to":0.0618},{"node":50,"state":0,"from":0,"to":0.0618},{"node":51,"state":0,"from":0,"to":0.079},{"node":52,"state":0,"from":0,"to":0.0045},{"node":53,"state":0,"from":0,"to":0.0062},{"node":54,"state":0,"from":0,"to":0.1094},{"node":55,"state":0,"from":0,"to":0.0498},{"node":56,"state":0,"from":0,"to":0.0183},{"node":56,"state":1,"from":0.0183,"to":0.0986},{"node":57,"state":0,"from":0,"to":0.0512},{"node":58,"state":0,"from":0,"to":0.0256},{"node":59,"state":0,"from":0,"to":0.0256},{"node":60,"state":0,"from":0,"to":0.0256},{"node":61,"state":0,"from":0,"to":0.0512},{"node":62,"state":0,"from":0,"to":0.0337},{"node":63,"state":0,"from":0,"to":0.0963},{"node":63,"state":1,"from":0.0963,"to":0.1425},{"node":64,"state":0,"from":0,"to":0.0407},{"node":64,"state":1,"from":0.0407,"to":0.1134},{"node":65,"state":0,"from":0,"to":0.0564},{"node":66,"state":0,"from":0,"to":0.2218},{"node":67,"state":0,"from":0,"to":0.1514},{"node":67,"state":1,"from":0.1514,"to":0.2696},{"node":68,"state":0,"from":0,"to":0.0067},{"node":69,"state":0,"from":0,"to":0.0497},{"node":70,"state":0,"from":0,"to":0.027},{"node":71,"state":0,"from":0,"to":0.0822},{"node":72,"state":0,"from":0,"to":0.1554},{"node":73,"state":0,"from":0,"to":0.2459},{"node":74,"state":0,"from":0,"to":0.0531},{"node":75,"state":0,"from":0,"to":0.1167},{"node":76,"state":0,"from":0,"to":0.0964},{"node":77,"state":0,"from":0,"to":0.2151},{"node":78,"state":0,"from":0,"to":0.1257},{"node":79,"state":0,"from":0,"to":0.021},{"node":80,"state":0,"from":0,"to":0.101},{"node":81,"state":0,"from":0,"to":0.101},{"node":82,"state":0,"from":0,"to":0.4566}],[{"node":1,"state":0,"from":0,"to":0.0717},{"node":2,"state":0,"from":0,"to":0.2347},{"node":3,"state":0,"from":0,"to":0.0237},{"node":4,"state":0,"from":0,"to":0.0206},{"node":5,"state":0,"from":0,"to":0.0049},{"node":6,"state":0,"from":0,"to":0.0155},{"node":7,"state":0,"from":0,"to":0.0111},{"node":8,"state":0,"from":0,"to":0.0576},{"node":9,"state":0,"from":0,"to":0.022},{"node":10,"state":0,"from":0,"to":0.0072},{"node":11,"state":0,"from":0,"to":0.0072},{"node":12,"state":0,"from":0,"to":0.0097},{"node":13,"state":0,"from":0,"to":0.0022},{"node":14,"state":0,"from":0,"to":0.0067},{"node":15,"state":0,"from":0,"to":0.0067},{"node":16,"state":0,"from":0,"to":0.0088},{"node":17,"state":0,"from":0,"to":0.0183},{"node":18,"state":0,"from":0,"to":0.0255},{"node":19,"state":0,"from":0,"to":0.0296},{"node":20,"state":0,"from":0,"to":0.0079},{"node":21,"state":0,"from":0,"to":0.0076},{"node":22,"state":0,"from":0,"to":0.0661},{"node":23,"state":0,"from":0,"to":0.1378},{"node":24,"state":0,"from":0,"to":0.0355},{"node":25,"state":0,"from":0,"to":0.0927},{"node":26,"state":0,"from":0,"to":0.1297},{"node":27,"state":0,"from":0,"to":0.1862},{"node":28,"state":0,"from":0,"to":0.0153},{"node":29,"state":0,"from":0,"to":0.0257},{"node":30,"state":0,"from":0,"to":0.0102},{"node":31,"state":0,"from":0,"to":0.023},{"node":32,"state":0,"from":0,"to":0.1978},{"node":33,"state":0,"from":0,"to":0.0845},{"node":34,"state":0,"from":0,"to":0.0916},{"node":35,"state":0,"from":0,"to":0.2116},{"node":36,"state":0,"from":0,"to":0.2256},{"node":37,"state":0,"from":0,"to":0.1485},{"node":38,"state":0,"from":0,"to":0.044},{"node":38,"state":1,"from":0.044,"to":0.1015},{"node":39,"state":0,"from":0,"to":0.1142},{"node":40,"state":0,"from":0,"to":0.2011},{"node":41,"state":0,"from":0,"to":0.0212},{"node":42,"state":0,"from":0,"to":0.0117},{"node":43,"state":0,"from":0,"to":0.0202},{"node":44,"state":0,"from":0,"to":0.0202},{"node":45,"state":0,"from":0,"to":0.1073},{"node":46,"state":0,"from":0,"to":0.0252},{"node":47,"state":0,"from":0,"to":0.0647},{"node":48,"state":0,"from":0,"to":0.0618},{"node":49,"state":0,"from":0,"to":0.0618},{"node":50,"state":0,"from":0,"to":0.0618},{"node":51,"state":0,"from":0,"to":0.079},{"node":52,"state":0,"from":0,"to":0.0045},{"node":53,"state":0,"from":0,"to":0.0062},{"node":54,"state":0,"from":0,"to":0.1094},{"node":55,"state":0,"from":0,"to":0.0498},{"node":56,"state":0,"from":0,"to":0.0183},{"node":56,"state":1,"from":0.0183,"to":0.0986},{"node":57,"state":0,"from":0,"to":0.0512},{"node":58,"state":0,"from":0,"to":0.0256},{"node":59,"state":0,"from":0,"to":0.0256},{"node":60,"state":0,"from":0,"to":0.0256},{"node":61,"state":0,"from":0,"to":0.0512},{"node":62,"state":0,"from":0,"to":0.0337},{"node":63,"state":0,"from":0,"to":0.0963},{"node":63,"state":1,"from":0.0963,"to":0.1425},{"node":64,"state":0,"from":0,"to":0.0407},{"node":64,"state":1,"from":0.0407,"to":0.1134},{"node":65,"state":0,"from":0,"to":0.0564},{"node":66,"state":0,"from":0,"to":0.2218},{"node":67,"state":0,"from":0,"to":0.1514},{"node":67,"state":1,"from":0.1514,"to":0.2696},{"node":68,"state":0,"from":0,"to":0.0067},{"node":69,"state":0,"from":0,"to":0.0497},{"node":70,"state":0,"from":0,"to":0.027},{"node":71,"state":0,"from":0,"to":0.0822},{"node":72,"state":0,"from":0,"to":0.1554},{"node":73,"state":0,"from":0,"to":0.2459},{"node":74,"state":0,"from":0,"to":0.0531},{"node":75,"state":0,"from":0,"to":0.1167},{"node":76,"state":0,"from":0,"to":0.0964},{"node":77,"state":0,"from":0,"to":0.2151},{"node":78,"state":0,"from":0,"to":0.1257},{"node":79,"state":0,"from":0,"to":0.021},{"node":80,"state":0,"from":0,"to":0.101},{"node":81,"state":0,"from":0,"to":0.101},{"node":82,"state":0,"from":0,"to":0.4566}]],"options":{"sim_type":"compound_codon","sites":"all","show_labels":true,"plot_intervals":true,"interval_opacity":0.3,"label_font_size":10,"show_axis":true,"axis_ticks":20,"axis_tick_font_size":10,"padding":10,"circle_size":4,"circle_opacity":0.1,"line_width":4}},"evals":[],"jsHooks":[]}</script>
+<p>Synonymous substiutions are shown in green, non-synonymous in red. Since the switch types differ across sites, they are not shown on the phylogeny. After every model switch, there is a burst of non-synonymous substitutions.</p>
+<p>Check substitution history table:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(sim$substitutions)</code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="right">site</th>
+<th align="right">node</th>
+<th align="right">time</th>
+<th align="right">from</th>
+<th align="right">to</th>
+<th align="left">codon_from</th>
+<th align="left">codon_to</th>
+<th align="left">amino_acid_from</th>
+<th align="left">amino_acid_to</th>
+<th align="left">synonymous</th>
+<th align="left">color</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">0</td>
+<td align="right">22</td>
+<td align="right">0.0534690</td>
+<td align="right">60</td>
+<td align="right">44</td>
+<td align="left">GGG</td>
+<td align="left">AGG</td>
+<td align="left">G</td>
+<td align="left">R</td>
+<td align="left">FALSE</td>
+<td align="left">#E84B2A</td>
+</tr>
+<tr class="even">
+<td align="right">0</td>
+<td align="right">32</td>
+<td align="right">0.0395312</td>
+<td align="right">60</td>
+<td align="right">57</td>
+<td align="left">GGG</td>
+<td align="left">GGT</td>
+<td align="left">G</td>
+<td align="left">G</td>
+<td align="left">TRUE</td>
+<td align="left">#16A35E</td>
+</tr>
+<tr class="odd">
+<td align="right">0</td>
+<td align="right">38</td>
+<td align="right">0.0486256</td>
+<td align="right">60</td>
+<td align="right">52</td>
+<td align="left">GGG</td>
+<td align="left">GCG</td>
+<td align="left">G</td>
+<td align="left">A</td>
+<td align="left">FALSE</td>
+<td align="left">#E84B2A</td>
+</tr>
+<tr class="even">
+<td align="right">0</td>
+<td align="right">49</td>
+<td align="right">0.0309456</td>
+<td align="right">60</td>
+<td align="right">57</td>
+<td align="left">GGG</td>
+<td align="left">GGT</td>
+<td align="left">G</td>
+<td align="left">G</td>
+<td align="left">TRUE</td>
+<td align="left">#16A35E</td>
+</tr>
+<tr class="odd">
+<td align="right">0</td>
+<td align="right">51</td>
+<td align="right">0.0599905</td>
+<td align="right">60</td>
+<td align="right">59</td>
+<td align="left">GGG</td>
+<td align="left">GGA</td>
+<td align="left">G</td>
+<td align="left">G</td>
+<td align="left">TRUE</td>
+<td align="left">#16A35E</td>
+</tr>
+<tr class="even">
+<td align="right">0</td>
+<td align="right">56</td>
+<td align="right">0.0193875</td>
+<td align="right">60</td>
+<td align="right">52</td>
+<td align="left">GGG</td>
+<td align="left">GCG</td>
+<td align="left">G</td>
+<td align="left">A</td>
+<td align="left">FALSE</td>
+<td align="left">#E84B2A</td>
+</tr>
+</tbody>
+</table>
+<p>Check model sswitching history table. Each site will have its own set of intervals. Each row corresponds to a tree node (branch). <code>state</code> is the index of the model, <code>from</code> and <code>to</code> are branch time points where the model applies:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(sim$intervals[[<span class="dv">1</span>]])</code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="right">node</th>
+<th align="right">state</th>
+<th align="right">from</th>
+<th align="right">to</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0.071664</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0.234728</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0.023664</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0.020593</td>
+</tr>
+<tr class="odd">
+<td align="right">5</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0.004937</td>
+</tr>
+<tr class="even">
+<td align="right">6</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0.015494</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="alignment" class="section level2">
+<h2>Alignment</h2>
+<p>Show alignment in a viewer:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(sim$alignment)</code></pre></div>
+<div id="htmlwidget-4e09118354eab7fef3ed" style="width:672px;height:480px;" class="AlignmentPlot html-widget"></div>
+<script type="application/json" data-for="htmlwidget-4e09118354eab7fef3ed">{"x":[{"index":1,"taxon":"Human","sequence":[{"state":"GGG","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGT","color":"#77aa88"},{"state":"TCT","color":"#ff4455"},{"state":"GGT","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGG","color":"#77aa88"},{"state":"GCC","color":"#77dd88"},{"state":"GGA","color":"#77aa88"},{"state":"GGA","color":"#77aa88"}]},{"index":2,"taxon":"Pan_troglodytes","sequence":[{"state":"GGG","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGT","color":"#77aa88"},{"state":"TCT","color":"#ff4455"},{"state":"GGT","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGG","color":"#77aa88"},{"state":"GCC","color":"#77dd88"},{"state":"GGA","color":"#77aa88"},{"state":"GGA","color":"#77aa88"}]},{"index":3,"taxon":"Gorilla_gorilla","sequence":[{"state":"GGG","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGT","color":"#77aa88"},{"state":"TCT","color":"#ff4455"},{"state":"GGT","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGG","color":"#77aa88"},{"state":"GCC","color":"#77dd88"},{"state":"GGA","color":"#77aa88"},{"state":"GGA","color":"#77aa88"}]},{"index":4,"taxon":"Pongo_abelii","sequence":[{"state":"GGG","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGT","color":"#77aa88"},{"state":"TCT","color":"#ff4455"},{"state":"GGT","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGG","color":"#77aa88"},{"state":"GCC","color":"#77dd88"},{"state":"GGA","color":"#77aa88"},{"state":"GGA","color":"#77aa88"}]},{"index":5,"taxon":"Nomascus_leucogenys","sequence":[{"state":"GGG","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"TCT","color":"#ff4455"},{"state":"GGT","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGG","color":"#77aa88"},{"state":"GCC","color":"#77dd88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"}]},{"index":6,"taxon":"Macaca_mulatta","sequence":[{"state":"GGG","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGT","color":"#77aa88"},{"state":"TCT","color":"#ff4455"},{"state":"GGT","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGG","color":"#77aa88"},{"state":"GCT","color":"#77dd88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"}]},{"index":7,"taxon":"Papio_hamadryas","sequence":[{"state":"GGG","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGT","color":"#77aa88"},{"state":"TCT","color":"#ff4455"},{"state":"GGT","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGG","color":"#77aa88"},{"state":"GCT","color":"#77dd88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"}]},{"index":8,"taxon":"Callithrix_jacchus","sequence":[{"state":"AGG","color":"#ffcc77"},{"state":"GGA","color":"#77aa88"},{"state":"GGT","color":"#77aa88"},{"state":"TCT","color":"#ff4455"},{"state":"GGT","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGG","color":"#77aa88"},{"state":"GCC","color":"#77dd88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"}]},{"index":9,"taxon":"Tarsius_syrichta","sequence":[{"state":"GGG","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGT","color":"#77aa88"},{"state":"TCG","color":"#ff4455"},{"state":"GGT","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGG","color":"#77aa88"},{"state":"GCT","color":"#77dd88"},{"state":"GGA","color":"#77aa88"},{"state":"GGA","color":"#77aa88"}]},{"index":10,"taxon":"Microcebus_murinus","sequence":[{"state":"GGG","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"TCG","color":"#ff4455"},{"state":"GGT","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGG","color":"#77aa88"},{"state":"GCC","color":"#77dd88"},{"state":"GGC","color":"#77aa88"},{"state":"GGC","color":"#77aa88"}]},{"index":11,"taxon":"Otolemur_garnettii","sequence":[{"state":"GGG","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"TCG","color":"#ff4455"},{"state":"GGT","color":"#77aa88"},{"state":"GAA","color":"#55bb33"},{"state":"GGG","color":"#77aa88"},{"state":"GCC","color":"#77dd88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"}]},{"index":12,"taxon":"Tupaia_belangeri","sequence":[{"state":"GGG","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"TCG","color":"#ff4455"},{"state":"GGT","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GCG","color":"#77dd88"},{"state":"GGT","color":"#77aa88"},{"state":"GGG","color":"#77aa88"}]},{"index":13,"taxon":"Mus_musculus","sequence":[{"state":"GGT","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"TCG","color":"#ff4455"},{"state":"GGT","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGT","color":"#77aa88"},{"state":"GCC","color":"#77dd88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"}]},{"index":14,"taxon":"Rattus_norvegicus","sequence":[{"state":"GGT","color":"#77aa88"},{"state":"GGG","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"TCG","color":"#ff4455"},{"state":"GGG","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGT","color":"#77aa88"},{"state":"GCA","color":"#77dd88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"}]},{"index":15,"taxon":"Dipodomys_ordii","sequence":[{"state":"GGG","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"TCG","color":"#ff4455"},{"state":"GGT","color":"#77aa88"},{"state":"CGA","color":"#ffcc77"},{"state":"GGG","color":"#77aa88"},{"state":"TCC","color":"#ff4455"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"}]},{"index":16,"taxon":"Cavia_porcellus","sequence":[{"state":"GGG","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GCG","color":"#77dd88"},{"state":"GGT","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"GGG","color":"#77aa88"},{"state":"GCA","color":"#77dd88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"}]},{"index":17,"taxon":"Ictidomys_tridecemlineatus","sequence":[{"state":"GGG","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"GGG","color":"#77aa88"},{"state":"TCG","color":"#ff4455"},{"state":"GGT","color":"#77aa88"},{"state":"GGG","color":"#77aa88"},{"state":"GGG","color":"#77aa88"},{"state":"TCG","color":"#ff4455"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"}]},{"index":18,"taxon":"Oryctolagus_cuniculus","sequence":[{"state":"GCG","color":"#77dd88"},{"state":"GCA","color":"#77dd88"},{"state":"GGG","color":"#77aa88"},{"state":"GGG","color":"#77aa88"},{"state":"TCT","color":"#ff4455"},{"state":"GGA","color":"#77aa88"},{"state":"GCG","color":"#77dd88"},{"state":"GCC","color":"#77dd88"},{"state":"GCA","color":"#77dd88"},{"state":"GCC","color":"#77dd88"}]},{"index":19,"taxon":"Ochotona_princeps","sequence":[{"state":"GCG","color":"#77dd88"},{"state":"GCT","color":"#77dd88"},{"state":"GGC","color":"#77aa88"},{"state":"TCG","color":"#ff4455"},{"state":"GCT","color":"#77dd88"},{"state":"GGA","color":"#77aa88"},{"state":"GCG","color":"#77dd88"},{"state":"GCC","color":"#77dd88"},{"state":"TCA","color":"#ff4455"},{"state":"CCC","color":"#eeaaaa"}]},{"index":20,"taxon":"Vicugna_pacos","sequence":[{"state":"GGG","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"TCG","color":"#ff4455"},{"state":"GGA","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGT","color":"#77aa88"},{"state":"GCT","color":"#77dd88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"}]},{"index":21,"taxon":"Tursiops_truncatus","sequence":[{"state":"GGG","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"TCG","color":"#ff4455"},{"state":"GGA","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGT","color":"#77aa88"},{"state":"GCC","color":"#77dd88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"}]},{"index":22,"taxon":"Bos_taurus","sequence":[{"state":"GGT","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"TCG","color":"#ff4455"},{"state":"GGA","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GAT","color":"#55bb33"},{"state":"GAC","color":"#55bb33"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"}]},{"index":23,"taxon":"Ovis_aries","sequence":[{"state":"GGG","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"TCG","color":"#ff4455"},{"state":"GGA","color":"#77aa88"},{"state":"GGT","color":"#77aa88"},{"state":"GAA","color":"#55bb33"},{"state":"GAC","color":"#55bb33"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"}]},{"index":24,"taxon":"Sus_scrofa","sequence":[{"state":"GGA","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"TCG","color":"#ff4455"},{"state":"GGA","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"GAC","color":"#55bb33"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"}]},{"index":25,"taxon":"Equus_caballus","sequence":[{"state":"GGG","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"TCG","color":"#ff4455"},{"state":"GGA","color":"#77aa88"},{"state":"GGT","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"GCC","color":"#77dd88"},{"state":"GGT","color":"#77aa88"},{"state":"GGC","color":"#77aa88"}]},{"index":26,"taxon":"Felis_catus","sequence":[{"state":"GCG","color":"#77dd88"},{"state":"GCG","color":"#77dd88"},{"state":"GCC","color":"#77dd88"},{"state":"ACG","color":"#ff4455"},{"state":"GCA","color":"#77dd88"},{"state":"GCT","color":"#77dd88"},{"state":"GCC","color":"#77dd88"},{"state":"GCC","color":"#77dd88"},{"state":"GCT","color":"#77dd88"},{"state":"GCC","color":"#77dd88"}]},{"index":27,"taxon":"Ailuropoda_melanoleuca","sequence":[{"state":"GGC","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"TCG","color":"#ff4455"},{"state":"GGA","color":"#77aa88"},{"state":"GGT","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"GCC","color":"#77dd88"},{"state":"GGT","color":"#77aa88"},{"state":"GGC","color":"#77aa88"}]},{"index":28,"taxon":"Mustela_putorius_furo","sequence":[{"state":"GGG","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"TCG","color":"#ff4455"},{"state":"GGA","color":"#77aa88"},{"state":"GGT","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"GCC","color":"#77dd88"},{"state":"GGT","color":"#77aa88"},{"state":"GGC","color":"#77aa88"}]},{"index":29,"taxon":"Canis_familiaris","sequence":[{"state":"GGG","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"TCG","color":"#ff4455"},{"state":"GGG","color":"#77aa88"},{"state":"GGT","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"GCC","color":"#77dd88"},{"state":"GGT","color":"#77aa88"},{"state":"GGC","color":"#77aa88"}]},{"index":30,"taxon":"Myotis_lucifugus","sequence":[{"state":"TGG","color":"#9999ff"},{"state":"GCA","color":"#77dd88"},{"state":"GCC","color":"#77dd88"},{"state":"TGG","color":"#9999ff"},{"state":"GCA","color":"#77dd88"},{"state":"GCA","color":"#77dd88"},{"state":"GCC","color":"#77dd88"},{"state":"GCG","color":"#77dd88"},{"state":"GCA","color":"#77dd88"},{"state":"GCC","color":"#77dd88"}]},{"index":31,"taxon":"Pteropus_vampyrus","sequence":[{"state":"TGG","color":"#9999ff"},{"state":"GCA","color":"#77dd88"},{"state":"GCC","color":"#77dd88"},{"state":"TGG","color":"#9999ff"},{"state":"GCA","color":"#77dd88"},{"state":"GCA","color":"#77dd88"},{"state":"GCC","color":"#77dd88"},{"state":"GCT","color":"#77dd88"},{"state":"GCA","color":"#77dd88"},{"state":"GCC","color":"#77dd88"}]},{"index":32,"taxon":"Erinaceus_europaeus","sequence":[{"state":"GGG","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"CCG","color":"#eeaaaa"},{"state":"GGA","color":"#77aa88"},{"state":"GAT","color":"#55bb33"},{"state":"GGC","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"}]},{"index":33,"taxon":"Sorex_araneus","sequence":[{"state":"GCT","color":"#77dd88"},{"state":"GCA","color":"#77dd88"},{"state":"GCC","color":"#77dd88"},{"state":"TTT","color":"#9999ff"},{"state":"GCA","color":"#77dd88"},{"state":"ATA","color":"#66bbff"},{"state":"TTG","color":"#66bbff"},{"state":"GCC","color":"#77dd88"},{"state":"GCA","color":"#77dd88"},{"state":"GCC","color":"#77dd88"}]},{"index":34,"taxon":"Loxodonta_africana","sequence":[{"state":"GGG","color":"#77aa88"},{"state":"GGG","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"TCG","color":"#ff4455"},{"state":"GGT","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"GCC","color":"#77dd88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"}]},{"index":35,"taxon":"Procavia_capensis","sequence":[{"state":"GGG","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"TCG","color":"#ff4455"},{"state":"GGA","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"GCC","color":"#77dd88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"}]},{"index":36,"taxon":"Echinops_telfairi","sequence":[{"state":"GGG","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"TCT","color":"#ff4455"},{"state":"GGA","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"AGC","color":"#ff4455"},{"state":"GAG","color":"#55bb33"},{"state":"GGG","color":"#77aa88"}]},{"index":37,"taxon":"Dasypus_novemcinctus","sequence":[{"state":"GGC","color":"#77aa88"},{"state":"GAT","color":"#55bb33"},{"state":"GGC","color":"#77aa88"},{"state":"TCG","color":"#ff4455"},{"state":"GAT","color":"#55bb33"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"GCT","color":"#77dd88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"}]},{"index":38,"taxon":"Choloepus_hoffmanni","sequence":[{"state":"GGA","color":"#77aa88"},{"state":"GAC","color":"#55bb33"},{"state":"GGC","color":"#77aa88"},{"state":"GCG","color":"#77dd88"},{"state":"GGT","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"GCT","color":"#77dd88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"}]},{"index":39,"taxon":"Monodelphis_domestica","sequence":[{"state":"GGG","color":"#77aa88"},{"state":"GAA","color":"#55bb33"},{"state":"GGG","color":"#77aa88"},{"state":"TCG","color":"#ff4455"},{"state":"GGT","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"AGC","color":"#ff4455"},{"state":"GGT","color":"#77aa88"},{"state":"GGC","color":"#77aa88"}]},{"index":40,"taxon":"Macropus_eugenii","sequence":[{"state":"GGG","color":"#77aa88"},{"state":"GAA","color":"#55bb33"},{"state":"GGT","color":"#77aa88"},{"state":"TCG","color":"#ff4455"},{"state":"GGT","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"AGC","color":"#ff4455"},{"state":"GGT","color":"#77aa88"},{"state":"GGC","color":"#77aa88"}]},{"index":41,"taxon":"Sarcophilus_harrisii","sequence":[{"state":"GGG","color":"#77aa88"},{"state":"GAA","color":"#55bb33"},{"state":"GGT","color":"#77aa88"},{"state":"GCG","color":"#77dd88"},{"state":"GGT","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"AGT","color":"#ff4455"},{"state":"GGT","color":"#77aa88"},{"state":"GCG","color":"#77dd88"}]},{"index":42,"taxon":"Ornithorhynchus_anatinus","sequence":[{"state":"GGG","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"CCG","color":"#eeaaaa"},{"state":"GGT","color":"#77aa88"},{"state":"GGA","color":"#77aa88"},{"state":"GGC","color":"#77aa88"},{"state":"GCC","color":"#77dd88"},{"state":"GGT","color":"#77aa88"},{"state":"GGC","color":"#77aa88"}]}],"evals":[],"jsHooks":[]}</script>
+<p>To export <code>FASTA</code> sequence:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">as.fasta</span>(sim$alignment, <span class="dt">file =</span> <span class="st">&quot;palantir_sim.fa&quot;</span>)</code></pre></div>
+</div>
+</div>
+
+<p style="padding: 15px; width:100%; background:#F4F3F4; text-align:center">de Koning Lab. 2016-2017 <a href="http://lab.jasondk.io">lab.jasondk.io</a></p>
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

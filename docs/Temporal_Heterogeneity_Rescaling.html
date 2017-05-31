@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title></title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 60px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+
+.section h2 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h3 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h4 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h5 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h6 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">PalantiR</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="installation.html">Installation</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Nucleotide Models
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Hasegawa_Kishino_Yano.html">Hasegawa-Kishino-Yano</a>
+    </li>
+    <li>
+      <a href="General_Time_Reversible.html">General Time Reversible</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Codon Models
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Mutation_Selection.html">Mutation-Selection</a>
+    </li>
+    <li>
+      <a href="Co_Evolution.html">Co-Evolution</a>
+    </li>
+    <li>
+      <a href="Markov_Modulated_Mutation_Selection.html">Markov-Modulated Mutation Selection</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Simulation Types
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Branch Heterogeneity.html">Branch Heterogeneity</a>
+    </li>
+    <li>
+      <a href="Shared_Substitution_History.html">Shared Model Substitution History</a>
+    </li>
+    <li>
+      <a href="Shared_Substitution_Times.html">Shared Model Time History</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+
+</div>
+
+
+<div id="temporal-rate-rescaling" class="section level1">
+<h1>Temporal Rate Rescaling</h1>
+<p><code>PalantiR</code> uses a rescaling strategy to simulate smooth transitions in temporal heterogeneity simulations. Temporal heterogeneity simulations have a “switch point” from one substitution model to another. This can correspond to a fitness shift or a population size change.</p>
+<p>The idea is to continuously rescale the substitution rate matrix until the equilibrium distribution of the rescaled rates matrix matches that of the new matrix we switch into.</p>
+</div>
+<div id="example" class="section level1">
+<h1>Example</h1>
+<div class="figure">
+<img src="img/Rescaling.png" alt="Rescaling" />
+<p class="caption">Rescaling</p>
+</div>
+<p>The figure shows a branch on which a switch occurs from substitution model <code>0</code> to to substitution model <code>1</code>. Model <code>0</code> has a switching rates matrix <code>Q0</code> and an equilibrium distribution <code>π0</code>. The branch segment where model <code>0</code> applies is represented by an orange line.</p>
+<p>The switch into model <code>1</code> is represented by a blue circle. The branch is now segmented into small sections of length <code>Δt</code>. We now calculate a rescaled version of <code>Q</code> and <code>π</code> for each of the branch segments.</p>
+<div id="rescaling" class="section level2">
+<h2>Rescaling</h2>
+<p>The idea is to calculate an empirical <code>π</code> for a short branch segment, given <code>Δt</code>.</p>
+<p>For a small <code>t</code>, we can approximate transition probability <code>P</code> as <code>P ≈ Q⋅Δt + I</code>.</p>
+<p>We then estimate the empirical <code>π</code> for the current branch segment as <code>π⋅P</code>.</p>
+<p>Using the current estimate of <code>π</code>, we now want to calculate a scaling factor <code>ρ</code>, which will be used to rescale the current substitution rate matrix. The scaling function <code>S</code> is discussed in more details in [[scaling|Rate Matrix Scaling]].</p>
+<p>The rescaled matrix <code>Q</code> is now used to simulate substitutions for the current branch segment.</p>
+<p>The rescaling procedure is applied until the current <code>π</code> is within an acceptable range of the <code>π</code> for next model. Once the <code>RMSD</code> between the two equilibrium vectors is within user-specified bound <code>ε</code>, the rescaling is stopped. At this point, the simulation continues with substitution rate <code>Q1</code> and equilibrium distribution <code>π1</code>, corresponding to the model <code>1</code> (blue branch segment).</p>
+</div>
+</div>
+
+<p style="padding: 15px; width:100%; background:#F4F3F4; text-align:center">de Koning Lab. 2016-2017 <a href="http://lab.jasondk.io">lab.jasondk.io</a></p>
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

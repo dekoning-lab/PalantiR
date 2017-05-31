@@ -7,13 +7,14 @@ output:
 ```{r, include=F}
 library(PalantiR)
 library(knitr)
+knitr::opts_chunk$set(cache=TRUE)
 ```
 
 # Shared Substitution Times
 
-Shared substitution times is a switching simulation type similar to [[Markov-Modulated Mutation Selection]]. However, instead of simulating each site with independent switching in the parent model, the switch times are shared across sites. In essense, this is a conditioned simulation, given _times_ of parent model switches.
+Shared substitution times is a switching simulation type similar to [Markov-Modulated Mutation-Selection](Markov_Modulated_Mutation_Selection.html). However, instead of simulating each site with independent switching in the parent model, the switch times are shared across sites. In essense, this is a conditioned simulation, given _times_ of parent model switches.
 
-Unlike [[Shared Substitution History]], this simulation does not share switch identity.
+Unlike [Shared Model Substitution History](Shared_Substitution_History.html), this simulation does not share switch identity.
 
 This type of simulation is useful to emulate fitness switches, such that fitness changes at every site at the same time. However, the identity of the fitness switch might differ.
 
