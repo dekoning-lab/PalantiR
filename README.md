@@ -10,11 +10,17 @@ The framework focuses on Mutation-Selection codon models and temporal heterogene
 
 # Installation
 
+The package can be installed automatically with `devtools`:
+
+```R
+devtools::install_github("dekoning-lab/PalantiR")
+```
+
 ## Downloading
 
 First, clone the `PalantiR` repo:
 
-```
+```bash
 git clone https://github.com/dekoning-lab/PalantiR.git
 ```
 
