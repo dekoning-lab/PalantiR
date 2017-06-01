@@ -300,6 +300,21 @@ $(document).ready(function () {
 <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">git</span> clone https://github.com/dekoning-lab/PalantiR.git</code></pre></div>
 <p>Install the dependencies:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="kw">c</span>(<span class="st">&quot;RcppArmadillo&quot;</span>, <span class="st">&quot;htmlwidgets&quot;</span>))</code></pre></div>
+</div>
+<div id="macos" class="section level1">
+<h1>MacOS</h1>
+<p>On MacOS, it might be necessary to install a <code>gfortran</code> compiler, for linear algebra libraries. See <a href="https://gcc.gnu.org/wiki/GFortranBinaries" class="uri">https://gcc.gnu.org/wiki/GFortranBinaries</a> for downloads.</p>
+</div>
+<div id="issues" class="section level1">
+<h1>Issues</h1>
+<p>Calling <code>plot</code> may produce a following warning:</p>
+<pre><code>Warning message:
+In structure(x, class = unique(c(&quot;AsIs&quot;, oldClass(x)))) :
+  Calling &#39;structure(NULL, *)&#39; is deprecated, as NULL cannot have attributes.
+  Consider &#39;structure(list(), *)&#39; instead.</code></pre>
+<p>This is a resolved <a href="https://github.com/ramnathv/htmlwidgets/issues/269">issue</a> with <a href="https://github.com/ramnathv/htmlwidgets">htmlwdigets</a> package. It did not seem to have made it to <code>CRAN</code> yet. Until it does, install the package from github:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">detach</span>(<span class="st">&quot;package:htmlwidgets&quot;</span>, <span class="dt">unload=</span><span class="ot">TRUE</span>)
+devtools::<span class="kw">install_github</span>(<span class="st">&quot;ramnathv/htmlwidgets&quot;</span>)</code></pre></div>
 <div id="building" class="section level2">
 <h2>Building</h2>
 <p>If using RStudio, hit “Build &amp; Reload”.</p>

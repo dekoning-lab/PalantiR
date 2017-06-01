@@ -1,5 +1,5 @@
-var download_svg = function(element_id, file_name) {
-    var svg = document.getElementById(element_id);
+var download_svg = function(selector, file_name) {
+    var svg = d3.select(selector).node();
     var serializer = new XMLSerializer();
     var source = serializer.serializeToString(svg);
     source = '<?xml version="1.1" standalone="no"?>\r\n' + source;

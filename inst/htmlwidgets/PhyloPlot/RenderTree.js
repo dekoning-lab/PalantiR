@@ -160,8 +160,4 @@ var render_tree = function(plot, root) {
         .text(function(d) { return d.children ? null : d.data.label; });
     }
 
-    // Downlod svg by pressing `S`
-    document.onkeydown = function (event) {
-        if (event.key === "s") download_svg("phylogram", "PalantiR_phylogeny.svg");
-    };
 };

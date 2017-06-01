@@ -24,6 +24,28 @@ Install the dependencies:
 install.packages(c("RcppArmadillo", "htmlwidgets"))
 ```
 
+# MacOS
+
+On MacOS, it might be necessary to install a `gfortran` compiler, for linear algebra libraries. See https://gcc.gnu.org/wiki/GFortranBinaries for downloads.
+
+# Issues
+
+Calling `plot` may produce a following warning:
+
+```
+Warning message:
+In structure(x, class = unique(c("AsIs", oldClass(x)))) :
+  Calling 'structure(NULL, *)' is deprecated, as NULL cannot have attributes.
+  Consider 'structure(list(), *)' instead.
+```
+
+This is a resolved [issue](https://github.com/ramnathv/htmlwidgets/issues/269) with [htmlwdigets](https://github.com/ramnathv/htmlwidgets) package. It did not seem to have made it to `CRAN` yet. Until it does, install the package from github:
+
+```R
+detach("package:htmlwidgets", unload=TRUE)
+devtools::install_github("ramnathv/htmlwidgets")
+```
+
 ## Building
 
 If using RStudio, hit "Build & Reload".

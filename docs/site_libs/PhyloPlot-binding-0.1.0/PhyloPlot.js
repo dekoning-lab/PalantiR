@@ -39,8 +39,20 @@ HTMLWidgets.widget({
                 } else {
                     render_substitutions(plot, data.substitutions);
                 }
-
             }
+
+            if(window.location.href.indexOf("viewer_pane=1") <= -1) {
+                plot.svg.on("click", function() {
+                    download_svg("#" + el.id + ">svg.phylogram", "PalantiR_phylogeny.svg");
+                });
+            }
+            //d3.select("body").on("keydown", function() {
+            //    console.log("keydown");
+            //    var object = this;
+            //    if (d3.event.key === "s") {
+            //        download_svg("#" + el.id + ">svg.phylogram", "PalantiR_phylogeny.svg");
+            //    }
+            //});
         };
 
         return {
