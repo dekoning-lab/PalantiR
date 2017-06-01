@@ -7,6 +7,7 @@ output:
 ```{r, include=F}
 library(PalantiR)
 library(knitr)
+knitr::opts_chunk$set(fig.height = 7, fig.width = 7)
 ```
 
 # Mutation-Selection

@@ -67,7 +67,9 @@ PhyloPlot <- function(
         sizingPolicy = htmlwidgets::sizingPolicy(
             viewer.padding = 0,
             viewer.fill = T,
-            browser.fill = T
+            browser.fill = T,
+            knitr.defaultHeight = 600,
+            knitr.defaultWidth = 800
         )
     )
 }

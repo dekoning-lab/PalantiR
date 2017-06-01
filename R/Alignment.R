@@ -75,7 +75,9 @@ AlignmentPlot <- function(alignment, width = NULL, height = NULL) {
         sizingPolicy = htmlwidgets::sizingPolicy(
             viewer.padding = 0,
             browser.fill = T,
-            viewer.fill = T
+            viewer.fill = T,
+            knitr.defaultHeight = 600,
+            knitr.defaultWidth = 800
         )
     )
 }

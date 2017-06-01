@@ -4,12 +4,12 @@ var string_bounding_box = function(text, font_family, font_size, parent_selectio
             "x": -1000,
             "y": -1000,
             "font-size": font_size,
-            "font_family": font_family
+            "font-family": font_family
         })
         .text(text);
 
     var box = t.node().getBBox();
+    var dimensions =  {width: box.width, height: box.height};
     t.remove();
-
-    return {width: box.width, height: box.height};
+    return dimensions;
 };

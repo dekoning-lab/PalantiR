@@ -35,6 +35,7 @@ var render_tree = function(plot, root) {
     var options = plot.options;
 
     // Initialize plot
+    d3.select("#" + plot.container.id).selectAll("svg").remove();
 
     plot.svg = d3.select("#" + plot.container.id)
         .append("svg")

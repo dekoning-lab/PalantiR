@@ -7,3 +7,7 @@ dependencies:
     version: 1.0.1
     src: htmlwidgets/lib/d3
     script: d3-selection-multi.min.js
+  - name: getScrollbarWidth
+    version: 0.0
+    src: htmlwidgets/lib
+    script: getScrollbarWidth.js
