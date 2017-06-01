@@ -12,7 +12,7 @@ knitr::opts_chunk$set(fig.height = 7, fig.width = 9)
 
 # Shared Substitution Times
 
-Shared substitution times is a switching simulation type similar to [Markov-Modulated Mutation-Selection](Markov_Modulated_Mutation_Selection.html). However, instead of simulating each site with independent switching in the parent model, the switch times are shared across sites. In essense, this is a conditioned simulation, given _times_ of parent model switches.
+Shared substitution times is a switching simulation type similar to [Markov-Modulated Mutation-Selection](Markov_Modulated_Mutation_Selection.html). However, instead of simulating each site with independent switching in the parent model, the switch times are shared across sites. In essence, this is a conditioned simulation, given _times_ of parent model switches.
 
 Unlike [Shared Model Substitution History](Shared_Substitution_History.html), this simulation does not share switch identity.
 
@@ -98,7 +98,7 @@ Plot substitution history:
 plot(sim, circle_opacity = 0.1)
 ```
 
-Synonymous substiutions are shown in green, non-synonymous in red. Since the switch types differ across sites, they are not shown on the phylogeny.
+Synonymous substitutions are shown in green, non-synonymous in red. Since the switch types differ across sites, they are not shown on the phylogeny.
 After every model switch, there is a burst of non-synonymous substitutions.
 
 Check substitution history table:
@@ -110,7 +110,7 @@ head(sim$substitutions)
 kable(head(sim$substitutions))
 ```
 
-Check model sswitching history table. Each site will have its own set of intervals. Each row corresponds to a tree node (branch). `state` is the index of the model, `from` and `to` are branch time points where the model applies:
+Check model switching history table. Each site will have its own set of intervals. Each row corresponds to a tree node (branch). `state` is the index of the model, `from` and `to` are branch time points where the model applies:
 
 ```{r, results='hide'}
 head(sim$intervals[[1]])
@@ -119,17 +119,17 @@ head(sim$intervals[[1]])
 kable(head(sim$intervals[[1]]))
 ```
 
-
 ## Alignment
-
-Show alignment in a viewer:
-
-```{r}
-plot(sim$alignment)
-```
 
 To export `FASTA` sequence:
 
 ```{r, eval=F}
 as.fasta(sim$alignment, file = "palantir_sim.fa")
 ```
+
+Show alignment in a scrollable viewer:
+
+```{r}
+plot(sim$alignment)
+```
+

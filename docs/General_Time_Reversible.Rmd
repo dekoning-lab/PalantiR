@@ -98,16 +98,16 @@ kable(head(sim$substitutions))
 
 ## Alignment
 
-Show alignment in a viewer:
-
-```{r}
-plot(sim$alignment)
-```
-
 To export `FASTA` sequence:
 
 ```{r, eval=F}
 as.fasta(sim$alignment, file = "palantir_sim.fa")
+```
+
+Show alignment in a scrollable viewer:
+
+```{r}
+plot(sim$alignment)
 ```
 
 # References

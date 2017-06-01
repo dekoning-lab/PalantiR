@@ -36,6 +36,7 @@ navbar:
       href: https://github.com/dekoning-lab/PalantiR
 output:
   html_document:
+    css: styles.css
     theme: flatly
     highlight: tango
     include:

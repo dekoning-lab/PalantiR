@@ -12,7 +12,7 @@ knitr::opts_chunk$set(fig.height = 7, fig.width = 9)
 
 # Branch Heterogeneity
 
-Branch heterogeneous simulations allow to specify different models (called `modes`) for each branch on a phylogeny. 
+Branch heterogeneous simulations specify different models (called `modes`) for each branch on a phylogeny. 
 This is done by providing a newick tree with model indexes instead of branch length, and a list of models.
 
 For more details on time-heterogeneous simulation, see [Temporal Heterogeneity Rescaling](Temporal_Heterogeneity_Rescaling.html).
@@ -37,6 +37,7 @@ We can view the phylogeny and the assigned modes:
 ```{r}
 plot(mammals, mammal_switches)
 ```
+
 # Example
 
 In the example below, we simulate on a mammalian phylogeny with a population size expansion on the primate lineage.
@@ -121,14 +122,14 @@ kable(head(sim$substitutions))
 
 ## Alignment
 
-Show alignment in a viewer:
-
-```{r}
-plot(sim$alignment)
-```
-
 To export `FASTA` sequence:
 
 ```{r, eval=F}
 as.fasta(sim$alignment, file = "palantir_sim.fa")
+```
+
+Show alignment in a scrollable viewer:
+
+```{r}
+plot(sim$alignment)
 ```

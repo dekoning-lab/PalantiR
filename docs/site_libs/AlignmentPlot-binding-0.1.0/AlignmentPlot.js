@@ -64,8 +64,6 @@ HTMLWidgets.widget({
                     return d.state;
                 });
 
-            //var cell_width = cells.node().offsetWidth;
-            //var cell_height = cells.node().offsetHeight;
             var table_width = plot.alignment.table.node().offsetWidth;
             var table_height = plot.alignment.table.node().offsetHeight;
 
@@ -135,6 +133,7 @@ HTMLWidgets.widget({
             // reposition
             var taxa_width = plot.taxa.table.node().offsetWidth;
             var site_height = plot.site.table.node().offsetHeight;
+
             var scrollbar_width = get_scrollbar_width();
 
             plot.alignment.div
@@ -157,18 +156,9 @@ HTMLWidgets.widget({
                     "max-height": height - site_height + "px",
                 });
 
-            // Sync scrolling
-            var syncing_taxa_scroll = false;
-            var syncing_alignment_scroll = false;
-            var syncing_site_scroll = false;
-
             plot.alignment.div.on("scroll", function() {
-                if(!syncing_alignment_scroll) {
-                    syncing_taxa_scroll = true;
-                    plot.taxa.div.node().scrollTop = this.scrollTop;
-                    plot.site.div.node().scrollLeft = this.scrollLeft;
-                }
-                syncing_alignment_scroll = false;
+                plot.taxa.div.node().scrollTop = this.scrollTop;
+                plot.site.div.node().scrollLeft = this.scrollLeft;
             });
         };
 

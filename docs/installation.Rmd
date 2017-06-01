@@ -4,7 +4,7 @@ title: "Installation"
 
 # Automatic installation
 
-Using `devtools` package, we can install from `github` directly:
+Using the `devtools` package, we can install from `github` directly:
 
 ```R
 devtools::install_github("dekoning-lab/PalantiR")

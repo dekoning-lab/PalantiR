@@ -1,0 +1,8 @@
+table thead {
+    background-color: #f1f1f1;
+}
+
+table tr.even{
+    background-color: #f8f8f8;
+}
+

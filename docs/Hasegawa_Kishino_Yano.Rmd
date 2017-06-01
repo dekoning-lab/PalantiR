@@ -47,7 +47,8 @@ hky <- HasegawaKishinoYano(
     transversion_rate = 1)
 ```
 
-Sample sequence from model equilibrium distribution to start at root:
+We first need to provide a sequence that to start off the simulation at the root.
+We can sample a sequence from the equilibrium distribution of the model we are simulating:
 
 ```{r}
 s <- sample_sequence(model = hky, length = 100)
@@ -81,18 +82,26 @@ head(sim$substitutions)
 kable(head(sim$substitutions))
 ```
 
-## Alignment
-
-Show alignment in a viewer:
-
+We can change the colors on the plot by changing columns in the `substitutions` dataframe:
 ```{r}
-plot(sim$alignment)
+transition_substitutions <- sim$substitutions$transition == TRUE
+sim$substitutions$color[transition_substitutions] <- "orange"
+sim$substitutions$color[!transition_substitutions] <- "blue"
+plot(sim, sites = 0:10)
 ```
+
+## Alignment
 
 To export `FASTA` sequence:
 
 ```{r, eval=F}
 as.fasta(sim$alignment, file = "palantir_sim.fa")
+```
+
+Show alignment in a scrollable viewer:
+
+```{r}
+plot(sim$alignment)
 ```
 
 # References

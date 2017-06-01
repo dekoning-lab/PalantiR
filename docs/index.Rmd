@@ -4,9 +4,9 @@ title: "PalantiR"
 
 Welcome to `PalantiR` documentation.
 
-For installation notes, consider [this page](installation.html)
+For installation notes, see [this page](installation.html).
 
-Peruse the following pages for details on particular models and simulation types:
+Details on particular models and simualtion types can be found on the following pages:
 
 # Nucleotide Models
 

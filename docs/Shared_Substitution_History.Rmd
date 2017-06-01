@@ -12,9 +12,9 @@ knitr::opts_chunk$set(fig.height = 7, fig.width = 9)
 
 # Shared Substitution History
 
-Shared substitution history is a switching simulation type similar to [Markov-Modulated Mutation-Selection](Markov_Modulated_Mutation_Selection.html). However, instead of simulating each site with independent switching in the parent model, the switches are shared across sites. In essense, this is a conditioned simulation, given _identities_ and _times_ of parent model switches.
+Shared substitution history is a switching simulation type similar to [Markov-Modulated Mutation-Selection](Markov_Modulated_Mutation_Selection.html). However, instead of simulating each site with independent switching in the parent model, the switches are shared across sites. In essence, this is a conditioned simulation, given _identities_ and _times_ of parent model switches.
 
-Unlike [Shared Model Time History](Shared_Substitution_Times.html), this simulation shares times and indetities.
+Unlike [Shared Model Time History](Shared_Substitution_Times.html), this simulation shares times and identities.
 
 This type of simulation is useful to emulate population size switches, such that population size change is common for all sites in the alignment.
 
@@ -95,7 +95,7 @@ Plot substitution history:
 plot(sim, circle_opacity = 0.1)
 ```
 
-Synonymous substiutions are shown in green, non-synonymous in red. Branch modes are shown as colored branches. Each mode has its own color. After every model switch, there is a burst of non-synonymous substitutions.
+Synonymous substitutions are shown in green, non-synonymous in red. Branch modes are shown as colored branches. Each mode has its own color. After every model switch, there is a burst of non-synonymous substitutions.
 
 Check substitution history table:
 
@@ -106,7 +106,7 @@ head(sim$substitutions)
 kable(head(sim$substitutions))
 ```
 
-Check model sswitching history table. Each row corresponds to a tree node (branch). `state` is the index of the model, `from` and `to` are branch time points where the model applies:
+Check model switching history table. Each row corresponds to a tree node (branch). `state` is the index of the model, `from` and `to` are branch time points where the model applies:
 
 ```{r, results='hide'}
 head(sim$intervals)
@@ -115,17 +115,17 @@ head(sim$intervals)
 kable(head(sim$intervals))
 ```
 
-
 ## Alignment
-
-Show alignment in a viewer:
-
-```{r}
-plot(sim$alignment)
-```
 
 To export `FASTA` sequence:
 
 ```{r, eval=F}
 as.fasta(sim$alignment, file = "palantir_sim.fa")
 ```
+
+Show alignment in a scrollable viewer:
+
+```{r}
+plot(sim$alignment)
+```
+
