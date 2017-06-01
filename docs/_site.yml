@@ -31,6 +31,9 @@ navbar:
           href: Shared_Substitution_Times.html
     - text: "About"
       href: about.html
+    - text: ""
+      icon: fa-github
+      href: https://github.com/dekoning-lab/PalantiR
 output:
   html_document:
     theme: flatly
