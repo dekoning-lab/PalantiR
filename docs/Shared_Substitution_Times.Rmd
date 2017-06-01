@@ -7,7 +7,7 @@ output:
 ```{r, include=F}
 library(PalantiR)
 library(knitr)
-knitr::opts_chunk$set(fig.height = 7, fig.width = 7)
+knitr::opts_chunk$set(fig.height = 7, fig.width = 9)
 ```
 
 # Shared Substitution Times
@@ -71,7 +71,7 @@ ms_2 <- MutationSelection(
 
 Sample sequence from model equilibrium distribution to start at root:
 ```{r sample_sequence}
-s <- sample_sequence(ms_1, 20)
+s <- sample_sequence(ms_1, 25)
 ```
 
 Simulate:
@@ -84,6 +84,8 @@ sim <- simulate_with_shared_time_heterogeneity(
     sequence = s,
     start_mode = 0)
 ```
+
+This simulation will take considerably more time than any other type. The switch modes are not shared across sites, so the sampling matrices have to be rescaled for each site separately.
 
 Note that we have to specify which mode the root starts with using `start_mode` argument.
 We can additionally accelerate switching model substitution rate with `switching_rate`. 
