@@ -3,9 +3,9 @@
 Palantir::SubstitutionHistory::SubstitutionHistory(): size(0) {}
 
 Palantir::SubstitutionHistory::SubstitutionHistory(
-        const vector<double> &time,
-        const vector<ullong> &states_from,
-        const vector<ullong> &states_to) :
+        const deque<double> &time,
+        const deque<ullong> &states_from,
+        const deque<ullong> &states_to) :
         time(time),
         state_from(states_from),
         state_to(states_to),

@@ -16,7 +16,7 @@ namespace Palantir
     namespace Simulate
     {
 
-        vector<double> poisson(
+        deque<double> poisson(
                 double time = 1,
                 double rate = 1);
 

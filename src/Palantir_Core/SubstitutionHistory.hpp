@@ -5,21 +5,21 @@
 
 namespace Palantir
 {
-    class SubstitutionHistory 
+    class SubstitutionHistory
     {
         public:
 
-            vector<double> time;
-            vector<ullong> state_from;
-            vector<ullong> state_to;
+            deque<double> time;
+            deque<ullong> state_from;
+            deque<ullong> state_to;
             ullong size;
 
             SubstitutionHistory();
 
             SubstitutionHistory(
-                    const vector<double> &time,
-                    const vector<ullong> &states_from,
-                    const vector<ullong> &states_to);
+                    const deque<double> &time,
+                    const deque<ullong> &states_from,
+                    const deque<ullong> &states_to);
 
             void append(SubstitutionHistory &s);
 

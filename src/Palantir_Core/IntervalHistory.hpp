@@ -9,17 +9,17 @@ namespace Palantir
     class IntervalHistory
     {
         public:
-            vector<ullong> state;
-            vector<double> time_from;
-            vector<double> time_to;
+            deque<ullong> state;
+            deque<double> time_from;
+            deque<double> time_to;
             ullong size;
 
             IntervalHistory();
 
             IntervalHistory(
-                    const vector<ullong>& state,
-                    const vector<double>& time_from,
-                    const vector<double>& time_to);
+                    const deque<ullong>& state,
+                    const deque<double>& time_from,
+                    const deque<double>& time_to);
 
             IntervalHistory(
                     const ullong state,

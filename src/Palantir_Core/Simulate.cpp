@@ -1,8 +1,8 @@
 #include "Simulate.hpp"
 
-vector<double> Palantir::Simulate::poisson(double time, double rate)
+deque<double> Palantir::Simulate::poisson(double time, double rate)
 {
-    vector<double> times;
+    deque<double> times;
     exponential_distribution<double> rnd_exp(rate);
 
     double t = rnd_exp(Palantir::rng);
@@ -39,9 +39,9 @@ Palantir::SubstitutionHistory Palantir::Simulate::over_time(
         double time,
         double rate)
 {
-    vector<double> times;
-    vector<ullong> states_from;
-    vector<ullong> states_to;
+    deque<double> times;
+    deque<ullong> states_from;
+    deque<ullong> states_to;
 
     uniform_real_distribution<double> rnd_unif(0, 1);
     ullong c = start; // current state
@@ -317,9 +317,9 @@ vector<vector<Palantir::IntervalHistory>> Palantir::Simulate::switching_poisson(
     }
 
     vector<reference_wrapper<const Phylogeny::Node> > nodes = tree.traversal();
-    vector<vector<double>> switch_times(tree.n_nodes);
+    vector<deque<double>> switch_times(tree.n_nodes);
     vector<vector<IntervalHistory>> tree_intervals(n_sites);
-    
+
     // Determine switch times for all sites
     for(const Phylogeny::Node& node : nodes) {
         if (!node.is_root()) {
@@ -339,24 +339,23 @@ vector<vector<Palantir::IntervalHistory>> Palantir::Simulate::switching_poisson(
                 ullong n_switches = switch_times[n].size();
                 if (n_switches) {
                     ullong start_state = tree_states[site][n];
-                    vector<double> times = switch_times[n];
                     vector<ullong> states = Palantir::Simulate::steps(
                             switching_sampling, start_state, n_switches);
-                    vector<ullong> state(n_switches + 1);
-                    vector<double> time_from(n_switches + 1);
-                    vector<double> time_to(n_switches + 1);
+                    deque<ullong> state(n_switches + 1);
+                    deque<double> time_from(n_switches + 1);
+                    deque<double> time_to(n_switches + 1);
                     state[0] = start_state;
                     time_from[0] = 0;
-                    time_to[0] = times[0];
+                    time_to[0] = switch_times[n][0];
                     for(ullong i = 1; i < n_switches; i++) {
                         state[i] = states[i];
-                        time_from[i] = times[i-1];
-                        time_to[i] = times[i];
+                        time_from[i] = switch_times[n][i-1];
+                        time_to[i] = switch_times[n][i];
                     }
                     ullong last = n_switches - 1;
-                    if (node.length != times[last]) {
+                    if (node.length != switch_times[n][last]) {
                         state[n_switches] = states[last];
-                        time_from[n_switches] = times[last];
+                        time_from[n_switches] = switch_times[n][last];
                         time_to[n_switches] = node.length;
                     }
                     tree_intervals[site][n] = IntervalHistory(state, time_from, time_to);

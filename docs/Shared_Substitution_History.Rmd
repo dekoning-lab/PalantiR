@@ -70,7 +70,7 @@ ms_20k <- MutationSelection(
 
 Sample sequence from model equilibrium distribution to start at root:
 ```{r sample_sequence}
-s <- sample_sequence(ms_1k, 20)
+s <- sample_sequence(ms_1k, 100)
 ```
 
 Simulate:

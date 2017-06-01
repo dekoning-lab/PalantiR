@@ -3,9 +3,9 @@
 Palantir::IntervalHistory::IntervalHistory(): size(0) {};
 
 Palantir::IntervalHistory::IntervalHistory(
-       const vector<ullong>& state,
-       const vector<double>& time_from,
-       const vector<double>& time_to):
+       const deque<ullong>& state,
+       const deque<double>& time_from,
+       const deque<double>& time_to):
     state(state),
     time_from(time_from),
     time_to(time_to),
