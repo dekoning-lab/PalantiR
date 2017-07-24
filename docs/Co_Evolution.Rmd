@@ -92,7 +92,7 @@ sim <- simulate_over_phylogeny(
 Plot substitution history:
 
 ```{r}
-plot(sim, sites = 0:20)
+plot(sim)
 ```
 
 Synonymous substiutions are shown in green, non-synonymous in red.

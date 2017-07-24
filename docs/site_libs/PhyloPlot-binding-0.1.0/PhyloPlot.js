@@ -46,13 +46,6 @@ HTMLWidgets.widget({
                     download_svg("#" + el.id + ">svg.phylogram", "PalantiR_phylogeny.svg");
                 });
             }
-            //d3.select("body").on("keydown", function() {
-            //    console.log("keydown");
-            //    var object = this;
-            //    if (d3.event.key === "s") {
-            //        download_svg("#" + el.id + ">svg.phylogram", "PalantiR_phylogeny.svg");
-            //    }
-            //});
         };
 
         return {

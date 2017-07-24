@@ -30,7 +30,11 @@ var render_pair_substitutions = function(plot, substitutions) {
 
         subs.append("circle")
             .attrs({
-                "r": plot.options.circle_size,
+                // so hacky
+                "r": function(d) {
+                    if (d.pair_from.split(",")[0] === d.pair_to.split(",")[0]) return 0;
+                    else return plot.options.circle_size;
+                },
                 "cy": -plot.options.circle_size,
                 "fill": function(d) {
                     if (d.hasOwnProperty("first_color")) return(d.first_color);
@@ -40,7 +44,10 @@ var render_pair_substitutions = function(plot, substitutions) {
 
         subs.append("circle")
             .attrs({
-                "r": plot.options.circle_size,
+                "r": function(d) {
+                    if (d.pair_from.split(",")[1] === d.pair_to.split(",")[1]) return 0;
+                    else return plot.options.circle_size;
+                },
                 "cy": plot.options.circle_size,
                 "fill": function(d) {
                     if (d.hasOwnProperty("second_color")) return(d.second_color);
