@@ -22,7 +22,7 @@ vec Palantir::MutationSelection::equilibrium(
     double max = numeric_limits<double>::min();
     vec codon_equilibrium(n_codons, fill::zeros);
     double scale = 0;
-    
+
     // Log-scale normalizing constant
     for(const Codon& i : g) {
         double population_selection = 2.0 * N * fitness[i.amino_acid];
@@ -30,7 +30,7 @@ vec Palantir::MutationSelection::equilibrium(
             max = population_selection;
         }
     }
-    
+
     for(const Codon& i : g) {
         double population_selection = 2.0 * N * fitness[i.amino_acid];
         codon_equilibrium[i.index] = population_selection;
@@ -43,13 +43,13 @@ vec Palantir::MutationSelection::equilibrium(
         scale += s;
     }
     scale = max + log(scale);
-    
+
     codon_equilibrium -= scale;
     codon_equilibrium = exp(codon_equilibrium);
     // Should this be re-normalized?
 
     codon_equilibrium /= sum(codon_equilibrium);
-    
+
     return codon_equilibrium;
 }
 
@@ -62,12 +62,12 @@ mat Palantir::MutationSelection::transition(
 {
     const ullong& N = population_size;
     mat codon_transition(g.size, g.size, fill::zeros);
-    
+
     for(const Codon& i : g) {
 
         for(const Codon& j : g) {
             if(Codon::_distance(i, j) <= 1 && i != j) {
-                
+
                 pair<ullong, ullong> s = Codon::_substitution(i, j);
                 double mu = nucleotide_transition.at(s.first,s.second) * mutation_rate;
 
@@ -77,10 +77,10 @@ mat Palantir::MutationSelection::transition(
             }
         }
     }
-    
+
     vec row_sums = sum(codon_transition, 1);
     codon_transition.diag() = -row_sums;
-    
+
     return codon_transition;
 }
 
@@ -91,19 +91,25 @@ double Palantir::MutationSelection::scaling(
         const GeneticCode& g)
 {
 
-    if (scaling_type == "none") {
+    string st = scaling_type;
+    if (st != "none" && st != "substitution" && st != "synonymous" && st != "non-synonymous") {
+        // need to raise error
+        cout << "Unknown scaling type - defaulting to 'none'" << endl;
+        st = "none";
+    }
+    if (st == "none") {
         return sum(equilibrium);
     }
     vec scale(g.size, fill::zeros);
-    
+
     for(const Codon& i : g) {
         for(const Codon& j : g) {
             if (Codon::_distance(i, j) <= 1 && i != j) {
-                if(scaling_type == "substitution") {
+                if(st == "substitution") {
                     scale[i.index] += transition.at(i.index, j.index);
-                } else if(scaling_type == "synonymous" && Codon::_synonymous(i, j)) {
+                } else if(st == "synonymous" && Codon::_synonymous(i, j)) {
                     scale[i.index] += transition.at(i.index, j.index);
-                } else if(scaling_type == "non-synonymous" && (!Codon::_synonymous(i, j))) {
+                } else if(st == "non-synonymous" && (!Codon::_synonymous(i, j))) {
                     scale[i.index] += transition.at(i.index, j.index);
                 }
             }

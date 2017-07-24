@@ -2,70 +2,70 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 HasegawaKishinoYano <- function(equilibrium, transition_rate = 1, transversion_rate = 1) {
-    .Call('PalantiR_HasegawaKishinoYano', PACKAGE = 'PalantiR', equilibrium, transition_rate, transversion_rate)
+    .Call('_PalantiR_HasegawaKishinoYano', PACKAGE = 'PalantiR', equilibrium, transition_rate, transversion_rate)
 }
 
 GeneralTimeReversible <- function(equilibrium, exchangeability) {
-    .Call('PalantiR_GeneralTimeReversible', PACKAGE = 'PalantiR', equilibrium, exchangeability)
+    .Call('_PalantiR_GeneralTimeReversible', PACKAGE = 'PalantiR', equilibrium, exchangeability)
 }
 
 MutationSelection <- function(population_size, mutation_rate, nucleotide_model, fitness, scaling_type = "synonymous") {
-    .Call('PalantiR_MutationSelection', PACKAGE = 'PalantiR', population_size, mutation_rate, nucleotide_model, fitness, scaling_type)
+    .Call('_PalantiR_MutationSelection', PACKAGE = 'PalantiR', population_size, mutation_rate, nucleotide_model, fitness, scaling_type)
 }
 
 CoEvolution <- function(population_size, mutation_rate, nucleotide_model, fitness_1, fitness_2, delta, scaling_type = "synonymous") {
-    .Call('PalantiR_CoEvolution', PACKAGE = 'PalantiR', population_size, mutation_rate, nucleotide_model, fitness_1, fitness_2, delta, scaling_type)
+    .Call('_PalantiR_CoEvolution', PACKAGE = 'PalantiR', population_size, mutation_rate, nucleotide_model, fitness_1, fitness_2, delta, scaling_type)
 }
 
 MarkovModulatedMutationSelection <- function(mutation_selection_models, switching_model) {
-    .Call('PalantiR_MarkovModulatedMutationSelection', PACKAGE = 'PalantiR', mutation_selection_models, switching_model)
+    .Call('_PalantiR_MarkovModulatedMutationSelection', PACKAGE = 'PalantiR', mutation_selection_models, switching_model)
 }
 
 Phylogeny <- function(newick_path, type = "phylogeny") {
-    .Call('PalantiR_Phylogeny', PACKAGE = 'PalantiR', newick_path, type)
+    .Call('_PalantiR_Phylogeny', PACKAGE = 'PalantiR', newick_path, type)
 }
 
 equilibrium_to_fitness <- function(equilibrium, population_size) {
-    .Call('PalantiR_equilibrium_to_fitness', PACKAGE = 'PalantiR', equilibrium, population_size)
+    .Call('_PalantiR_equilibrium_to_fitness', PACKAGE = 'PalantiR', equilibrium, population_size)
 }
 
 simulate_over_phylogeny <- function(phylogeny, model, sequence, rate = 1) {
-    .Call('PalantiR_simulate_over_phylogeny', PACKAGE = 'PalantiR', phylogeny, model, sequence, rate)
+    .Call('_PalantiR_simulate_over_phylogeny', PACKAGE = 'PalantiR', phylogeny, model, sequence, rate)
 }
 
 phylogeny_to_intervals <- function(phylogeny, mode_phylogeny) {
-    .Call('PalantiR_phylogeny_to_intervals', PACKAGE = 'PalantiR', phylogeny, mode_phylogeny)
+    .Call('_PalantiR_phylogeny_to_intervals', PACKAGE = 'PalantiR', phylogeny, mode_phylogeny)
 }
 
 simulate_over_interval_phylogeny <- function(phylogeny, mode_phylogeny, models, sequence, start_mode, rate = 1, segment_length = 0.001, tolerance = 0.001) {
-    .Call('PalantiR_simulate_over_interval_phylogeny', PACKAGE = 'PalantiR', phylogeny, mode_phylogeny, models, sequence, start_mode, rate, segment_length, tolerance)
+    .Call('_PalantiR_simulate_over_interval_phylogeny', PACKAGE = 'PalantiR', phylogeny, mode_phylogeny, models, sequence, start_mode, rate, segment_length, tolerance)
 }
 
 simulate_with_shared_substitution_heterogeneity <- function(phylogeny, switching_model, substitution_models, sequence, start_mode, rate = 1, switching_rate = 1, segment_length = 0.0001, tolerance = 0.001) {
-    .Call('PalantiR_simulate_with_shared_substitution_heterogeneity', PACKAGE = 'PalantiR', phylogeny, switching_model, substitution_models, sequence, start_mode, rate, switching_rate, segment_length, tolerance)
+    .Call('_PalantiR_simulate_with_shared_substitution_heterogeneity', PACKAGE = 'PalantiR', phylogeny, switching_model, substitution_models, sequence, start_mode, rate, switching_rate, segment_length, tolerance)
 }
 
 simulate_with_shared_time_heterogeneity <- function(phylogeny, switching_model, substitution_models, sequence, start_mode, rate = 1, switching_rate = 1, segment_length = 0.0001, tolerance = 0.001) {
-    .Call('PalantiR_simulate_with_shared_time_heterogeneity', PACKAGE = 'PalantiR', phylogeny, switching_model, substitution_models, sequence, start_mode, rate, switching_rate, segment_length, tolerance)
+    .Call('_PalantiR_simulate_with_shared_time_heterogeneity', PACKAGE = 'PalantiR', phylogeny, switching_model, substitution_models, sequence, start_mode, rate, switching_rate, segment_length, tolerance)
 }
 
 compare_modes <- function(substitution_models, intervals) {
-    .Call('PalantiR_compare_modes', PACKAGE = 'PalantiR', substitution_models, intervals)
+    .Call('_PalantiR_compare_modes', PACKAGE = 'PalantiR', substitution_models, intervals)
 }
 
 Sequence <- function(sequence, type = "codon", mode = 0L) {
-    .Call('PalantiR_Sequence', PACKAGE = 'PalantiR', sequence, type, mode)
+    .Call('_PalantiR_Sequence', PACKAGE = 'PalantiR', sequence, type, mode)
 }
 
 as_compound <- function(sequence, mode) {
-    .Call('PalantiR_as_compound', PACKAGE = 'PalantiR', sequence, mode)
+    .Call('_PalantiR_as_compound', PACKAGE = 'PalantiR', sequence, mode)
 }
 
 sample_sequence <- function(model, length) {
-    .Call('PalantiR_sample_sequence', PACKAGE = 'PalantiR', model, length)
+    .Call('_PalantiR_sample_sequence', PACKAGE = 'PalantiR', model, length)
 }
 
 as_amino_acid <- function(codons) {
-    .Call('PalantiR_as_amino_acid', PACKAGE = 'PalantiR', codons)
+    .Call('_PalantiR_as_amino_acid', PACKAGE = 'PalantiR', codons)
 }
 
