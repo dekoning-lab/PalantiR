@@ -6,6 +6,16 @@
 
 using namespace Rcpp;
 
+// GeneticCode
+StringVector GeneticCode();
+RcppExport SEXP _PalantiR_GeneticCode() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(GeneticCode());
+    return rcpp_result_gen;
+END_RCPP
+}
 // HasegawaKishinoYano
 List HasegawaKishinoYano(arma::vec equilibrium, double transition_rate, double transversion_rate);
 RcppExport SEXP _PalantiR_HasegawaKishinoYano(SEXP equilibriumSEXP, SEXP transition_rateSEXP, SEXP transversion_rateSEXP) {
@@ -243,6 +253,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_PalantiR_GeneticCode", (DL_FUNC) &_PalantiR_GeneticCode, 0},
     {"_PalantiR_HasegawaKishinoYano", (DL_FUNC) &_PalantiR_HasegawaKishinoYano, 3},
     {"_PalantiR_GeneralTimeReversible", (DL_FUNC) &_PalantiR_GeneralTimeReversible, 2},
     {"_PalantiR_MutationSelection", (DL_FUNC) &_PalantiR_MutationSelection, 5},
