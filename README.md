@@ -15,6 +15,7 @@ The package can be installed automatically with `devtools`:
 ```R
 devtools::install_github("dekoning-lab/PalantiR")
 ```
+*Note: Rccparmadillo is a required package. It will require GCC 4.7x to compile properly.*
 
 ## Downloading
 
