@@ -15,16 +15,7 @@ The package can be installed automatically with `devtools`:
 ```R
 devtools::install_github("dekoning-lab/PalantiR")
 ```
-
-If you are installing from a local clone, use:
-
-```R
-devtools::install_local("path/to/palantir/clone")
-```
-
-*Note: Rccparmadillo is a required package. Compiling against it will require `gfortran`*
-
-For MacOS, a copy of `gfortran` binaries can be downloaded from [CRAN tools](https://cran.r-project.org/bin/macosx/tools)
+*Note: Rccparmadillo is a required package. It will require GCC 4.7x to compile properly.*
 
 ## Downloading
 
