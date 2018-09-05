@@ -101,4 +101,11 @@ as.fasta.Alignment <- function(alignment, file = "") {
     }
 }
 
+cbind2.Alignment <- function(x, y) {
+  al <- cbind2(x, y)
+  class(al) <- 'Alignment'
+  attr(al, 'type') <- 'codon'
+  al
+}
+
 plot.Alignment <- function(alignment) AlignmentPlot(alignment)
