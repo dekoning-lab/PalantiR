@@ -174,8 +174,14 @@ List simulate_over_interval_phylogeny(
         sampling.push_back(substitution_model["sampling"]);
     }
 
+    // FIX (2026-08-17): scaling_type was never passed, so the segment rescaler
+    // always used its default of "synonymous" whatever the models were built
+    // with (PROJECT-RECORD 8E.5a). NOTE: with synonymous models this is a no-op;
+    // with "substitution" models it changes behaviour, and pinning the TOTAL
+    // rate during the transient is not what the analysis wants. Use synonymous.
+    string scaling_type = get_attr(first_model, "scaling_type");
     vector<Palantir::SiteSimulation> sims = Palantir::Simulate::sequence_over_intervals(
-        p, tree_intervals, equilibrium, transition, sampling, codons, start_mode, g, rate, segment_length, tolerance);
+        p, tree_intervals, equilibrium, transition, sampling, codons, start_mode, g, rate, segment_length, tolerance, scaling_type);
 
     List substitutions = site_simulations_to_list(sims, p);
 
@@ -267,8 +273,11 @@ List simulate_with_shared_substitution_heterogeneity(
         sampling.push_back(substitution_model["sampling"]);
     }
 
+    // FIX (2026-08-17): see the note on the same call in
+    // simulate_over_interval_phylogeny -- scaling_type was never passed through.
+    string mm_scaling_type = get_attr(List(substitution_models[0]), "scaling_type");
     vector<Palantir::SiteSimulation> sims = Palantir::Simulate::sequence_over_intervals(
-        p, tree_intervals, equilibrium, transition, sampling, codons, start_mode, g, rate, segment_length, tolerance);
+        p, tree_intervals, equilibrium, transition, sampling, codons, start_mode, g, rate, segment_length, tolerance, mm_scaling_type);
 
     List substitutions = site_simulations_to_list(sims, p);
 
@@ -362,13 +371,15 @@ List simulate_with_shared_time_heterogeneity(
         sampling.push_back(substitution_model["sampling"]);
     }
 
+    // FIX (2026-08-17): see the note in simulate_over_interval_phylogeny.
+    string th_scaling_type = get_attr(List(substitution_models[0]), "scaling_type");
     vector<Palantir::SiteSimulation> sims;
     for(unsigned long long site = 0; site < n_sites; site++) {
         uvec seq(1);
         seq[0] = codons[site];
 
         vector<Palantir::SiteSimulation> sim = Palantir::Simulate::sequence_over_intervals(
-             p, tree_intervals[site], equilibrium, transition, sampling, seq, start_mode, g, rate, segment_length, tolerance);
+             p, tree_intervals[site], equilibrium, transition, sampling, seq, start_mode, g, rate, segment_length, tolerance, th_scaling_type);
         if(sim.size() != 1) {
             Rcout << sim.size() << endl;
             stop("This should never happen!");
