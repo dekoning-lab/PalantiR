@@ -47,8 +47,13 @@ Palantir::SubstitutionHistory Palantir::Simulate::over_time(
     ullong c = start; // current state
     ullong j;
 
+    // FIX (2026-08-17): the loop increment divided the exponential's RATE
+    // PARAMETER by `rate` instead of dividing the deviate, giving a mean waiting
+    // time of rate/-Q(c,c) rather than 1/(rate * -Q(c,c)) -- wrong by a factor of
+    // rate^2 for every waiting time after the first. Site rate multipliers were
+    // therefore compressed (see PROJECT-RECORD 8E.2: r = 4 gave 2.62x, not 4x).
     double t = rnd_exp(-transition.at(c, c)) / rate;
-    for (; t <= time; t += rnd_exp(-transition.at(c, c) / rate)) {
+    for (; t <= time; t += rnd_exp(-transition.at(c, c)) / rate) {
         states_from.push_back(c); // starting state
         times.push_back(t);
         double r = rnd_unif(Palantir::rng);

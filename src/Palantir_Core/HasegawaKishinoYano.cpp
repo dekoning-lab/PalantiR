@@ -1,9 +1,14 @@
 #include "HasegawaKishinoYano.hpp"
 
+// FIX (2026-08-17): the parameter order here disagreed with the declaration in
+// HasegawaKishinoYano.hpp, which is (equilibrium, transition_rate,
+// transversion_rate). C++ binds positionally, so every caller asking for
+// transition_rate = k silently got transversion_rate = k. Reordered to match the
+// header. All other call sites use defaults only, so nothing else changes.
 mat Palantir::HasegawaKishinoYano::transition(
         const vec& equilibrium,
-        double transversion_rate,
-        double transition_rate)
+        double transition_rate,
+        double transversion_rate)
 {
     ullong size = equilibrium.n_elem;
     if(!(size == 4)) {
