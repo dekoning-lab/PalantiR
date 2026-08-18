@@ -181,6 +181,52 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
                 if (pi_rmsd > tolerance) {
                     // rescaling
 
+                    // GUARD (2026-08-17): the segment rescaler renormalises Q
+                    // against the transient distribution using
+                    // MutationSelection::scaling. Two preconditions have to hold
+                    // for that to mean anything, and neither was checked.
+                    // See PROJECT-RECORD 8H.
+
+                    // (1) MutationSelection::scaling sizes its accumulator by the
+                    // number of sense codons, so it is only applicable to
+                    // single-codon models. A CoEvolution ("codon_pair") model has
+                    // n_codons^2 states and previously died here with an opaque
+                    // Armadillo dimension error -- but only when the rescaler
+                    // happened to engage, which for a 3600-state model it does not
+                    // do at the default tolerance (8H.3).
+                    if (local_Q[mode].n_rows != g.size) {
+                        throw logic_error(
+                            "The transient segment rescaler supports single-codon "
+                            "models only (MutationSelection). This model has " +
+                            to_string(local_Q[mode].n_rows) + " states against " +
+                            to_string(g.size) + " sense codons in the active "
+                            "genetic code. Either simulate without mode changes, "
+                            "or disable the rescaler by passing a tolerance of 1 "
+                            "or more.");
+                    }
+
+                    // (2) The rescaler must normalise a quantity that does not
+                    // itself depend on what the mode change varies. Under
+                    // mutation-selection a synonymous change has s = 0, so its
+                    // substitution rate is mutation-limited and independent of the
+                    // population size; "substitution" and "non-synonymous" are not.
+                    // Pinning either of those across a population-size shift forces
+                    // the synonymous rate to absorb the difference and cancels the
+                    // non-synonymous acceleration the shift is supposed to produce
+                    // (PROJECT-RECORD 8F.2, 8H.4).
+                    if (scaling_type != "synonymous") {
+                        throw logic_error(
+                            "Models reaching the transient segment rescaler must be "
+                            "built with scaling_type = \"synonymous\"; got \"" +
+                            scaling_type + "\". The rescaler holds the scaled "
+                            "quantity constant across a mode change, and only the "
+                            "synonymous rate is independent of population size, so "
+                            "any other choice suppresses the non-synonymous rate "
+                            "change that the mode switch exists to model. To "
+                            "simulate without the transient at all, pass a "
+                            "tolerance of 1 or more.");
+                    }
+
                     // Iterate over small branch segments -
                     IntervalHistory segments(finish - start, segment_length);
                     segments.fast_forward(start);
