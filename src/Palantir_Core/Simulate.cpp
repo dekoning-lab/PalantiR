@@ -205,27 +205,16 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
                             "or more.");
                     }
 
-                    // (2) The rescaler must normalise a quantity that does not
-                    // itself depend on what the mode change varies. Under
-                    // mutation-selection a synonymous change has s = 0, so its
-                    // substitution rate is mutation-limited and independent of the
-                    // population size; "substitution" and "non-synonymous" are not.
-                    // Pinning either of those across a population-size shift forces
-                    // the synonymous rate to absorb the difference and cancels the
-                    // non-synonymous acceleration the shift is supposed to produce
-                    // (PROJECT-RECORD 8F.2, 8H.4).
-                    if (scaling_type != "synonymous") {
-                        throw logic_error(
-                            "Models reaching the transient segment rescaler must be "
-                            "built with scaling_type = \"synonymous\"; got \"" +
-                            scaling_type + "\". The rescaler holds the scaled "
-                            "quantity constant across a mode change, and only the "
-                            "synonymous rate is independent of population size, so "
-                            "any other choice suppresses the non-synonymous rate "
-                            "change that the mode switch exists to model. To "
-                            "simulate without the transient at all, pass a "
-                            "tolerance of 1 or more.");
-                    }
+                    // NOTE: no constraint on scaling_type. The rescaler must
+                    // normalise the SAME quantity the models were built with --
+                    // which the preceding commit guarantees by passing
+                    // scaling_type through -- but WHICH quantity that is, is the
+                    // caller's modelling choice, set by the units of the guide
+                    // tree's branch lengths. An earlier revision of this guard
+                    // required "synonymous"; that was wrong, because it assumed
+                    // the invariant should be the Ne-independent rate rather than
+                    // whatever the branch lengths denominate. With amino-acid
+                    // branch lengths the correct invariant is non-synonymous.
 
                     // Iterate over small branch segments -
                     IntervalHistory segments(finish - start, segment_length);
