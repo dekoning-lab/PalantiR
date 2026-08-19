@@ -1,4 +1,5 @@
-plot.SubstitutionModel <- function(model, prop = 0.25, label_font_size = 12, axis_cex = 1, ...) {
+plot.SubstitutionModel <- function(x, prop = 0.25, label_font_size = 12, axis_cex = 1, ...) {
+    model <- x
 
     # Transition rates plot
     tr_plot <- Matrix::image(Matrix::Matrix(model$transition),
@@ -21,6 +22,6 @@ plot.SubstitutionModel <- function(model, prop = 0.25, label_font_size = 12, axi
     print(tr_plot, position = c(prop, 0, 1, 1))
 }
 
-print.SubstitutionModel <- function(model) {
-    cat("SubstitutionModel of type", model$type, "with", model$n_states, "states\n")
+print.SubstitutionModel <- function(x, ...) {
+    cat("SubstitutionModel of type", x$type, "with", x$n_states, "states\n")
 }

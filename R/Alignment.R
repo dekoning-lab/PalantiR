@@ -35,7 +35,7 @@
         return(apply(alignment, c(1, 2), function(x)
             strsplit(x, ",")[[1]][[1]]))
     } else if(type == "codon_pair") {
-        return(t(apply(sim$alignment, 1, function(col)
+        return(t(apply(alignment, 1, function(col)
             vapply(col, function(x)
                 strsplit(x, ",")[[1]], character(2)))))
     } else {
@@ -91,8 +91,9 @@ AlignmentPlotRender <- function(expr, env = parent.frame(), quoted = FALSE) {
     htmlwidgets::shinyRenderWidget(expr, AlignmentPlotOutput, env, quoted = TRUE)
 }
 
-as.fasta <- function(alignment, file) UseMethod("as.fasta")
-as.fasta.Alignment <- function(alignment, file = "") {
+as.fasta <- function(x, file = "", ...) UseMethod("as.fasta")
+as.fasta.Alignment <- function(x, file = "", ...) {
+    alignment <- x
     taxa <- row.names(alignment)
     cat("", sep = "", file = file, append = F)
     for(row in seq_len(nrow(alignment))) {
@@ -101,4 +102,4 @@ as.fasta.Alignment <- function(alignment, file = "") {
     }
 }
 
-plot.Alignment <- function(alignment) AlignmentPlot(alignment)
+plot.Alignment <- function(x, ...) AlignmentPlot(x)

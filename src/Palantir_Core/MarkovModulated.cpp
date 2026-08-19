@@ -11,7 +11,7 @@ vec Palantir::MarkovModulated::equilibrium(
     
     for(ullong i = 0; i < n_modes; i++) {
         const vec mode_equilibrium(substitution_equilibrium[i]);
-        for(const Codon c : g) {
+        for(const Codon& c : g) {
             ullong j = c.index;
             equilibrium_distribution((i * g.size) + j) = mode_equilibrium[j] * switching_equilibrium[i];
         }

@@ -1,4 +1,5 @@
-plot.Phylogeny <- function(phylogeny, mode_phylogeny = NULL) {
+plot.Phylogeny <- function(x, ..., mode_phylogeny = NULL) {
+    phylogeny <- x
     if((phylogeny$type == "phylogeny") && is.null(mode_phylogeny)) {
        PhyloPlot(phylogeny)
     } else if (phylogeny$type == "mode") {
@@ -14,7 +15,7 @@ plot.Phylogeny <- function(phylogeny, mode_phylogeny = NULL) {
     }
 }
 
-print.Phylogeny <- function(phylogeny) cat(phylogeny$string)
+print.Phylogeny <- function(x, ...) cat(x$string)
 
 PhyloPlot <- function(
     phylogeny,

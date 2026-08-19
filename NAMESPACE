@@ -1,3 +1,22 @@
-exportPattern("^[[:alpha:]]+")
+useDynLib(PalantiR, .registration = TRUE)
 importFrom(Rcpp, evalCpp)
-useDynLib(PalantiR)
+importFrom(jsonlite, fromJSON, toJSON)
+importFrom(grDevices, rgb)
+importFrom(stats, setNames)
+importFrom(Matrix, Matrix, image)
+importFrom(lattice, barchart)
+
+exportPattern("^[[:alpha:]]+")
+
+# S3 methods must be registered explicitly. exportPattern makes them visible but
+# does not enter them in the methods table, so UseMethod() never dispatches to
+# them -- as.fasta(x) on an Alignment failed with "no applicable method" despite
+# as.fasta.Alignment being exported.
+S3method(as.fasta, Alignment)
+S3method(plot, Alignment)
+S3method(plot, Phylogeny)
+S3method(plot, Simulation)
+S3method(plot, SubstitutionModel)
+S3method(print, Phylogeny)
+S3method(print, Simulation)
+S3method(print, SubstitutionModel)

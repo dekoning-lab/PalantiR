@@ -17,8 +17,8 @@ vec Palantir::CoEvolution::equilibrium(
     double scale = 0;
     
     // Log-scale normalizing constant
-    for(const Codon i : g) {
-        for(const Codon j : g) {
+    for(const Codon& i : g) {
+        for(const Codon& j : g) {
             ullong aa_i = i.amino_acid;
             ullong aa_j = j.amino_acid;
             
@@ -30,8 +30,8 @@ vec Palantir::CoEvolution::equilibrium(
         }
     }
     
-    for(const Codon i : g) {
-        for(const Codon j : g) {
+    for(const Codon& i : g) {
+        for(const Codon& j : g) {
             ullong aa_i = i.amino_acid;
             ullong aa_j = j.amino_acid;
             ullong pair_index = CodonPair::index(i, j, g);
@@ -74,11 +74,11 @@ mat Palantir::CoEvolution::transition(
     mat transition(n_pairs, n_pairs, fill::zeros);
     
     // (i,j) -> (k, l)
-    for(const Codon i : g) {
-        for(const Codon j : g) {
+    for(const Codon& i : g) {
+        for(const Codon& j : g) {
             ullong c_ij = CodonPair::index(i, j, g);
-            for(const Codon k : g) {
-                for(const Codon l : g) {
+            for(const Codon& k : g) {
+                for(const Codon& l : g) {
                     ullong c_kl = CodonPair::index(k, l, g);
                     ullong ik_d = Codon::_distance(i, k);    // i -> k
                     ullong jl_d = Codon::_distance(j, l);    // j -> l
@@ -126,14 +126,22 @@ double Palantir::CoEvolution::scaling(
     if (scaling_type == "none") {
         return sum(equilibrium);
     }
+    if (scaling_type != "substitution" && scaling_type != "synonymous"
+        && scaling_type != "non-synonymous") {
+        // Without this an unrecognised name leaves the accumulator at zero and
+        // the caller divides the transition matrix by it.
+        throw logic_error("Unknown scaling type '" + scaling_type + "'. Valid "
+                          "values are \"none\", \"substitution\", "
+                          "\"synonymous\" and \"non-synonymous\".");
+    }
 
     vec scale(g.size * g.size, fill::zeros);
     // (i,j) -> (k, l)
-    for(const Codon i : g) {
-        for(const Codon j : g) {
+    for(const Codon& i : g) {
+        for(const Codon& j : g) {
             ullong c_ij = CodonPair::index(i, j, g);
-            for(const Codon k : g) {
-                for(const Codon l : g) {
+            for(const Codon& k : g) {
+                for(const Codon& l : g) {
                     ullong ik_d = Codon::_distance(i, k);    // i -> k
                     ullong jl_d = Codon::_distance(j, l);    // j -> l
 

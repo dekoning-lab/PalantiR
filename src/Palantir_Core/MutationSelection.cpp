@@ -93,9 +93,15 @@ double Palantir::MutationSelection::scaling(
 
     string st = scaling_type;
     if (st != "none" && st != "substitution" && st != "synonymous" && st != "non-synonymous") {
-        // need to raise error
-        cout << "Unknown scaling type - defaulting to 'none'" << endl;
-        st = "none";
+        // Previously this printed to stdout and fell back to "none", i.e. no
+        // scaling at all -- a silent wrong answer. The 2016 fork of this package
+        // called the total-rate option "standard", so passing that name here
+        // produced unscaled rate matrices with only a message on stdout, which
+        // R does not show. Fail loudly instead.
+        throw logic_error("Unknown scaling type '" + st + "'. Valid values are "
+                          "\"none\", \"substitution\", \"synonymous\" and "
+                          "\"non-synonymous\" (the 2016 fork's \"standard\" is "
+                          "called \"substitution\" here).");
     }
     if (st == "none") {
         return sum(equilibrium);
