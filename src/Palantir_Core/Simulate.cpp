@@ -122,6 +122,120 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_phylogeny(
 }
 
 // Shared modes for all sites in the sequence
+// --- Exact time-change rescaling (opt-in alternative to the segment scheme).
+// See the accompanying technical note: because every rescaled segment applies a
+// scalar multiple of one generator, the out-of-equilibrium branch is exactly
+// the homogeneous chain run for an intrinsic duration tau*. With p0 the
+// forecast entering the branch and g the per-state class outflux, the budget
+// delivered by intrinsic time tau is F(tau) = p0' (int_0^tau e^{Qu} du) g,
+// strictly increasing with F'(tau) = p0' e^{Qtau} g -> 1, so F(tau*) = t*rate
+// has a unique root. F and F' come from one exponential of the augmented
+// matrix [[Q, I], [0, 0]].
+
+static vec rescale_class_outflux(const mat& Q, const string& scaling_type,
+                                 const Palantir::GeneticCode& g)
+{
+    vec out(Q.n_rows, fill::zeros);
+    for(const Palantir::Codon& i : g) {
+        for(const Palantir::Codon& j : g) {
+            if(Palantir::Codon::_distance(i, j) <= 1 && i != j) {
+                bool syn = Palantir::Codon::_synonymous(i, j);
+                if(scaling_type == "substitution" ||
+                   (scaling_type == "synonymous" && syn) ||
+                   (scaling_type == "non-synonymous" && !syn)) {
+                    out[i.index] += Q.at(i.index, j.index);
+                }
+            }
+        }
+    }
+    return out;
+}
+
+static double rescale_solve_tau(const mat& Q, const mat& Estep_aug,
+                                double dtau, const vec& p0, const vec& g,
+                                double budget, vec& exit_forecast,
+                                vec& knot_tau, vec& knot_F)
+{
+    // March the row vector [p', p' * int e^{Qu} du] through the precomputed
+    // augmented step matrix. Each step costs one vector-matrix product; F and
+    // f are exact at every grid point. Stop when the budget is bracketed and
+    // invert the final interval with a monotone Hermite cubic.
+    const uword n = Q.n_rows;
+    rowvec v(2 * n, fill::zeros);
+    v.head(n) = p0.t();
+    rowvec v_prev = v;
+
+    std::vector<double> taus(1, 0.0), Fs(1, 0.0);
+    double f_prev = std::max(dot(p0, g), 1e-300);
+    double F_prev = 0.0;
+    double f_cur = f_prev, F_cur = 0.0;
+    const ullong kmax = (ullong)(std::max(budget, 1.0) / dtau) * 100 + 1000;
+    ullong k = 0;
+    while (F_cur < budget && k < kmax) {
+        v_prev = v;
+        v = v * Estep_aug;
+        k++;
+        f_prev = f_cur; F_prev = F_cur;
+        f_cur = std::max(as_scalar(v.head(n) * g), 1e-300);
+        F_cur = as_scalar(v.tail(n) * g);
+        taus.push_back(k * dtau);
+        Fs.push_back(F_cur);
+    }
+    if (F_cur < budget) {
+        throw logic_error("Exact rescaler failed to reach the event budget; "
+                          "the class flux may be degenerate for this model.");
+    }
+
+    // Hermite inversion on the final interval: F has values (F_prev, F_cur)
+    // and derivatives (f_prev, f_cur) at the ends; both positive, F monotone.
+    double a = 0.5;
+    for (int it = 0; it < 50; it++) {
+        double h00 = (1 + 2 * a) * (1 - a) * (1 - a);
+        double h10 = a * (1 - a) * (1 - a);
+        double h01 = a * a * (3 - 2 * a);
+        double h11 = a * a * (a - 1);
+        double Fh = h00 * F_prev + h10 * dtau * f_prev
+                  + h01 * F_cur + h11 * dtau * f_cur;
+        double dh = 6 * a * (a - 1) * (F_prev - F_cur)
+                  + (3 * a * a - 4 * a + 1) * dtau * f_prev
+                  + (3 * a * a - 2 * a) * dtau * f_cur;
+        double step = (Fh - budget) / std::max(dh, 1e-300);
+        a -= step;
+        if (a < 0) a = 0;
+        if (a > 1) a = 1;
+        if (std::fabs(Fh - budget) < 1e-12 * std::max(1.0, budget)) break;
+    }
+    double tau = (k - 1) * dtau + a * dtau;
+
+    // Exit forecast: v_prev holds the exact state at the last full grid
+    // point; one small exponential covers the partial step.
+    exit_forecast = trans(rowvec(v_prev.head(n)) *
+                          expmat(Q * (tau - (k - 1) * dtau)));
+
+    knot_tau = conv_to<vec>::from(taus);
+    knot_F = conv_to<vec>::from(Fs);
+    ullong m = knot_tau.n_elem - 1;
+    knot_tau[m] = tau;                    // final knot lands exactly on tau*
+    knot_F[m] = budget;
+    return tau;
+}
+
+// Piecewise-linear inverse of the tabulated time change: intrinsic time to
+// delivered budget (monotone in both).
+static double rescale_budget_at(const vec& knot_tau, const vec& knot_F, double tau_e)
+{
+    const uword K = knot_tau.n_elem - 1;
+    if(tau_e <= 0) return 0.0;
+    if(tau_e >= knot_tau[K]) return knot_F[K];
+    // uniform grid except possibly the final (partial) interval
+    double dtau = (K >= 2) ? knot_tau[1] : knot_tau[K];
+    uword j = std::min((uword)(tau_e / dtau), K - 1);
+    if(j + 1 == K && K >= 2 && tau_e < knot_tau[K - 1]) j = K - 2;
+    double w = (tau_e - knot_tau[j]) /
+               std::max(knot_tau[j + 1] - knot_tau[j], 1e-300);
+    return knot_F[j] * (1.0 - w) + knot_F[j + 1] * w;
+}
+
 vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
         const Phylogeny& tree,
         const vector<IntervalHistory>& tree_intervals,
@@ -134,8 +248,12 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
         double rate,
         double segment_length,
         double tolerance,
-        string scaling_type)
+        string scaling_type,
+        string rescale_method)
 {
+    if (rescale_method != "segments" && rescale_method != "exact") {
+        throw logic_error("rescale_method must be \"segments\" or \"exact\"");
+    }
     if (tree_intervals.size() != tree.n_nodes) {
         throw logic_error("Intervals must correspond to tree nodes");
     }
@@ -156,6 +274,19 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
     vector<deque<double>> tree_segment_start(tree.n_nodes);
 
     vector<deque<double>> tree_segment_end(tree.n_nodes);
+
+    // Exact-mode inverse time-change tables, one entry per pushed segment
+    // (empty vec when the segment is not an exact-mode stretch): events on
+    // such a segment are reported at branch position start + F(tau_e)/rate,
+    // keeping output identical in semantics to the segment method, including
+    // on branches that mix rescaled and plain intervals.
+    vector<deque<vec>> tree_tc_tau(tree.n_nodes);
+    vector<deque<vec>> tree_tc_F(tree.n_nodes);
+    vector<deque<double>> tree_tc_start(tree.n_nodes);
+
+    // one augmented step matrix per mode for the exact method's marching
+    const double EXACT_DTAU = 0.01;
+    std::map<ullong, mat> exact_step;
 
     vector<reference_wrapper<const Phylogeny::Node> > nodes = tree.traversal();
 
@@ -205,6 +336,42 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
                             "or more.");
                     }
 
+                    if (rescale_method == "exact" && scaling_type != "none") {
+                        // Exact time change: one homogeneous stretch of the
+                        // mode's own matrix for intrinsic duration tau*, with
+                        // the budget (finish-start)*rate delivered identically.
+                        // Event times on this branch are reported in intrinsic
+                        // time, a strictly monotone reparameterisation of
+                        // branch position.
+                        vec g_class = rescale_class_outflux(local_Q[mode], scaling_type, g);
+                        if (exact_step.count(mode) == 0) {
+                            const uword nn = local_Q[mode].n_rows;
+                            mat aug(2 * nn, 2 * nn, fill::zeros);
+                            aug.submat(0, 0, nn - 1, nn - 1) = local_Q[mode];
+                            aug.submat(0, nn, nn - 1, 2 * nn - 1) = eye(nn, nn);
+                            exact_step[mode] = expmat(aug * EXACT_DTAU);
+                        }
+                        vec exit_forecast, knot_tau, knot_F;
+                        double tau = rescale_solve_tau(local_Q[mode],
+                                                       exact_step[mode],
+                                                       EXACT_DTAU, current_pi,
+                                                       g_class,
+                                                       (finish - start) * rate,
+                                                       exit_forecast,
+                                                       knot_tau, knot_F);
+                        tree_tc_tau[n].push_back(knot_tau);
+                        tree_tc_F[n].push_back(knot_F);
+                        tree_tc_start[n].push_back(start);
+                        tree_segment_start[n].push_back(start);
+                        tree_segment_end[n].push_back(start + tau / rate);
+                        tree_pi[n].push_back(exit_forecast);
+                        tree_Q[n].push_back(local_Q[mode]);
+                        tree_S[n].push_back(local_S[mode]);
+                        current_pi = exit_forecast;
+                        current_Q = local_Q[mode];
+                        continue;
+                    }
+
                     // NOTE: no constraint on scaling_type. The rescaler must
                     // normalise the SAME quantity the models were built with --
                     // which the preceding commit guarantees by passing
@@ -251,6 +418,9 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
 
                             tree_segment_start[n].push_back(segments.time_from[s]);
                             tree_segment_end[n].push_back(segments.time_to[s]);
+                            tree_tc_tau[n].push_back(vec());
+                            tree_tc_F[n].push_back(vec());
+                            tree_tc_start[n].push_back(0.0);
                             tree_pi[n].push_back(current_pi);
                             tree_Q[n].push_back(current_Q);
                             tree_S[n].push_back(current_S);
@@ -259,6 +429,9 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
 
                             tree_segment_start[n].push_back(segments.time_from[s]);
                             tree_segment_end[n].push_back(node.length);
+                            tree_tc_tau[n].push_back(vec());
+                            tree_tc_F[n].push_back(vec());
+                            tree_tc_start[n].push_back(0.0);
                             tree_pi[n].push_back(local_pi[mode]);
                             tree_Q[n].push_back(local_Q[mode]);
                             tree_S[n].push_back(local_S[mode]);
@@ -269,6 +442,9 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
                 else { // entire interval
                     tree_segment_start[n].push_back(start);
                     tree_segment_end[n].push_back(finish);
+                    tree_tc_tau[n].push_back(vec());
+                    tree_tc_F[n].push_back(vec());
+                    tree_tc_start[n].push_back(0.0);
                     tree_pi[n].push_back(local_pi[mode]);
                     tree_Q[n].push_back(local_Q[mode]);
                     tree_S[n].push_back(local_S[mode]);
@@ -306,7 +482,18 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
                             rate);
 
                     if (s.size) {
-                        s.fast_forward(i_start);
+                        if (tree_tc_tau[n][i].n_elem > 0) {
+                            // exact mode: map intrinsic event times to branch
+                            // position so reporting matches the segment method
+                            for (ullong e = 0; e < s.size; e++) {
+                                double tau_e = s.time[e] * rate;
+                                s.time[e] = tree_tc_start[n][i]
+                                    + rescale_budget_at(tree_tc_tau[n][i],
+                                                        tree_tc_F[n][i], tau_e) / rate;
+                            }
+                        } else {
+                            s.fast_forward(i_start);
+                        }
                         tree_states[n] = s.state_to.back();
                         node_substitutions.append(s);
                     }

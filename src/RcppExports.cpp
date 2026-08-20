@@ -136,8 +136,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // simulate_over_interval_phylogeny
-List simulate_over_interval_phylogeny(List phylogeny, List mode_phylogeny, List models, List sequence, unsigned long long start_mode, double rate, double segment_length, double tolerance);
-RcppExport SEXP _PalantiR_simulate_over_interval_phylogeny(SEXP phylogenySEXP, SEXP mode_phylogenySEXP, SEXP modelsSEXP, SEXP sequenceSEXP, SEXP start_modeSEXP, SEXP rateSEXP, SEXP segment_lengthSEXP, SEXP toleranceSEXP) {
+List simulate_over_interval_phylogeny(List phylogeny, List mode_phylogeny, List models, List sequence, unsigned long long start_mode, double rate, double segment_length, double tolerance, std::string rescale_method);
+RcppExport SEXP _PalantiR_simulate_over_interval_phylogeny(SEXP phylogenySEXP, SEXP mode_phylogenySEXP, SEXP modelsSEXP, SEXP sequenceSEXP, SEXP start_modeSEXP, SEXP rateSEXP, SEXP segment_lengthSEXP, SEXP toleranceSEXP, SEXP rescale_methodSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -149,7 +149,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type rate(rateSEXP);
     Rcpp::traits::input_parameter< double >::type segment_length(segment_lengthSEXP);
     Rcpp::traits::input_parameter< double >::type tolerance(toleranceSEXP);
-    rcpp_result_gen = Rcpp::wrap(simulate_over_interval_phylogeny(phylogeny, mode_phylogeny, models, sequence, start_mode, rate, segment_length, tolerance));
+    Rcpp::traits::input_parameter< std::string >::type rescale_method(rescale_methodSEXP);
+    rcpp_result_gen = Rcpp::wrap(simulate_over_interval_phylogeny(phylogeny, mode_phylogeny, models, sequence, start_mode, rate, segment_length, tolerance, rescale_method));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -263,7 +264,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_PalantiR_equilibrium_to_fitness", (DL_FUNC) &_PalantiR_equilibrium_to_fitness, 2},
     {"_PalantiR_simulate_over_phylogeny", (DL_FUNC) &_PalantiR_simulate_over_phylogeny, 4},
     {"_PalantiR_phylogeny_to_intervals", (DL_FUNC) &_PalantiR_phylogeny_to_intervals, 2},
-    {"_PalantiR_simulate_over_interval_phylogeny", (DL_FUNC) &_PalantiR_simulate_over_interval_phylogeny, 8},
+    {"_PalantiR_simulate_over_interval_phylogeny", (DL_FUNC) &_PalantiR_simulate_over_interval_phylogeny, 9},
     {"_PalantiR_simulate_with_shared_substitution_heterogeneity", (DL_FUNC) &_PalantiR_simulate_with_shared_substitution_heterogeneity, 9},
     {"_PalantiR_simulate_with_shared_time_heterogeneity", (DL_FUNC) &_PalantiR_simulate_with_shared_time_heterogeneity, 9},
     {"_PalantiR_compare_modes", (DL_FUNC) &_PalantiR_compare_modes, 2},

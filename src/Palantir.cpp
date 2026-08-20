@@ -115,7 +115,8 @@ List simulate_over_interval_phylogeny(
     unsigned long long start_mode,
     double rate = 1,
     double segment_length = 0.001,
-    double tolerance = 0.001)
+    double tolerance = 0.001,
+    std::string rescale_method = "segments")
 {
 
     //Type checking
@@ -181,7 +182,7 @@ List simulate_over_interval_phylogeny(
     // rate during the transient is not what the analysis wants. Use synonymous.
     string scaling_type = get_attr(first_model, "scaling_type");
     vector<Palantir::SiteSimulation> sims = Palantir::Simulate::sequence_over_intervals(
-        p, tree_intervals, equilibrium, transition, sampling, codons, start_mode, g, rate, segment_length, tolerance, scaling_type);
+        p, tree_intervals, equilibrium, transition, sampling, codons, start_mode, g, rate, segment_length, tolerance, scaling_type, rescale_method);
 
     List substitutions = site_simulations_to_list(sims, p);
 

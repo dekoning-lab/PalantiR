@@ -41,8 +41,8 @@ phylogeny_to_intervals <- function(phylogeny, mode_phylogeny) {
     .Call('_PalantiR_phylogeny_to_intervals', PACKAGE = 'PalantiR', phylogeny, mode_phylogeny)
 }
 
-simulate_over_interval_phylogeny <- function(phylogeny, mode_phylogeny, models, sequence, start_mode, rate = 1, segment_length = 0.001, tolerance = 0.001) {
-    .Call('_PalantiR_simulate_over_interval_phylogeny', PACKAGE = 'PalantiR', phylogeny, mode_phylogeny, models, sequence, start_mode, rate, segment_length, tolerance)
+simulate_over_interval_phylogeny <- function(phylogeny, mode_phylogeny, models, sequence, start_mode, rate = 1, segment_length = 0.001, tolerance = 0.001, rescale_method = "segments") {
+    .Call('_PalantiR_simulate_over_interval_phylogeny', PACKAGE = 'PalantiR', phylogeny, mode_phylogeny, models, sequence, start_mode, rate, segment_length, tolerance, rescale_method)
 }
 
 simulate_with_shared_substitution_heterogeneity <- function(phylogeny, switching_model, substitution_models, sequence, start_mode, rate = 1, switching_rate = 1, segment_length = 0.0001, tolerance = 0.001) {

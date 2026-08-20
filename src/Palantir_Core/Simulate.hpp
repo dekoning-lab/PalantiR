@@ -58,7 +58,8 @@ namespace Palantir
                 double rate = 1,
                 double segment_length = 0.001,
                 double tolerance = 0.001,
-                string scaling_type = "synonymous");
+                string scaling_type = "synonymous",
+                string rescale_method = "segments");
 
         vector<IntervalHistory> switching_intervals(
                 const Phylogeny& tree,
