@@ -29,6 +29,12 @@ navbar:
           href: Shared_Substitution_History.html
         - text: Shared Model Time History
           href: Shared_Substitution_Times.html
+    - text: "Features"
+      menu:
+        - text: "Rate Scaling"
+          href: Rate_Scaling.html
+        - text: "Temporal Heterogeneity Rescaling"
+          href: Temporal_Heterogeneity_Rescaling.html
     - text: "About"
       href: about.html
     - text: ""

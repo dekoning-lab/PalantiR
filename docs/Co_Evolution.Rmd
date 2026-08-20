@@ -7,6 +7,7 @@ output:
 ```{r, include=F}
 library(PalantiR)
 library(knitr)
+set_palantir_seed(20260820)
 knitr::opts_chunk$set(fig.height = 7, fig.width = 9)
 ```
 

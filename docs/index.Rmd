@@ -2,11 +2,18 @@
 title: "PalantiR"
 ---
 
-Welcome to `PalantiR` documentation.
+<p align="center"><img src="img/palantir.png" width="380" alt="PalantiR"></p>
+
+`PalantiR` simulates and visualizes complete substitution histories --- every
+substitution event, with its time, codon, and fitness context --- under
+time-heterogeneous mutation--selection codon substitution models and other
+advanced models, including site-specific fitness profiles, epistasis between
+sites, and changes in effective population size or fitness along a phylogeny.
 
 For installation notes, see [this page](installation.html).
 
-Details on particular models and simualtion types can be found on the following pages:
+Details on particular models and simulation types can be found on the
+following pages:
 
 # Nucleotide Models
 
@@ -29,3 +36,24 @@ Details on particular models and simualtion types can be found on the following 
 
 * [Rate Scaling](Rate_Scaling.html)
 * [Temporal Heterogeneity Rescaling](Temporal_Heterogeneity_Rescaling.html)
+
+# What's new in 1.2.0
+
+Following a full source review: reproducible simulations via
+`set_palantir_seed()`; an exact time-change alternative to the segment
+rescaler (`rescale_method = "exact"`); corrected `CoEvolution` and
+Markov-modulated model semantics; input validation throughout; and repaired
+datasets and documentation. See
+[NEWS.md](https://github.com/dekoning-lab/PalantiR/blob/master/NEWS.md) for
+the complete list, including breaking changes.
+
+<table style="border: none;"><tr style="background: none;">
+<td style="border: none; text-align: center;">
+<a href="Co_Evolution.html"><img src="img/mutsel-epi.png" width="100%" alt="Mutation-selection with epistasis"></a>
+<em>Substitution histories under mutation--selection with epistasis</em>
+</td>
+<td style="border: none; text-align: center;">
+<a href="Branch_Heterogeneity.html"><img src="img/fitness-shift.png" width="100%" alt="Fitness shift"></a>
+<em>A fitness shift under a time-heterogeneous mutation--selection model</em>
+</td>
+</tr></table>

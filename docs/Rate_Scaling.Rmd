@@ -10,7 +10,7 @@ output:
 
 ## Scaling types
 
-There are 3 scaling schemes implemented:
+There are four scaling schemes implemented:
 
 * `synonymous` is the default scaling. This forces the branch length to be proportional to the expected number of _synonymous_ substitutions per site.
 * `non-synonymous` scaling forces the branch length to be equivalent to the expected number of _non-synonymous_ substitutions per site.
@@ -37,3 +37,10 @@ $$
 
 The inner summation is over all the substitutions from each state (codon) $i$ to each state $j$.
 $Q^{(t)}$ means substitution rate for a substitution of type $t$ (e.g. synonymous substitution).
+
+At equilibrium the identity is exact: with the default `synonymous` scaling, a
+branch of length one carries one expected synonymous substitution per codon.
+On branches where the model changes and the process is temporarily out of
+equilibrium, the branch-length currency is maintained by the rescaling
+machinery described in
+[Temporal Heterogeneity Rescaling](Temporal_Heterogeneity_Rescaling.html).

@@ -7,6 +7,7 @@ output:
 ```{r, include=F}
 library(PalantiR)
 library(knitr)
+set_palantir_seed(20260820)
 knitr::opts_chunk$set(fig.height = 7, fig.width = 9)
 ```
 
@@ -53,7 +54,9 @@ nuc_pi <- c(.3, .2, .25, .25)
 
 # Load amino acid equilibrium frequencies
 # These will be converted to population-specific fitness vectors
-aa_pi <- as.matrix(read.table("../inst/extdata/psi-c50-1.txt"))
+# (the raw file carries a spurious 21st column from a trailing tab,
+# so keep the twenty amino-acid columns)
+aa_pi <- as.matrix(read.table("../inst/extdata/psi-c50-1.txt"))[, 1:20]
 
 psi <- equilibrium_to_fitness(aa_pi[1, ], 1000)
 ```
