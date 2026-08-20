@@ -47,21 +47,22 @@ profile shown as a logo:
 
 Version 1.2.1 fixes event-position reporting through stiff transients under
 `rescale_method = "exact"`; the defect was found by the engine validation
-notebook (below) and is guarded by a regression test.
+notebook (below) and is included in new regression tests.
 
-Version 1.2.0 follows a full source review: 31 verified findings were fixed,
-including corrected `CoEvolution` scaling and double-substitution semantics, a
-proper GTR switching process for Markov-modulated models, input validation
-throughout, reproducible simulations via `set_palantir_seed()`, and a
-regression test suite. Some of these fixes change simulated output relative to
-earlier versions; [NEWS.md](NEWS.md) lists them in full.
+Version 1.2.0 is a substantial overhaul that introduces a number of fixes and
+improvements. This includes updates to the mutation-selection-epistasis models in
+`CoEvolution`, affecting scaling and double-substitution semantics, patching of GTR
+switching processes for Markov-modulated models, input validation throughout,
+reproducible simulations via `set_palantir_seed()`, and a regression test suite.
+Some of these fixes change simulated output relative to earlier versions;
+[NEWS.md](NEWS.md) lists critical changes in full.
 
-Version 1.1.0 corrects the transient rescaler used on branches where the model
-changes (the forecast now advances at the site's rate multiplier) and adds an
-opt-in exact alternative to it: `rescale_method = "exact"` replaces the branch
-segmentation with a closed-form time change. The rescaler ensures the expected number
-of substitutions per unit branch length are exact, and runs faster than the
-segmented approach.
+Version 1.1.0 corrects the transient rescaler for time-heterogeneous simulations, which
+previously. did not correctly account for rate variation. We've also added an opt-in to 
+a faster, exact approach for simulating the transient approach to a new stationary
+distribution using `rescale_method = "exact"`. This approach replaces our branch segmentation
+algorithm with a closed-form time change. The rescaler ensures the expected number of
+substitutions per unit branch length are exact.
 
 # Installation
 
