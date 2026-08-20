@@ -28,7 +28,8 @@ distribution to another, following a model change-point, is carefully modelled.
 See the documentation at
 [dekoning-lab.github.io/PalantiR](https://dekoning-lab.github.io/PalantiR)
 
-Substitution histories simulated under a mutation–selection model with
+## Visualization examples:
+1. Substitution histories simulated under a mutation–selection model with
 epistasis between site pairs; joint states of the interacting sites are shown
 alongside the events on the tree:
 
@@ -38,8 +39,8 @@ alongside the events on the tree:
 </picture>
 
 A fitness shift under a time-heterogeneous mutation–selection model; each dot
-is a substitution (synonymous in green, non-synonymous in red), with the site's fitness
-profile shown as a logo:
+is a substitution (synonymous in green, non-synonymous in red), with the site's stationary
+distribution summarized as a frequency logo:
 
 <picture>
 <source media="(prefers-color-scheme: dark)" srcset="docs/img/fitness-shift.png">
