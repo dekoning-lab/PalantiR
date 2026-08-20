@@ -164,10 +164,13 @@ exact rescaler's knot table could not resolve that burst and misplaced early
 event positions.)
 
 **Criterion.** Under both rescale methods (`"segments"` and `"exact"`):
-cumulative class events per site track branch position to within 0.04 at
-every checkpoint, and Monte-Carlo chi-square of the observed amino-acid
-distribution against the predicted trajectory gives p ≥ 0.001 at every
-checkpoint with at most two of the twelve p-values below 0.05.
+cumulative class events per site track branch position to within
+$0.02 + 4\sqrt{u/n}$ at every checkpoint (the count's sampling standard
+deviation grows with $u$, so the bound scales with the checkpoint; the 1.2.1
+defect exceeded the early-checkpoint bounds five-fold), and Monte-Carlo
+chi-square of the observed amino-acid distribution against the predicted
+trajectory gives p ≥ 0.001 at every checkpoint with at most two of the
+twelve p-values below 0.05.
 
 ```{r test3-setup}
 mA <- MutationSelection(1000, 1e-8, hky, psi_1, scaling_type = "non-synonymous")
@@ -278,11 +281,12 @@ plot_freqs(data.frame(
 ```
 
 ```{r test3-verdict, results="asis"}
-calib_ok <- all(abs(t3$cum_class - t3$u) < 0.04)
+calib_tol <- 0.02 + 4 * sqrt(t3$u / n_sites)
+calib_ok <- all(abs(t3$cum_class - t3$u) < calib_tol)
 p_ok <- min(t3$p) >= 0.001 && sum(t3$p < 0.05) <= 2
 verdict("Test 3", calib_ok && p_ok,
-        sprintf("max |cumulative class events - u| = %.3f (criterion < 0.04); chi-square p range %.3f-%.3f with %d of %d below 0.05 (criterion: min >= 0.001, at most 2)",
-                max(abs(t3$cum_class - t3$u)), min(t3$p), max(t3$p), sum(t3$p < 0.05), nrow(t3)))
+        sprintf("max |cumulative class events - u| / tolerance = %.2f (criterion < 1); chi-square p range %.3f-%.3f with %d of %d below 0.05 (criterion: min >= 0.001, at most 2)",
+                max(abs(t3$cum_class - t3$u) / calib_tol), min(t3$p), max(t3$p), sum(t3$p < 0.05), nrow(t3)))
 ```
 
 # Summary
