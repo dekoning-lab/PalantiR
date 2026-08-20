@@ -10,17 +10,20 @@
 > rebuilt with reproducible examples, and the repository now includes
 > [stand-alone command-line simulation scripts](examples/).
 
-`PalantiR` is a framework for phylogenetic simulation and visualization,
-implemented as an `R` package with a `C++` backend and interactive `js`
-visualizations.
+`PalantiR` is a framework for the simulation and visualization of sequence
+evolution along phylogenies, and is implemented as an `R` package with a
+fast `C++` backend and interactive `js` visualizations.
 
 The package facilitates the simulation and visualization of complete
-substitution histories, including every substitution event, with its time, 
-codon states, and fitnesses - under time-heterogeneous mutation–selection codon
-substitution models and other advanced models. Models support site-specific fitness
-profiles, models with epistasis between sites ("mutation-selection-epistasis" codon
-models), and changes in effective population size or fitness assignments along the
-phylogeny.
+substitution histories, including the precise timing of substitution events,
+codon state transitions, and fitness flux. Palantir primarily uses time-heterogeneous
+mutation–selection codon substitution models that account for the fitness of amino-acid
+sequence states at each codon site. Models support site-specific fitness profiles, and
+fitness interactions between sites can be defined using a straightforward extension of
+Halpern-Bruno type models ("mutation-selection-epistasis" codon models), which are supported
+in a paired-site configuration. Changes in effective population size and fitness profile
+assignments are allowed along branches, and the transient approach from one stationary
+distribution to another, following a model change-point, is carefully modelled.
 
 See the documentation at
 [dekoning-lab.github.io/PalantiR](https://dekoning-lab.github.io/PalantiR)
