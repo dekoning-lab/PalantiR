@@ -42,12 +42,12 @@ BEGIN_RCPP
 END_RCPP
 }
 // MutationSelection
-List MutationSelection(unsigned long long population_size, double mutation_rate, List nucleotide_model, arma::vec fitness, std::string scaling_type);
+List MutationSelection(double population_size, double mutation_rate, List nucleotide_model, arma::vec fitness, std::string scaling_type);
 RcppExport SEXP _PalantiR_MutationSelection(SEXP population_sizeSEXP, SEXP mutation_rateSEXP, SEXP nucleotide_modelSEXP, SEXP fitnessSEXP, SEXP scaling_typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< unsigned long long >::type population_size(population_sizeSEXP);
+    Rcpp::traits::input_parameter< double >::type population_size(population_sizeSEXP);
     Rcpp::traits::input_parameter< double >::type mutation_rate(mutation_rateSEXP);
     Rcpp::traits::input_parameter< List >::type nucleotide_model(nucleotide_modelSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type fitness(fitnessSEXP);
@@ -57,12 +57,12 @@ BEGIN_RCPP
 END_RCPP
 }
 // CoEvolution
-List CoEvolution(unsigned long long population_size, double mutation_rate, List nucleotide_model, arma::vec fitness_1, arma::vec fitness_2, arma::mat delta, std::string scaling_type);
+List CoEvolution(double population_size, double mutation_rate, List nucleotide_model, arma::vec fitness_1, arma::vec fitness_2, arma::mat delta, std::string scaling_type);
 RcppExport SEXP _PalantiR_CoEvolution(SEXP population_sizeSEXP, SEXP mutation_rateSEXP, SEXP nucleotide_modelSEXP, SEXP fitness_1SEXP, SEXP fitness_2SEXP, SEXP deltaSEXP, SEXP scaling_typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< unsigned long long >::type population_size(population_sizeSEXP);
+    Rcpp::traits::input_parameter< double >::type population_size(population_sizeSEXP);
     Rcpp::traits::input_parameter< double >::type mutation_rate(mutation_rateSEXP);
     Rcpp::traits::input_parameter< List >::type nucleotide_model(nucleotide_modelSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type fitness_1(fitness_1SEXP);
@@ -97,15 +97,36 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// set_palantir_seed
+void set_palantir_seed(double seed);
+RcppExport SEXP _PalantiR_set_palantir_seed(SEXP seedSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type seed(seedSEXP);
+    set_palantir_seed(seed);
+    return R_NilValue;
+END_RCPP
+}
+// genetic_code_names
+std::vector<std::string> genetic_code_names();
+RcppExport SEXP _PalantiR_genetic_code_names() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(genetic_code_names());
+    return rcpp_result_gen;
+END_RCPP
+}
 // equilibrium_to_fitness
-arma::vec equilibrium_to_fitness(arma::vec equilibrium, unsigned long long population_size);
-RcppExport SEXP _PalantiR_equilibrium_to_fitness(SEXP equilibriumSEXP, SEXP population_sizeSEXP) {
+arma::vec equilibrium_to_fitness(arma::vec equilibrium, double population_size, Rcpp::Nullable<Rcpp::NumericVector> nucleotide_equilibrium);
+RcppExport SEXP _PalantiR_equilibrium_to_fitness(SEXP equilibriumSEXP, SEXP population_sizeSEXP, SEXP nucleotide_equilibriumSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::vec >::type equilibrium(equilibriumSEXP);
-    Rcpp::traits::input_parameter< unsigned long long >::type population_size(population_sizeSEXP);
-    rcpp_result_gen = Rcpp::wrap(equilibrium_to_fitness(equilibrium, population_size));
+    Rcpp::traits::input_parameter< double >::type population_size(population_sizeSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::NumericVector> >::type nucleotide_equilibrium(nucleotide_equilibriumSEXP);
+    rcpp_result_gen = Rcpp::wrap(equilibrium_to_fitness(equilibrium, population_size, nucleotide_equilibrium));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -230,13 +251,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // sample_sequence
-List sample_sequence(List model, unsigned long long length);
+List sample_sequence(List model, double length);
 RcppExport SEXP _PalantiR_sample_sequence(SEXP modelSEXP, SEXP lengthSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type model(modelSEXP);
-    Rcpp::traits::input_parameter< unsigned long long >::type length(lengthSEXP);
+    Rcpp::traits::input_parameter< double >::type length(lengthSEXP);
     rcpp_result_gen = Rcpp::wrap(sample_sequence(model, length));
     return rcpp_result_gen;
 END_RCPP
@@ -261,7 +282,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_PalantiR_CoEvolution", (DL_FUNC) &_PalantiR_CoEvolution, 7},
     {"_PalantiR_MarkovModulatedMutationSelection", (DL_FUNC) &_PalantiR_MarkovModulatedMutationSelection, 2},
     {"_PalantiR_Phylogeny", (DL_FUNC) &_PalantiR_Phylogeny, 2},
-    {"_PalantiR_equilibrium_to_fitness", (DL_FUNC) &_PalantiR_equilibrium_to_fitness, 2},
+    {"_PalantiR_set_palantir_seed", (DL_FUNC) &_PalantiR_set_palantir_seed, 1},
+    {"_PalantiR_genetic_code_names", (DL_FUNC) &_PalantiR_genetic_code_names, 0},
+    {"_PalantiR_equilibrium_to_fitness", (DL_FUNC) &_PalantiR_equilibrium_to_fitness, 3},
     {"_PalantiR_simulate_over_phylogeny", (DL_FUNC) &_PalantiR_simulate_over_phylogeny, 4},
     {"_PalantiR_phylogeny_to_intervals", (DL_FUNC) &_PalantiR_phylogeny_to_intervals, 2},
     {"_PalantiR_simulate_over_interval_phylogeny", (DL_FUNC) &_PalantiR_simulate_over_interval_phylogeny, 9},

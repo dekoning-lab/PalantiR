@@ -23,7 +23,11 @@ MarkovModulatedMutationSelection(mutation_selection_models, switching_model)
 \item{equilibrium}{Numeric vector of equilibrium frequencies. Length 4 for a
 nucleotide model.}
 \item{transition_rate, transversion_rate}{Relative rates of transitions and
-transversions. Only their ratio matters.}
+transversions. Only their ratio matters when the model is used as the mutation
+process of a \code{MutationSelection} or \code{CoEvolution} model, since the
+codon model is renormalised afterwards. Used directly to simulate nucleotide
+evolution the model is not renormalised, so their absolute size sets the overall
+rate and scales the meaning of the branch lengths with it.}
 \item{exchangeability}{Symmetric matrix of relative exchange rates.}
 \item{population_size}{Effective population size, \eqn{N_e}.}
 \item{mutation_rate}{Scalar multiplier on the mutation process.}

@@ -55,7 +55,7 @@ List GeneralTimeReversible(arma::vec equilibrium, arma::mat exchangeability)
 
 // [[Rcpp::export]]
 List MutationSelection(
-        unsigned long long population_size,
+        double population_size,
         double mutation_rate,
         List nucleotide_model,
         arma::vec fitness,
@@ -67,13 +67,21 @@ List MutationSelection(
         stop("Argument `nucleotide_model` should be a nucleotide substitution model");
     }
 
+    // FIX (2026-08-20, M3/C8): validate before anything is constructed. Ne = 0
+    // used to produce an all-NaN model that printed normally, a negative Ne
+    // wrapped to a huge unsigned value, and a mis-sized `fitness` was read out
+    // of bounds by armadillo's unchecked accessors.
+    unsigned long long N = as_count(population_size, "population_size", 1);
+    as_positive_rate(mutation_rate, "mutation_rate");
+    check_length(fitness.n_elem, Palantir::AminoAcid::size, "fitness");
+
     arma::vec nucleotide_equilibrium = nucleotide_model["equilibrium"];
     arma::mat nucleotide_transition = nucleotide_model["transition"];
 
     arma::vec equilibrium = Palantir::MutationSelection::equilibrium(
-        population_size, mutation_rate, nucleotide_equilibrium, fitness, g);
+        N, mutation_rate, nucleotide_equilibrium, fitness, g);
     arma::mat transition = Palantir::MutationSelection::transition(
-        population_size, mutation_rate, nucleotide_transition, fitness, g);
+        N, mutation_rate, nucleotide_transition, fitness, g);
     double scaling = Palantir::MutationSelection::scaling(
         equilibrium, transition, scaling_type, g);
     transition /= scaling;
@@ -85,7 +93,7 @@ List MutationSelection(
         _["equilibrium"] = equilibrium,
         _["transition"] = transition,
         _["sampling"] = sampling,
-        _["population_size"] = population_size,
+        _["population_size"] = N,
         _["fitness"] = fitness,
         _["nucleotide_model"] = nucleotide_model,
         _["scaling"] = scaling,
@@ -100,7 +108,7 @@ List MutationSelection(
 
 //[[Rcpp::export]]
 List CoEvolution(
-    unsigned long long population_size,
+    double population_size,
     double mutation_rate,
     List nucleotide_model,
     arma::vec fitness_1,
@@ -113,13 +121,24 @@ List CoEvolution(
     if(!has_class(nucleotide_model, "SubstitutionModel") || get_attr(nucleotide_model, "type") != "nucleotide") {
         stop("Argument `nucleotide_model` should be a nucleotide substitution model");
     }
+
+    // FIX (2026-08-20, M3/C8): see the note in MutationSelection above. The
+    // coevolution kernel indexes fitness_1/fitness_2 by amino acid and delta by
+    // the amino-acid pair, all with unchecked accessors: a 2x2 delta used to
+    // give a "model" whose equilibrium summed to 24.
+    unsigned long long N = as_count(population_size, "population_size", 1);
+    as_positive_rate(mutation_rate, "mutation_rate");
+    check_length(fitness_1.n_elem, Palantir::AminoAcid::size, "fitness_1");
+    check_length(fitness_2.n_elem, Palantir::AminoAcid::size, "fitness_2");
+    check_square(delta.n_rows, delta.n_cols, Palantir::AminoAcid::size, "delta");
+
     arma::vec nucleotide_equilibrium = nucleotide_model["equilibrium"];
     arma::mat nucleotide_transition = nucleotide_model["transition"];
 
     arma::vec equilibrium = Palantir::CoEvolution::equilibrium(
-        population_size, mutation_rate, nucleotide_equilibrium, fitness_1, fitness_2, delta, g);
+        N, mutation_rate, nucleotide_equilibrium, fitness_1, fitness_2, delta, g);
     arma::mat transition = Palantir::CoEvolution::transition(
-        population_size, mutation_rate, nucleotide_transition, fitness_1, fitness_2, delta, g);
+        N, mutation_rate, nucleotide_transition, fitness_1, fitness_2, delta, g);
     double scaling = Palantir::CoEvolution::scaling(equilibrium, transition, scaling_type, g);
     transition /= scaling;
 
@@ -130,7 +149,7 @@ List CoEvolution(
         _["equilibrium"] = equilibrium,
         _["transition"] = transition,
         _["sampling"] = sampling,
-        _["population_size"] = population_size,
+        _["population_size"] = N,
         _["fitness_1"] = fitness_1,
         _["fitness_2"] = fitness_2,
         _["nucleotide_model"] = nucleotide_model,
@@ -153,6 +172,12 @@ List MarkovModulatedMutationSelection(
     if(!has_class(switching_model, "SubstitutionModel") || get_attr(switching_model, "type") != "exchangeable") {
         stop("Argument `switching_model` should be an exchangeable substitution model");
     }
+    // FIX (2026-08-20, MIN7): an empty or mistyped model list used to fail deep
+    // inside the kernel (or not at all) instead of at the boundary.
+    if(mutation_selection_models.size() == 0) {
+        stop("Argument `mutation_selection_models` should contain at least one model");
+    }
+
     vec switching_equilibrium = switching_model["equilibrium"];
     mat exchangeability = switching_model["exchangeability"];
     vector<vec> substitution_equilibrium;
@@ -160,6 +185,9 @@ List MarkovModulatedMutationSelection(
 
     for(ullong i = 0; i < mutation_selection_models.size(); i++) {
         List ms_model = mutation_selection_models[i];
+        if(!has_class(ms_model, "SubstitutionModel")) {
+            stop("Each argument in `mutation_selection_models` should be of class `SubstitutionModel`");
+        }
         substitution_equilibrium.push_back(ms_model["equilibrium"]);
         substitution_transition.push_back(ms_model["transition"]);
     }

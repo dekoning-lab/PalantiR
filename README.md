@@ -94,11 +94,12 @@ library(PalantiR)
 Below we show how to run a simulation with the Mutation-Selection model:
 
 ```R
-# read phylogeny
-p <- Phylogeny("data/mammals.newick")
+# read phylogeny (from a clone, this file is inst/extdata/mammals.newick)
+p <- Phylogeny(system.file("extdata", "mammals.newick", package = "PalantiR"))
 
 # read amino acid fitness values
-aa_psi <- read.csv("data/amino_acid_fitness_N_1000.csv")
+data(amino_acid_fitness_N_1000)
+aa_psi <- amino_acid_fitness_N_1000
 
 # use first row
 psi <- as.numeric(aa_psi[1,])
@@ -135,8 +136,8 @@ as.fasta(sim$alignment, "PalantiR_ms.fa")
 We can also visualize the substitutions that have been simulated:
 
 ```R
-# examine substitutions
-plot(sim, sites = 1:10)
+# examine substitutions (sites are 0-based, so the first ten are 0:9)
+plot(sim, sites = 0:9)
 
 # check specific substitution data
 head(sim$substitutions)

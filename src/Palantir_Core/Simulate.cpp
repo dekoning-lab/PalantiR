@@ -161,6 +161,22 @@ static double rescale_solve_tau(const mat& Q, const mat& Estep_aug,
     // f are exact at every grid point. Stop when the budget is bracketed and
     // invert the final interval with a monotone Hermite cubic.
     const uword n = Q.n_rows;
+
+    // FIX (2026-08-20): a non-positive budget -- what a zero-length interval
+    // asks for, and what a degenerate class flux can produce -- never entered
+    // the marching loop, so k stayed at 0 and the `(k - 1) * dtau` below wrapped
+    // on the unsigned k to ~1.8e17: an effectively infinite stretch of
+    // simulation rather than an error or a no-op. Nothing is delivered over a
+    // non-positive budget, so return an intrinsic duration of zero with the
+    // entering forecast intact and a single-knot table, which rescale_budget_at
+    // reads as "no budget anywhere".
+    if (!(budget > 0)) {
+        exit_forecast = p0;
+        knot_tau = vec(1, fill::zeros);
+        knot_F = vec(1, fill::zeros);
+        return 0.0;
+    }
+
     rowvec v(2 * n, fill::zeros);
     v.head(n) = p0.t();
     rowvec v_prev = v;
@@ -226,11 +242,17 @@ static double rescale_budget_at(const vec& knot_tau, const vec& knot_F, double t
 {
     const uword K = knot_tau.n_elem - 1;
     if(tau_e <= 0) return 0.0;
+    // Also the whole answer for a degenerate single-knot table (K == 0, from a
+    // non-positive budget): knot_tau[0] is 0, so every positive tau_e leaves
+    // here with a delivered budget of 0 and the K - 1 below is never reached.
     if(tau_e >= knot_tau[K]) return knot_F[K];
     // uniform grid except possibly the final (partial) interval
     double dtau = (K >= 2) ? knot_tau[1] : knot_tau[K];
+    // FIX (2026-08-20): a guard here re-seated j to K - 2 when it landed on the
+    // final interval below knot_tau[K - 1]. That cannot happen: reaching j ==
+    // K - 1 requires tau_e >= (K - 1) * dtau == knot_tau[K - 1], which is the
+    // negation of the guard's own second condition. Removed as dead code.
     uword j = std::min((uword)(tau_e / dtau), K - 1);
-    if(j + 1 == K && K >= 2 && tau_e < knot_tau[K - 1]) j = K - 2;
     double w = (tau_e - knot_tau[j]) /
                std::max(knot_tau[j + 1] - knot_tau[j], 1e-300);
     return knot_F[j] * (1.0 - w) + knot_F[j + 1] * w;
@@ -254,41 +276,82 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
     if (rescale_method != "segments" && rescale_method != "exact") {
         throw logic_error("rescale_method must be \"segments\" or \"exact\"");
     }
+    // FIX (2026-08-20): "exact" used to fall through to the segment scheme
+    // whenever the models carried no scaled class, so the caller's choice of
+    // rescaler was silently ignored. The exact time change is defined by the
+    // class flux it has to deliver; with no class there is nothing to solve
+    // for. Say so rather than quietly running something else.
+    if (rescale_method == "exact" && scaling_type == "none") {
+        throw logic_error("rescale_method \"exact\" needs models built with a "
+                          "scaled class: the exact time change solves for the "
+                          "intrinsic duration that delivers the branch's budget "
+                          "of scaled-class events, and scaling_type \"none\" "
+                          "defines no such class. Rebuild the models with a "
+                          "scaling_type, or use rescale_method \"segments\".");
+    }
     if (tree_intervals.size() != tree.n_nodes) {
         throw logic_error("Intervals must correspond to tree nodes");
     }
 
-    // Each node has multiple intervals
-    vector<deque<vec>> tree_pi(tree.n_nodes);
     vector<vec> local_pi = equilibrium;
-    tree_pi[0].push_back(local_pi[start_mode]);
-
-    vector<deque<mat>> tree_Q(tree.n_nodes);
     vector<mat> local_Q = transition;
-    tree_Q[0].push_back(local_Q[start_mode]);
-
-    vector<deque<mat>> tree_S(tree.n_nodes);
     vector<mat> local_S = sampling;
-    tree_S[0].push_back(local_S[start_mode]);
 
+    // FIX (2026-08-20): the segment rescaler used to store a full Q and a full
+    // sampling matrix for every segment it pushed -- ~60 KB per segment for a
+    // 61-state model, measured at 3.3 GB peak on a single length-5 branch at the
+    // shared simulators' default segment_length of 1e-4. Every rescaled segment
+    // applies a scalar multiple of its own mode's generator, and Palantir::
+    // sampling is invariant under that scalar, so a segment is fully described
+    // by its mode and one number: over_time on (Q_mode, S_mode) at rate * scal
+    // has exactly the exposure Q_mode * rate * scal * dt that the old
+    // (Q_mode / rho, sampling(Q_mode / rho)) at rate had, with scal = 1 / rho.
+    // Segments therefore carry a mode index and a scalar instead of matrices.
+    vector<deque<ullong>> tree_segment_mode(tree.n_nodes);
+    vector<deque<double>> tree_segment_scal(tree.n_nodes);
     vector<deque<double>> tree_segment_start(tree.n_nodes);
-
     vector<deque<double>> tree_segment_end(tree.n_nodes);
 
-    // Exact-mode inverse time-change tables, one entry per pushed segment
-    // (empty vec when the segment is not an exact-mode stretch): events on
-    // such a segment are reported at branch position start + F(tau_e)/rate,
-    // keeping output identical in semantics to the segment method, including
-    // on branches that mix rescaled and plain intervals.
-    vector<deque<vec>> tree_tc_tau(tree.n_nodes);
-    vector<deque<vec>> tree_tc_F(tree.n_nodes);
-    vector<deque<double>> tree_tc_start(tree.n_nodes);
+    // Exact-mode inverse time-change tables. One table per exact-mode stretch
+    // lives in a shared pool and a segment records the index of its table, or
+    // NO_TIME_CHANGE when it is an ordinary segment. Events on an exact stretch
+    // are reported at branch position start + F(tau_e)/rate, keeping output
+    // identical in semantics to the segment method, including on branches that
+    // mix rescaled and plain intervals.
+    const ullong NO_TIME_CHANGE = numeric_limits<ullong>::max();
+    vector<vec> tc_tau;
+    vector<vec> tc_F;
+    vector<double> tc_start;
+    vector<deque<ullong>> tree_segment_tc(tree.n_nodes);
+
+    // What a branch hands to its children: the forecast where it ends and the
+    // generator in force there, as the same (mode, scalar) pair. Only the last
+    // entry of the old per-node deques of pi/Q/S was ever read, and a branch
+    // that pushes no segment at all (see the zero-length interval guard below)
+    // used to leave them empty for the child's .back() to dereference.
+    vector<vec> tree_end_pi(tree.n_nodes);
+    vector<ullong> tree_end_mode(tree.n_nodes, start_mode);
+    vector<double> tree_end_scal(tree.n_nodes, 1.0);
+    tree_end_pi[0] = local_pi[start_mode];
 
     // one augmented step matrix per mode for the exact method's marching
     const double EXACT_DTAU = 0.01;
     std::map<ullong, mat> exact_step;
 
     vector<reference_wrapper<const Phylogeny::Node> > nodes = tree.traversal();
+
+    // Every segment push must write one entry to each of the parallel segment
+    // tables. This is the only place that does so, so they cannot drift out of
+    // alignment -- a misalignment silently reports events under the wrong
+    // generator or at the wrong branch position.
+    auto push_segment = [&](ullong index, double seg_start, double seg_end,
+                            ullong seg_mode, double seg_scal, ullong seg_tc) {
+        tree_segment_start[index].push_back(seg_start);
+        tree_segment_end[index].push_back(seg_end);
+        tree_segment_mode[index].push_back(seg_mode);
+        tree_segment_scal[index].push_back(seg_scal);
+        tree_segment_tc[index].push_back(seg_tc);
+    };
 
     // first find when rescaling is needed
 
@@ -297,8 +360,10 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
         if (!node.is_root()) {
             ullong n = node.index;
             ullong p = node.parent_index;
-            vec current_pi = tree_pi[p].back();
-            mat current_Q = tree_Q[p].back();
+            vec current_pi = tree_end_pi[p];
+            ullong current_mode = tree_end_mode[p];
+            double current_scal = tree_end_scal[p];
+            mat current_Q = local_Q[current_mode] * current_scal;
 
             const IntervalHistory& intervals = tree_intervals[n];
             // for each interval on this node
@@ -306,6 +371,20 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
                 double start = intervals.time_from[i];
                 double finish = intervals.time_to[i];
                 ullong mode = intervals.state[i];
+
+                // FIX (2026-08-20): an interval of zero length -- every interval
+                // on a zero-length branch, and any interval between coincident
+                // switch times -- has nothing to simulate, but it used to be
+                // handed to the segmenter anyway, which built a size-0
+                // IntervalHistory and then wrote to its empty deques (segfault),
+                // or in exact mode to the solver with a budget of zero (an
+                // effectively infinite stretch, see rescale_solve_tau). Push no
+                // segment; the child still inherits the forecast and generator
+                // that entered the branch, because those are tracked below
+                // rather than read off the last pushed segment.
+                if (!(finish > start)) {
+                    continue;
+                }
 
                 double pi_rmsd = rmsd(current_pi, local_pi[mode]);
 
@@ -336,7 +415,7 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
                             "or more.");
                     }
 
-                    if (rescale_method == "exact" && scaling_type != "none") {
+                    if (rescale_method == "exact") {
                         // Exact time change: one homogeneous stretch of the
                         // mode's own matrix for intrinsic duration tau*, with
                         // the budget (finish-start)*rate delivered identically.
@@ -359,15 +438,14 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
                                                        (finish - start) * rate,
                                                        exit_forecast,
                                                        knot_tau, knot_F);
-                        tree_tc_tau[n].push_back(knot_tau);
-                        tree_tc_F[n].push_back(knot_F);
-                        tree_tc_start[n].push_back(start);
-                        tree_segment_start[n].push_back(start);
-                        tree_segment_end[n].push_back(start + tau / rate);
-                        tree_pi[n].push_back(exit_forecast);
-                        tree_Q[n].push_back(local_Q[mode]);
-                        tree_S[n].push_back(local_S[mode]);
+                        tc_tau.push_back(knot_tau);
+                        tc_F.push_back(knot_F);
+                        tc_start.push_back(start);
+                        push_segment(n, start, start + tau / rate,
+                                     mode, 1.0, tc_tau.size() - 1);
                         current_pi = exit_forecast;
+                        current_mode = mode;
+                        current_scal = 1.0;
                         current_Q = local_Q[mode];
                         continue;
                     }
@@ -413,43 +491,68 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
                             double rho = MutationSelection::scaling(
                                     current_pi, local_Q[mode], scaling_type, g);
 
-                            current_Q = local_Q[mode] / rho;
-                            mat current_S = Palantir::sampling(current_Q);
+                            current_mode = mode;
+                            current_scal = 1.0 / rho;
+                            current_Q = local_Q[mode] * current_scal;
 
-                            tree_segment_start[n].push_back(segments.time_from[s]);
-                            tree_segment_end[n].push_back(segments.time_to[s]);
-                            tree_tc_tau[n].push_back(vec());
-                            tree_tc_F[n].push_back(vec());
-                            tree_tc_start[n].push_back(0.0);
-                            tree_pi[n].push_back(current_pi);
-                            tree_Q[n].push_back(current_Q);
-                            tree_S[n].push_back(current_S);
+                            // the segmenter tiles [start, finish] exactly, but
+                            // clamp anyway: no segment of an interval may cover
+                            // branch time that belongs to the next one.
+                            push_segment(n,
+                                         std::min(segments.time_from[s], finish),
+                                         std::min(segments.time_to[s], finish),
+                                         current_mode, current_scal,
+                                         NO_TIME_CHANGE);
                         } else {
                             // done rescaling - rest of branch
 
-                            tree_segment_start[n].push_back(segments.time_from[s]);
-                            tree_segment_end[n].push_back(node.length);
-                            tree_tc_tau[n].push_back(vec());
-                            tree_tc_F[n].push_back(vec());
-                            tree_tc_start[n].push_back(0.0);
-                            tree_pi[n].push_back(local_pi[mode]);
-                            tree_Q[n].push_back(local_Q[mode]);
-                            tree_S[n].push_back(local_S[mode]);
+                            // FIX (2026-08-20): this segment used to end at
+                            // node.length instead of at the finish of the
+                            // interval it belongs to. On a branch carrying more
+                            // than one mode interval it therefore ran past its
+                            // own interval to the end of the branch, and every
+                            // later interval re-simulated on top of the overrun:
+                            // ~23% more events than the branch should carry
+                            // (p = 3e-6), event times that jump backwards, and a
+                            // state chain broken by the backwards jumps.
+                            // FIX (2026-08-20): refresh the forecast and the
+                            // generator here as well. They were left at the last
+                            // rescaling segment's values, so a later rescaled
+                            // interval on the same branch started its transient
+                            // from a stale distribution.
+                            current_pi = local_pi[mode];
+                            current_mode = mode;
+                            current_scal = 1.0;
+                            current_Q = local_Q[mode];
+
+                            push_segment(n,
+                                         std::min(segments.time_from[s], finish),
+                                         finish,
+                                         current_mode, current_scal,
+                                         NO_TIME_CHANGE);
                             break;
                         }
                     } // end rescaling segments
                 } // end rescaling
                 else { // entire interval
-                    tree_segment_start[n].push_back(start);
-                    tree_segment_end[n].push_back(finish);
-                    tree_tc_tau[n].push_back(vec());
-                    tree_tc_F[n].push_back(vec());
-                    tree_tc_start[n].push_back(0.0);
-                    tree_pi[n].push_back(local_pi[mode]);
-                    tree_Q[n].push_back(local_Q[mode]);
-                    tree_S[n].push_back(local_S[mode]);
+                    // FIX (2026-08-20): the forecast and generator were not
+                    // refreshed on this path, so an interval that needed no
+                    // rescaling left a later rescaled interval on the same
+                    // branch starting its transient from whatever the previous
+                    // interval happened to leave behind.
+                    current_pi = local_pi[mode];
+                    current_mode = mode;
+                    current_scal = 1.0;
+                    current_Q = local_Q[mode];
+
+                    push_segment(n, start, finish, current_mode, current_scal,
+                                 NO_TIME_CHANGE);
                 }
             } // end intervals
+
+            tree_end_pi[n] = current_pi;
+            tree_end_mode[n] = current_mode;
+            tree_end_scal[n] = current_scal;
         } // end non root
     } // end nodes
 
@@ -473,23 +576,31 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
                 for(ullong i = 0; i < tree_segment_start[n].size(); i++) {
                     double i_start = tree_segment_start[n][i];
                     double i_finish = tree_segment_end[n][i];
+                    ullong i_mode = tree_segment_mode[n][i];
+                    ullong i_tc = tree_segment_tc[n][i];
 
+                    // The segment's generator is its mode's, rescaled by one
+                    // scalar; over_time divides its waiting times by the rate it
+                    // is given, so folding the scalar into the rate delivers the
+                    // same exposure Q * rate * scal * dt as a rescaled matrix
+                    // would, and the sampling matrix does not depend on it. The
+                    // scalar is exactly 1 on every non-rescaled segment.
                     SubstitutionHistory s = Simulate::over_time(
-                            tree_Q[n][i],
-                            tree_S[n][i],
+                            local_Q[i_mode],
+                            local_S[i_mode],
                             tree_states[n],
                             i_finish - i_start,
-                            rate);
+                            rate * tree_segment_scal[n][i]);
 
                     if (s.size) {
-                        if (tree_tc_tau[n][i].n_elem > 0) {
+                        if (i_tc != NO_TIME_CHANGE) {
                             // exact mode: map intrinsic event times to branch
                             // position so reporting matches the segment method
                             for (ullong e = 0; e < s.size; e++) {
                                 double tau_e = s.time[e] * rate;
-                                s.time[e] = tree_tc_start[n][i]
-                                    + rescale_budget_at(tree_tc_tau[n][i],
-                                                        tree_tc_F[n][i], tau_e) / rate;
+                                s.time[e] = tc_start[i_tc]
+                                    + rescale_budget_at(tc_tau[i_tc],
+                                                        tc_F[i_tc], tau_e) / rate;
                             }
                         } else {
                             s.fast_forward(i_start);
@@ -588,8 +699,14 @@ vector<vector<Palantir::IntervalHistory>> Palantir::Simulate::switching_poisson(
                     state[0] = start_state;
                     time_from[0] = 0;
                     time_to[0] = switch_times[n][0];
+                    // FIX (2026-08-20): interval i spans switch i-1 to switch i,
+                    // so it carries the mode ENTERED at switch i-1, states[i-1].
+                    // Indexing it with states[i] discarded the first sampled
+                    // mode altogether and gave the last two intervals of every
+                    // branch the same mode, since the tail interval below
+                    // (correctly) also carries states[n_switches-1].
                     for(ullong i = 1; i < n_switches; i++) {
-                        state[i] = states[i];
+                        state[i] = states[i-1];
                         time_from[i] = switch_times[n][i-1];
                         time_to[i] = switch_times[n][i];
                     }
@@ -598,7 +715,18 @@ vector<vector<Palantir::IntervalHistory>> Palantir::Simulate::switching_poisson(
                         state[n_switches] = states[last];
                         time_from[n_switches] = switch_times[n][last];
                         time_to[n_switches] = node.length;
+                    } else {
+                        // no tail interval: drop the slot rather than leave a
+                        // zero-width interval in mode 0 at the end of the branch
+                        state.pop_back();
+                        time_from.pop_back();
+                        time_to.pop_back();
                     }
+                    // FIX (2026-08-20): the mode the branch ends in was never
+                    // written back, so every child restarted from its parent's
+                    // STARTING mode and the lineage mode process was not Markov
+                    // across nodes.
+                    tree_states[site][n] = states[last];
                     tree_intervals[site][n] = IntervalHistory(state, time_from, time_to);
                 } else {
                     tree_intervals[site][n] = IntervalHistory(tree_states[site][n], 0, node.length);

@@ -16,6 +16,14 @@ std::string get_attr(List l, std::string a);
 
 bool has_class(List a, std::string cl);
 
+// Argument validation shared by the model constructors and the simulators
+// (see the FIX notes in RcppPalantir.cpp).
+unsigned long long as_count(double value, std::string argument, unsigned long long minimum);
+void as_positive_rate(double value, std::string argument);
+void check_length(unsigned long long actual, unsigned long long expected, std::string argument);
+void check_square(unsigned long long rows, unsigned long long cols,
+                  unsigned long long expected, std::string argument);
+
 CharacterVector predicate(arma::uvec predicate, string yes, string no);
 
 void decorate_substitutions(List& substitutions, std::string type);

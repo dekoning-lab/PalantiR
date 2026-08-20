@@ -27,10 +27,15 @@
                     "T" = "#038BE9")
 
 # Make sure the alignment is in "just codons"
+#
+# The result is a plain character matrix: everything below indexes it row by row
+# and, since `[.Alignment` was added (MIN9), leaving the class on would hand
+# those row slices back as one-row Alignments -- which toJSON() cannot serialize.
+# The other two branches already return plain matrices from apply().
 .normalize <- function(alignment, type) {
 
     if(type == "codon" || type == "nucleotide") {
-        return(alignment);
+        return(unclass(alignment));
     } else if(type == "compound_codon") {
         return(apply(alignment, c(1, 2), function(x)
             strsplit(x, ",")[[1]][[1]]))
@@ -64,7 +69,10 @@ AlignmentPlot <- function(alignment, width = NULL, height = NULL) {
                  color = colors[row, ]))
     })
 
-    data <- jsonlite::toJSON(sequences, auto_unbox = T)
+    # FIX (2026-08-20, MIN8): as in PhyloPlot(), toJSON()'s default digits = 4
+    # rounds every number in the payload. Nothing here is numeric today, but the
+    # two widget payloads should not disagree about precision.
+    data <- jsonlite::toJSON(sequences, auto_unbox = T, digits = NA)
 
     htmlwidgets::createWidget(
         name = "AlignmentPlot",
@@ -91,9 +99,28 @@ AlignmentPlotRender <- function(expr, env = parent.frame(), quoted = FALSE) {
     htmlwidgets::shinyRenderWidget(expr, AlignmentPlotOutput, env, quoted = TRUE)
 }
 
+# FIX (2026-08-20, MIN9): an Alignment is a character matrix carrying a class and
+# a `type` attribute, and the default matrix `[` drops both. Subsetting an
+# alignment therefore produced a plain character matrix (or, for a single row or
+# column, a bare vector), so alignment[, 1:3] could not be passed to as.fasta()
+# ("no applicable method") or plot() and .normalize() lost the type it dispatches
+# on. Restore class, `type` and the taxon rownames, and default to drop = FALSE
+# so a one-site or one-taxon slice is still an alignment.
+`[.Alignment` <- function(x, i, j, ..., drop = FALSE) {
+    type <- attr(x, "type")
+    subset <- NextMethod("[", drop = drop)
+    if(is.matrix(subset)) {
+        attr(subset, "type") <- type
+        class(subset) <- "Alignment"
+    }
+    subset
+}
+
 as.fasta <- function(x, file = "", ...) UseMethod("as.fasta")
 as.fasta.Alignment <- function(x, file = "", ...) {
-    alignment <- x
+    # plain matrix: `[.Alignment` (MIN9) would otherwise return the row slice
+    # below as a one-row Alignment
+    alignment <- unclass(x)
     taxa <- row.names(alignment)
     cat("", sep = "", file = file, append = F)
     for(row in seq_len(nrow(alignment))) {

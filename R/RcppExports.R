@@ -29,8 +29,16 @@ Phylogeny <- function(newick_path, type = "phylogeny") {
     .Call('_PalantiR_Phylogeny', PACKAGE = 'PalantiR', newick_path, type)
 }
 
-equilibrium_to_fitness <- function(equilibrium, population_size) {
-    .Call('_PalantiR_equilibrium_to_fitness', PACKAGE = 'PalantiR', equilibrium, population_size)
+set_palantir_seed <- function(seed) {
+    invisible(.Call('_PalantiR_set_palantir_seed', PACKAGE = 'PalantiR', seed))
+}
+
+genetic_code_names <- function() {
+    .Call('_PalantiR_genetic_code_names', PACKAGE = 'PalantiR')
+}
+
+equilibrium_to_fitness <- function(equilibrium, population_size, nucleotide_equilibrium = NULL) {
+    .Call('_PalantiR_equilibrium_to_fitness', PACKAGE = 'PalantiR', equilibrium, population_size, nucleotide_equilibrium)
 }
 
 simulate_over_phylogeny <- function(phylogeny, model, sequence, rate = 1) {

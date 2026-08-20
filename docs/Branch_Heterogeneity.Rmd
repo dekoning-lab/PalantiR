@@ -19,17 +19,17 @@ For more details on time-heterogeneous simulation, see [Temporal Heterogeneity R
 
 Here is an example file, which represents a model switch on the primate lineage in the mammalian phylogeny:
 ```{r}
-scan("../data/mammals_switch.newick", what = character(), quiet = T)
+scan("../inst/extdata/mammals_switch.newick", what = character(), quiet = T)
 ```
 
 This phylogeny can be loaded with the `Phylogeny` constructor, with an additional `type = "mode"` argument.
 
 ```{r}
 # Load phylogeny
-mammals <- Phylogeny("../data/mammals.newick")
+mammals <- Phylogeny("../inst/extdata/mammals.newick")
 
 # Load branch modes
-mammal_switches <- Phylogeny("../data/mammals_switch.newick", type = "mode")
+mammal_switches <- Phylogeny("../inst/extdata/mammals_switch.newick", type = "mode")
 ```
 
 We can view the phylogeny and the assigned modes:
@@ -53,7 +53,7 @@ nuc_pi <- c(.3, .2, .25, .25)
 
 # Load amino acid equilibrium frequencies
 # These will be converted to population-specific fitness vectors
-aa_pi <- as.matrix(read.table("../data/psi-c50-1.txt"))
+aa_pi <- as.matrix(read.table("../inst/extdata/psi-c50-1.txt"))
 
 psi <- equilibrium_to_fitness(aa_pi[1, ], 1000)
 ```

@@ -20,6 +20,13 @@ HTMLWidgets.widget({
                 "border-collapse": "collapse"
             };
 
+            // FIX (2026-08-20, MIN10): render() appended a fresh container
+            // without removing the previous one, so every Shiny re-render (and
+            // every resize, which calls render() again) stacked another copy of
+            // the alignment table below the last. RenderTree.js already clears
+            // its svg the same way.
+            d3.select("#" + el.id).selectAll("div").remove();
+
             plot.container = d3.select("#" + el.id)
                 .append("div")
                 .styles({

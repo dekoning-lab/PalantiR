@@ -15,6 +15,10 @@
 #include <functional>
 #include <iostream>
 #include <sstream>
+// FIX (2026-08-20): <random> was only reaching this header indirectly through
+// RcppArmadillo/armadillo. The engine RNG declared in Palantir.hpp needs it, so
+// include it explicitly rather than relying on a transitive include.
+#include <random>
 
 typedef unsigned long long ullong;
 

@@ -5,13 +5,94 @@ std::string get_genetic_code_name() {
     return globals["genetic_code_name"];
 }
 
+// FIX (2026-08-20, MIN7): `return l[a];` threw Rcpp's opaque "Object was
+// created without names" (unnamed list) or "no such index" (named list, wrong
+// field) whenever a caller passed the wrong kind of object, which is precisely
+// when a useful message is needed. Name the missing field instead.
 std::string get_attr(List l, std::string a) {
-    return l[a];
+    if(l.size() == 0 || !l.containsElementNamed(a.c_str())) {
+        stop("Object is missing the required field `" + a + "`");
+    }
+    return as<std::string>(l[a]);
 }
 
+// FIX (2026-08-20, MIN7): `std::string c = a.attr("class");` threw on any
+// object with no class attribute rather than answering the question that was
+// asked. It also compared against only the first class of a multi-class object.
+// Return false for a classless object and test membership of the whole vector.
 bool has_class(List a, std::string cl) {
-    std::string c = a.attr("class");
-    return cl == c;
+    RObject klass = a.attr("class");
+    if(klass.isNULL()) {
+        return false;
+    }
+    CharacterVector classes = as<CharacterVector>(klass);
+    for(R_xlen_t i = 0; i < classes.size(); i++) {
+        if(cl == as<std::string>(classes[i])) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// FIX (2026-08-20, M3): counts (population sizes, sequence lengths) used to be
+// declared `unsigned long long` on the Rcpp boundary, so R doubles were coerced
+// before anything could look at them: 0 passed straight through (an all-NaN
+// model with a normal-looking print), -1 wrapped to 1.8e19, and 2.5 was
+// silently truncated. Take the argument as a double and validate it here,
+// BEFORE the conversion.
+unsigned long long as_count(double value, std::string argument, unsigned long long minimum)
+{
+    if(!R_finite(value)) {
+        stop("Argument `" + argument + "` should be a finite number, not " +
+             std::to_string(value));
+    }
+    if(value != std::floor(value)) {
+        stop("Argument `" + argument + "` should be a whole number, not " +
+             std::to_string(value));
+    }
+    if(value < (double) minimum) {
+        stop("Argument `" + argument + "` should be at least " +
+             std::to_string(minimum) + ", not " + std::to_string((long long) value));
+    }
+    if(value > 9007199254740992.0) {
+        stop("Argument `" + argument + "` is too large to represent exactly");
+    }
+    return (unsigned long long) value;
+}
+
+// FIX (2026-08-20, M3): mutation rates of 0 or below give a degenerate or
+// sign-flipped rate matrix that then propagates NaN through the scaling.
+void as_positive_rate(double value, std::string argument)
+{
+    if(!R_finite(value) || value <= 0) {
+        stop("Argument `" + argument + "` should be a finite number greater "
+             "than 0, not " + std::to_string(value));
+    }
+}
+
+// FIX (2026-08-20, C8): armadillo's unchecked accessors (.at()/operator[]) read
+// out of bounds when a fitness vector or delta matrix is the wrong size, which
+// produced models with non-finite rates that differed between calls. Check the
+// shape up front and name the argument, the expected size and what arrived.
+void check_length(unsigned long long actual, unsigned long long expected, std::string argument)
+{
+    if(actual != expected) {
+        stop("Argument `" + argument + "` should have " +
+             std::to_string(expected) + " elements (one per amino acid under "
+             "the active genetic code), not " + std::to_string(actual));
+    }
+}
+
+void check_square(unsigned long long rows, unsigned long long cols,
+                  unsigned long long expected, std::string argument)
+{
+    if(rows != expected || cols != expected) {
+        stop("Argument `" + argument + "` should be a " +
+             std::to_string(expected) + "x" + std::to_string(expected) +
+             " matrix (one row and column per amino acid under the active "
+             "genetic code), not " + std::to_string(rows) + "x" +
+             std::to_string(cols));
+    }
 }
 
 CharacterVector predicate(arma::uvec predicate, string yes, string no)

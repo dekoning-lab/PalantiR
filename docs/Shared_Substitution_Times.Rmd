@@ -26,7 +26,7 @@ Load model parameters:
 
 ```{r}
 # Load phylogeny
-mammals <- Phylogeny("../data/mammals.newick")
+mammals <- Phylogeny("../inst/extdata/mammals.newick")
 
 # Load nucleotide equilibrium distribution
 # Nucleotide order is T,C,A,G
@@ -34,7 +34,7 @@ nuc_pi <- c(.3, .2, .25, .25)
 
 # Load amino acid equilibrium frequencies
 # These will be converted to population-specific fitness vectors
-aa_pi <- as.matrix(read.table("../data/psi-c50-1.txt"))
+aa_pi <- as.matrix(read.table("../inst/extdata/psi-c50-1.txt"))
 
 psi_1 <- equilibrium_to_fitness(aa_pi[1, ], 1000)
 psi_2 <- equilibrium_to_fitness(aa_pi[2, ], 1000)

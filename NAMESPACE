@@ -13,6 +13,11 @@ exportPattern("^[[:alpha:]]+")
 # them -- as.fasta(x) on an Alignment failed with "no applicable method" despite
 # as.fasta.Alignment being exported.
 S3method(as.fasta, Alignment)
+# FIX 2026-08-20: `[.Alignment` is not matched by exportPattern("^[[:alpha:]]+")
+# (its name starts with "["), so subsetting an Alignment from the user's
+# workspace decayed to a plain character matrix and as.fasta()/plot() then
+# refused to dispatch. Register it explicitly.
+S3method("[", Alignment)
 S3method(plot, Alignment)
 S3method(plot, Phylogeny)
 S3method(plot, Simulation)

@@ -41,7 +41,15 @@ HTMLWidgets.widget({
                 }
             }
 
-            if(window.location.href.indexOf("viewer_pane=1") <= -1) {
+            // FIX (2026-08-20, MIN12): a click anywhere on the plot used to
+            // download the whole svg whenever the widget was not in the RStudio
+            // viewer pane -- undocumented, unguarded, and surprising in a
+            // browser or a Shiny app where a click means something else. It is
+            // now opt-in via the download_on_click option (PhyloPlot(),
+            // default FALSE); the viewer-pane exclusion is kept because the
+            // download does not work there.
+            if(plot.options.download_on_click &&
+               window.location.href.indexOf("viewer_pane=1") <= -1) {
                 plot.svg.on("click", function() {
                     download_svg("#" + el.id + ">svg.phylogram", "PalantiR_phylogeny.svg");
                 });

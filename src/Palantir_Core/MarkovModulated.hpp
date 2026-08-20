@@ -9,10 +9,9 @@ namespace Palantir
 {
     namespace MarkovModulated
     {
-        vec equilibrium(
-                const vec& switching_equilibrium,
-                const vector<vec>& substitution_equilibrium,
-                const GeneticCode& g);
+        // FIX (2026-08-20): the equilibrium() declaration was removed along
+        // with its (dead, incorrect) definition; use
+        // MarkovModel::solve_equilibrium on the transition matrix instead.
 
         mat transition(
                 const vector<mat>& substitution_transition,

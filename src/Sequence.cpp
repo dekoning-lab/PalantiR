@@ -85,14 +85,19 @@ List as_compound(List sequence, unsigned long long mode)
 }
 
 //[[Rcpp::export]]
-List sample_sequence(List model, unsigned long long length)
+List sample_sequence(List model, double length)
 {
     if(!has_class(model, "SubstitutionModel")) {
         stop("Argument `model` should be of class `SubstitutionModel`");
     }
 
+    // FIX (2026-08-20, M3): `length` was declared unsigned long long on the
+    // Rcpp boundary, so length = 0 returned an empty sequence that only failed
+    // later and length = -1 wrapped to 1.8e19 and tried to allocate it.
+    unsigned long long n = as_count(length, "length", 1);
+
     Palantir::GeneticCode g(get_genetic_code_name());
-    uvec i = Palantir::sample_sequence(model["equilibrium"], length);
+    uvec i = Palantir::sample_sequence(model["equilibrium"], n);
     string type = model["type"];
     vector<string> s;
 

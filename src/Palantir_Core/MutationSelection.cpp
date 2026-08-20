@@ -4,9 +4,24 @@ double Palantir::MutationSelection::fixation_probability(ullong population_size,
 {
     if (selection == 0) {
         return 1.0 / (2.0 * population_size);
-    } else{
-        return (-expm1(-selection)) / (-expm1(-2.0 * population_size * selection));
     }
+    // FIX (2026-08-20): guard both exponential asymptotes. For selection below
+    // about -709.78, exp(-selection) overflows so numerator and denominator are
+    // both -Inf and the ratio is NaN. The true value, ~e^{(2N-1)s}, is at or
+    // below the double underflow threshold there for any N >= 1, so return 0
+    // explicitly. For large positive selection the denominator is exactly 1 in
+    // double precision and the probability is the 1 - e^{-s} asymptote; return
+    // it directly so the behaviour is explicit for either sign. Both cut-offs
+    // sit where the unguarded formula still returns exactly the same value
+    // (0, because the denominator overflows first, and -expm1(-s)), so results
+    // in the normal range are unchanged.
+    if (selection <= -709.0) {
+        return 0.0;
+    }
+    if (selection >= 709.0) {
+        return -expm1(-selection);
+    }
+    return (-expm1(-selection)) / (-expm1(-2.0 * population_size * selection));
 }
 
 
@@ -19,7 +34,14 @@ vec Palantir::MutationSelection::equilibrium(
 {
     ullong n_codons = g.size;
     const ullong& N = population_size;
-    double max = numeric_limits<double>::min();
+    // FIX (2026-08-20): the log-sum-exp offset was initialised to
+    // numeric_limits<double>::min(), which is the smallest POSITIVE double
+    // (2.2e-308), not the most negative one. With an all-negative fitness
+    // vector no population_selection ever exceeded it, the offset stayed at
+    // ~0 while every term underflowed to exp(-huge) = 0, and the equilibrium
+    // came out all-NaN. Initialise to -infinity so the running maximum is
+    // correct for any sign of fitness.
+    double max = -numeric_limits<double>::infinity();
     vec codon_equilibrium(n_codons, fill::zeros);
     double scale = 0;
 

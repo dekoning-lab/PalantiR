@@ -31,7 +31,7 @@ Load model parameters:
 
 ```{r}
 # Load phylogeny
-mammals <- Phylogeny("../data/mammals.newick")
+mammals <- Phylogeny("../inst/extdata/mammals.newick")
 
 # Load nucleotide equilibrium distribution
 # Nucleotide order is T,C,A,G

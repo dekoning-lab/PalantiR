@@ -15,6 +15,11 @@
 branches.}
 \item{intervals}{Optionally the interval table, to shade mode changes.}
 \item{alignment}{An \code{Alignment}.}
+\item{sites}{Which sites of the substitution table to draw, either \code{"all"}
+(the default) or a vector of site numbers. These are \strong{0-based}, matching
+the \code{site} column of a simulation's substitution table: the first site of
+the sequence is site \code{0}, so the first ten sites are \code{0:9}. Passing
+\code{1:10} draws sites two to eleven and leaves the first site unreachable.}
 \item{...}{Passed to the widget.}
 }
 \description{

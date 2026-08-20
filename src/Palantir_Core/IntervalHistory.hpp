@@ -31,9 +31,12 @@ namespace Palantir
                     const ullong start_state,
                     const double end_time);
 
+            // FIX (2026-08-20): the declaration named these (length, end_time)
+            // while the definition reads them as (end_time, length). Callers
+            // that trusted the header passed them the wrong way round.
             IntervalHistory(
-                    const double length,
-                    const double end_time);
+                    const double end_time,
+                    const double length);
 
             void fast_forward(double time);
 

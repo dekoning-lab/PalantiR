@@ -54,7 +54,7 @@ Load model parameters:
 
 ```{r}
 # Load phylogeny
-mammals <- Phylogeny("../data/mammals.newick")
+mammals <- Phylogeny("../inst/extdata/mammals.newick")
 
 # Load nucleotide equilibrium distribution
 # Nucleotide order is T,C,A,G
@@ -63,7 +63,7 @@ nuc_pi <- c(.3, .2, .25, .25)
 # Load amino acid equilibrium vector
 # Amino acid order is:
 # A, C, D, E, F, G, H, I, K, L, M, N, P, Q, R, S, T, V, W, Y
-aa_pi <- as.matrix(read.csv("../data/amino_acid_equilibrium.csv"))
+aa_pi <- as.matrix(read.csv("../inst/extdata/amino_acid_equilibrium.csv"))
 ```
 
 Create model:

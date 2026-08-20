@@ -9,21 +9,97 @@
 
 #include "RcppPalantir.hpp"
 
+#include <sys/stat.h>
+
 using namespace Rcpp;
 using namespace std;
+
+// FIX (2026-08-20, M5): the `type` field distinguishes a branch-length tree
+// ("phylogeny") from a guide tree whose branch "lengths" are mode indices
+// ("mode"). It was never validated on the way in and never checked on the way
+// out, so passing the branch-length tree where a guide tree was expected ran
+// every branch under models[[1]] without complaint.
+static void check_phylogeny_type(List phylogeny, std::string expected, std::string argument)
+{
+    if(!has_class(phylogeny, "Phylogeny")) {
+        stop("Argument `" + argument + "` should be of class `Phylogeny`");
+    }
+    string type = get_attr(phylogeny, "type");
+    if(type != expected) {
+        stop("Argument `" + argument + "` should be a phylogeny of type `" +
+             expected + "`, not `" + type + "`. Build it with "
+             "Phylogeny(path, type = \"" + expected + "\").");
+    }
+}
+
+// FIX (2026-08-20, M4): Phylogeny() used to accept anything ifstream could
+// open -- a directory, an empty file, arbitrary text, or a file holding several
+// trees (only the first was used). The newick parser then either built a
+// nonsense tree or failed with an unrelated message. These are the cheap
+// structural checks; they are deliberately not a full grammar.
+static void validate_newick(const std::string& path, const std::string& newick)
+{
+    string trimmed(newick);
+    removeWhitespace(trimmed);
+
+    if(trimmed.empty()) {
+        stop("File '" + path + "' is empty; expected a newick tree");
+    }
+
+    long depth = 0;
+    for(const char& c : trimmed) {
+        if(c == '(') {
+            depth++;
+        } else if(c == ')') {
+            depth--;
+            if(depth < 0) {
+                stop("File '" + path + "' is not a valid newick tree: "
+                     "unbalanced parentheses (a ')' with no matching '(')");
+            }
+        }
+    }
+    if(depth != 0) {
+        stop("File '" + path + "' is not a valid newick tree: unbalanced "
+             "parentheses (" + std::to_string(depth) + " unclosed '(')");
+    }
+
+    size_t terminator = trimmed.find(';');
+    if(terminator == string::npos) {
+        stop("File '" + path + "' is not a valid newick tree: it does not end "
+             "with ';'");
+    }
+    if(terminator != trimmed.size() - 1) {
+        stop("File '" + path + "' contains more than one tree; PalantiR reads "
+             "a single newick tree per file");
+    }
+}
 
 // [[Rcpp::export]]
 List Phylogeny(std::string newick_path, std::string type = "phylogeny")
 {
-    string newick;
+    if(type != "phylogeny" && type != "mode") {
+        stop("Argument `type` should be either \"phylogeny\" (branch lengths) "
+             "or \"mode\" (a guide tree whose branch lengths are mode "
+             "indices), not \"" + type + "\"");
+    }
 
+    struct stat info;
+    if(stat(newick_path.c_str(), &info) != 0) {
+        stop("Could not find file " + newick_path);
+    }
+    if(S_ISDIR(info.st_mode)) {
+        stop("'" + newick_path + "' is a directory, not a newick file");
+    }
+
+    string newick;
     ifstream f(newick_path);
     if(f.good()) {
         newick = file_to_string(newick_path);
     } else {
-        stop("Could not find file " + newick_path);
+        stop("Could not read file " + newick_path);
     }
-    //TODO: need error checking and file parsing
+    validate_newick(newick_path, newick);
+
     Palantir::Phylogeny tree(newick);
 
     List phylo = List::create(
@@ -37,10 +113,71 @@ List Phylogeny(std::string newick_path, std::string type = "phylogeny")
     return phylo;
 }
 
+// FIX (2026-08-20, C7): the engine RNG is a single mt19937 that is independent
+// of R's generator, so R's set.seed() has no effect on it. Call this instead to
+// make a run of PalantiR simulations reproducible; unseeded sessions keep
+// drawing their seed from std::random_device.
 // [[Rcpp::export]]
-arma::vec equilibrium_to_fitness(arma::vec equilibrium, unsigned long long population_size)
+void set_palantir_seed(double seed)
 {
-    return Palantir::equilibrium_to_fitness(equilibrium, population_size);
+    unsigned long long s = as_count(seed, "seed", 0);
+    if(s > 4294967295ULL) {
+        stop("Argument `seed` should be between 0 and 4294967295");
+    }
+    Palantir::seed_rng((unsigned int) s);
+}
+
+// FIX (2026-08-20, M7): the valid genetic code names were only discoverable by
+// reading the C++ table; use_genetic_code() accepted anything and the failure
+// surfaced much later. The R layer validates against this list.
+// [[Rcpp::export]]
+std::vector<std::string> genetic_code_names()
+{
+    std::vector<std::string> names;
+    for(const auto& code : Palantir::GeneticCode::GeneticCode_table) {
+        names.push_back(code.first);
+    }
+    return names;
+}
+
+// FIX (2026-08-20, M2): `nucleotide_equilibrium` is optional and defaults to
+// NULL, which reproduces the previous (degeneracy-tilted) inversion exactly.
+// When it is supplied, the mutational weight of each amino acid's codons is
+// divided out so that a MutationSelection model built on the returned fitness
+// vector -- with the SAME nucleotide equilibrium -- has the requested
+// amino-acid marginal.
+// [[Rcpp::export]]
+arma::vec equilibrium_to_fitness(
+    arma::vec equilibrium,
+    double population_size,
+    Rcpp::Nullable<Rcpp::NumericVector> nucleotide_equilibrium = R_NilValue)
+{
+    // FIX (2026-08-20): population_size here is a real effective size (the
+    // formula is smooth in N and callers pass branch-length-weighted means);
+    // require positive and finite, not integral.
+    if (!std::isfinite(population_size) || population_size <= 0) {
+        stop("Argument `population_size` should be a positive finite number, not "
+             + std::to_string(population_size));
+    }
+    double N = population_size;
+
+    if(nucleotide_equilibrium.isNull()) {
+        return Palantir::equilibrium_to_fitness(equilibrium, N);
+    }
+
+    arma::vec nucleotide = as<arma::vec>(NumericVector(nucleotide_equilibrium));
+    if(nucleotide.n_elem != Palantir::Nucleotide::size) {
+        stop("Argument `nucleotide_equilibrium` should have " +
+             std::to_string(Palantir::Nucleotide::size) + " elements (T, C, A, "
+             "G), not " + std::to_string(nucleotide.n_elem));
+    }
+    if(!nucleotide.is_finite() || nucleotide.min() <= 0) {
+        stop("Argument `nucleotide_equilibrium` should be strictly positive");
+    }
+    check_length(equilibrium.n_elem, Palantir::AminoAcid::size, "equilibrium");
+
+    Palantir::GeneticCode g(get_genetic_code_name());
+    return Palantir::equilibrium_to_fitness(equilibrium, N, nucleotide, g);
 }
 
 // [[Rcpp::export]]
@@ -51,9 +188,7 @@ List simulate_over_phylogeny(
     double rate = 1)
 {
     // Type checking
-    if(!has_class(phylogeny, "Phylogeny")) {
-        stop("Argument `tree` should be of class `Phylogeny`");
-    }
+    check_phylogeny_type(phylogeny, "phylogeny", "tree");
     if(!has_class(model, "SubstitutionModel")) {
         stop("Argument `substitution_model` should be of class `SubstitutionModel`");
     }
@@ -82,7 +217,11 @@ List simulate_over_phylogeny(
         _["model"] = model,
         _["substitutions"] = DataFrame::create(substitutions, _["stringsAsFactors"] = false),
         _["alignment"] = alignment,
-        _["intervals"] = NULL,
+        // FIX (2026-08-20, MIN6): `NULL` here is the C++ null pointer literal,
+        // which Rcpp wraps as the integer 0, so sim$intervals was numeric(0-ish)
+        // and is.null(sim$intervals) was FALSE for every homogeneous
+        // simulation. R_NilValue is R's NULL.
+        _["intervals"] = R_NilValue,
         _["type"] = model["type"]
     );
 
@@ -94,6 +233,12 @@ List simulate_over_phylogeny(
 //[[Rcpp::export]]
 DataFrame phylogeny_to_intervals(List phylogeny, List mode_phylogeny)
 {
+    // FIX (2026-08-20, M5/MIN7): validate before dereferencing, and check the
+    // phylogeny types rather than trusting the caller to pass the guide tree in
+    // the second slot.
+    check_phylogeny_type(phylogeny, "phylogeny", "phylogeny");
+    check_phylogeny_type(mode_phylogeny, "mode", "mode_phylogeny");
+
     string newick = phylogeny["newick"];
     Palantir::Phylogeny p(newick);
 
@@ -119,22 +264,31 @@ List simulate_over_interval_phylogeny(
     std::string rescale_method = "segments")
 {
 
-    //Type checking
-    List first_model = models[0];
-    string model_type = get_attr(first_model, "type");
-
-    if(!has_class(phylogeny, "Phylogeny")) {
-        stop("Argument `tree` should be of class `Phylogeny`");
-    }
-    if(!has_class(mode_phylogeny, "Phylogeny")) {
-        stop("Argument `mode_tree` should be of class `Phylogeny`");
+    // Type checking
+    // FIX (2026-08-20, MIN7): models[0] used to be dereferenced for its `type`
+    // BEFORE anything was validated, so an empty list or a list of non-models
+    // failed with Rcpp's "index out of bounds" / "Object was created without
+    // names" instead of a message naming the argument.
+    // FIX (2026-08-20, M5): the guide tree's `type` is now required to be
+    // "mode"; passing the branch-length tree used to run every branch under
+    // models[[1]] silently.
+    check_phylogeny_type(phylogeny, "phylogeny", "tree");
+    check_phylogeny_type(mode_phylogeny, "mode", "mode_tree");
+    if(models.size() == 0) {
+        stop("Argument `substitution_models` should contain at least one model");
     }
     for(ullong i = 0; i < models.size(); i++) {
         List s = models[i];
         if(!has_class(s, "SubstitutionModel")) {
             stop("Each argument in `substitution_models` should be of class `SubstitutionModel`");
         }
+    }
 
+    List first_model = models[0];
+    string model_type = get_attr(first_model, "type");
+
+    for(ullong i = 0; i < models.size(); i++) {
+        List s = models[i];
         if(get_attr(s, "type") != model_type) {
             stop("All models in `substitution_models` should have the same `type`");
         }
@@ -216,19 +370,29 @@ List simulate_with_shared_substitution_heterogeneity(
     double segment_length = 0.0001,
     double tolerance = 0.001)
 {
-    //Type checking
-    List first_model = substitution_models[0];
-    string model_type = get_attr(first_model, "type");
-
-    if(!has_class(phylogeny, "Phylogeny")) {
-        stop("Argument `tree` should be of class `Phylogeny`");
+    // Type checking
+    // FIX (2026-08-20, M5/MIN7): validate the tree (including its `type`) and
+    // every model before dereferencing substitution_models[0]. See the notes on
+    // simulate_over_interval_phylogeny.
+    check_phylogeny_type(phylogeny, "phylogeny", "tree");
+    if(!has_class(switching_model, "SubstitutionModel")) {
+        stop("Argument `switching_model` should be of class `SubstitutionModel`");
+    }
+    if(substitution_models.size() == 0) {
+        stop("Argument `substitution_models` should contain at least one model");
     }
     for(ullong i = 0; i < substitution_models.size(); i++) {
         List s = substitution_models[i];
         if(!has_class(s, "SubstitutionModel")) {
             stop("Each argument in `substitution_models` should be of class `SubstitutionModel`");
         }
+    }
 
+    List first_model = substitution_models[0];
+    string model_type = get_attr(first_model, "type");
+
+    for(ullong i = 0; i < substitution_models.size(); i++) {
+        List s = substitution_models[i];
         if(get_attr(s, "type") != model_type) {
             stop("All models in `substitution_models` should have the same `type`");
         }
@@ -312,19 +476,28 @@ List simulate_with_shared_time_heterogeneity(
     double segment_length = 0.0001,
     double tolerance = 0.001)
 {
-    //Type checking
-    List first_model = substitution_models[0];
-    string model_type = get_attr(first_model, "type");
-
-    if(!has_class(phylogeny, "Phylogeny")) {
-        stop("Argument `tree` should be of class `Phylogeny`");
+    // Type checking
+    // FIX (2026-08-20, M5/MIN7): as in
+    // simulate_with_shared_substitution_heterogeneity above.
+    check_phylogeny_type(phylogeny, "phylogeny", "tree");
+    if(!has_class(switching_model, "SubstitutionModel")) {
+        stop("Argument `switching_model` should be of class `SubstitutionModel`");
+    }
+    if(substitution_models.size() == 0) {
+        stop("Argument `substitution_models` should contain at least one model");
     }
     for(ullong i = 0; i < substitution_models.size(); i++) {
         List s = substitution_models[i];
         if(!has_class(s, "SubstitutionModel")) {
             stop("Each argument in `substitution_models` should be of class `SubstitutionModel`");
         }
+    }
 
+    List first_model = substitution_models[0];
+    string model_type = get_attr(first_model, "type");
+
+    for(ullong i = 0; i < substitution_models.size(); i++) {
+        List s = substitution_models[i];
         if(get_attr(s, "type") != model_type) {
             stop("All models in `substitution_models` should have the same `type`");
         }
