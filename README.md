@@ -4,6 +4,12 @@
 
 # PalantiR
 
+> :star: **Recently refreshed (August 2026):** version 1.2.0 contains
+> correctness and validation fixes from a full source review, the
+> [documentation site](https://dekoning-lab.github.io/PalantiR) has been
+> rebuilt with reproducible examples, and the repository now includes
+> [stand-alone command-line simulation scripts](examples/).
+
 `PalantiR` is a framework for phylogenetic simulation and visualization,
 implemented as an `R` package with a `C++` backend and interactive `js`
 visualizations.
@@ -13,7 +19,7 @@ substitution histories, including every substitution event, with its time,
 codon states, and fitnesses - under time-heterogeneous mutation–selection codon
 substitution models and other advanced models. Models support site-specific fitness
 profiles, models with epistasis between sites ("mutation-selection-epistasis" codon
-models), and changes in effective population size or fitness assignmenets along the
+models), and changes in effective population size or fitness assignments along the
 phylogeny.
 
 See the documentation at
@@ -39,10 +45,17 @@ profile shown as a logo:
 
 ## Recent updates
 
+Version 1.2.0 follows a full source review: 31 verified findings were fixed,
+including corrected `CoEvolution` scaling and double-substitution semantics, a
+proper GTR switching process for Markov-modulated models, input validation
+throughout, reproducible simulations via `set_palantir_seed()`, and a
+regression test suite. Some of these fixes change simulated output relative to
+earlier versions; [NEWS.md](NEWS.md) lists them in full.
+
 Version 1.1.0 corrects the transient rescaler used on branches where the model
 changes (the forecast now advances at the site's rate multiplier) and adds an
 opt-in exact alternative to it: `rescale_method = "exact"` replaces the branch
-segmentation with a closed-form time change. The rescaler insures the expected number
+segmentation with a closed-form time change. The rescaler ensures the expected number
 of substitutions per unit branch length are exact, and runs faster than the
 segmented approach.
 
@@ -76,7 +89,7 @@ git clone https://github.com/dekoning-lab/PalantiR.git
 The dependencies for the `R` package can be installed as follows:
 
 ```R
-install.packages(c("RcppArmadillo", "htmlwidgets"))
+install.packages(c("Rcpp", "RcppArmadillo", "jsonlite", "htmlwidgets", "Matrix", "lattice"))
 ```
 
 ## Building
@@ -150,3 +163,21 @@ head(sim$substitutions)
 ```
 
 ![simulation](docs/img/PalantiR-simulation.gif)
+
+# Command-line simulation
+
+The [`examples/`](examples/) directory contains stand-alone scripts that run
+`PalantiR` simulations from the shell, with arguments for the tree, population
+sizes, number of sites, and random seed (run with `--help` for the full list):
+
+```bash
+# time-homogeneous mutation-selection with site-heterogeneous fitness profiles
+Rscript examples/simulate_site_heterogeneous.R --sites=200 --population-size=10000
+
+# time-heterogeneous: a larger population size on the primate clade
+Rscript examples/simulate_time_heterogeneous.R --population-sizes=5000,30000
+```
+
+Each script writes codon and amino-acid `FASTA` alignments, the complete
+substitution history, an interactive substitution-history plot, and a
+`run_info.txt` recording parameters, seed, and package versions.
