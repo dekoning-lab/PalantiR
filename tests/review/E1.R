@@ -13,10 +13,13 @@
 #   Before the fix (adaptive knot refinement, 2026-08-21): FAIL. Cumulative
 #     non-synonymous events per site by branch position u overshoot badly at
 #     small u under rescale_method = "exact" (~0.46 at u = 0.1).
-#   After the fix: PASS. Cumulative class events per site track u to within
-#     0.04 at every checkpoint, under both rescale methods. The tolerance is
-#     ~5 sampling SDs at the tightest checkpoint, and ~9x smaller than the
-#     defect it guards against.
+#   After the fix: PASS. Cumulative class events per site track u at every
+#     checkpoint, under both rescale methods, within a tolerance of
+#     0.02 + 4 * sqrt(u / n_sites) -- the count's sampling SD grows with u
+#     (per-site counts are approximately Poisson(u)), and the engine's seeded
+#     stream is platform-dependent, so the bound scales with the checkpoint
+#     rather than being fixed. The margins against the recorded defect are
+#     ~5-7x at the early checkpoints where it lived.
 
 suppressMessages(library(PalantiR))
 
@@ -49,9 +52,10 @@ result <- tryCatch({
         ns_time <- subA$time[aa_of[subA$from + 1] != aa_of[subA$to + 1]]
         for (u in c(0.1, 0.25, 0.5, 1, 2)) {
             got <- sum(ns_time <= u) / n_sites
-            if (abs(got - u) > 0.04) {
-                fail(sprintf("(%s) cum non-syn/site %.3f at u=%.2f (expected %.2f +/- 0.04)",
-                             method, got, u, u))
+            tol <- 0.02 + 4 * sqrt(u / n_sites)
+            if (abs(got - u) > tol) {
+                fail(sprintf("(%s) cum non-syn/site %.3f at u=%.2f (expected %.2f +/- %.3f)",
+                             method, got, u, u, tol))
             }
         }
     }
