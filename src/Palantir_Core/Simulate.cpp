@@ -227,7 +227,21 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
                         if (pi_rmsd > tolerance) {
                             // rescaling on segment
                             mat I = eye(size(current_Q));
-                            current_pi = trans(current_pi.t() * ((current_Q * s_length) + I));
+                            // FIX (2026-08-19): the transient forecast must advance at
+                            // the same speed as the simulation it rescales. over_time
+                            // divides waiting times by `rate`, i.e. the realised process
+                            // runs at Q*rate, but this forecast advanced at Q alone, so
+                            // for rate > 1 the schedule lagged the sequence it was
+                            // normalising (and led it for rate < 1). The delivered
+                            // number of substitutions per unit branch length during the
+                            // transient then depended on the site's rate multiplier:
+                            // measured on the population-shift sweep, stems delivered
+                            // 4.3% too few substitutions at Ne 7,500 and 13.9% too few
+                            // at Ne 17,000 (rate multipliers mean 1.20). Advancing the
+                            // forecast by rate * s_length restores the invariant that
+                            // one unit of branch length is one expected substitution of
+                            // the scaled class, for every site.
+                            current_pi = trans(current_pi.t() * ((current_Q * (s_length * rate)) + I));
 
                             double rho = MutationSelection::scaling(
                                     current_pi, local_Q[mode], scaling_type, g);

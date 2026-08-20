@@ -1,7 +1,7 @@
 Package: PalantiR
 Type: Package
 Title: Simulation and Visualisation of Phylogenetic Substitution Histories
-Version: 0.2.0
+Version: 1.0.1
 Author: Ivan Krukov [aut], Maria Escandor [aut], Nikhil Mathankeri [aut],
     A. P. Jason de Koning [aut, cre]
 Maintainer: A. P. Jason de Koning <jason.de.koning@gmail.com>
