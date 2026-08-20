@@ -58,23 +58,27 @@ mammals <- Phylogeny("../inst/extdata/mammals.newick")
 
 # Flat site fitness: all structure comes from the pair coupling
 f <- rep(1, 20)
+Ne <- 1000
 
 # Amino acid order is:
 # A, C, D, E, F, G, H, I, K, L, M, N, P, Q, R, S, T, V, W, Y
 K <- 9; E <- 4
 
-# Three-tier coupling. With fitness_1 + fitness_2 = 2 and N = 1000, a pair
-# with delta = 1 - g/4000 sits a scaled gap of 2*N*2*(g/4000) = g below the
-# compatible pairs:
-delta <- matrix(1 - 20/4000, 20, 20)   # everything else:      gap 20
-delta[K, K] <- 1 - 8/4000              # mismatch K,K:         gap  8
-delta[E, E] <- 1 - 8/4000              # mismatch E,E:         gap  8
-delta[K, E] <- 1                       # compatible:           gap  0
-delta[E, K] <- 1
+# Population-scaled selection coefficients (2*Ne*s) of each pair
+# configuration, relative to the compatible charge-swap pairs:
+S <- matrix(-20, 20, 20)   # everything else:  2Ns = -20
+S[K, K] <- -8              # mismatch K,K:     2Ns =  -8
+S[E, E] <- -8              # mismatch E,E:     2Ns =  -8
+S[K, E] <- 0               # compatible:       2Ns =   0
+S[E, K] <- 0
+
+# The scaled fitness of pair (i, j) is 2*Ne*(f[i] + f[j])*delta[i, j];
+# with flat f this is 4*Ne*delta, so a coefficient of S corresponds to:
+delta <- 1 + S / (4 * Ne)
 ```
 
 The intermediate depth sets how tightly the two substitutions couple: the
-rate of escaping an intermediate grows roughly like $e^{\text{gap}}$, while
+rate of escaping an intermediate grows roughly like $e^{|2Ns|}$, while
 non-synonymous scaling (below) pins the overall rate of excursions. A
 deeper intermediate therefore gives the same number of toggles, each
 resolved much faster.
@@ -89,7 +93,7 @@ delivered at a rate the tree's branch lengths control directly.
 hky <- HasegawaKishinoYano(equilibrium = rep(0.25, 4))
 
 co <- CoEvolution(
-    population_size = 1000,
+    population_size = Ne,
     mutation_rate = 1e-6,
     nucleotide_model = hky,
     fitness_1 = f,
@@ -138,33 +142,43 @@ sort(table(ns$pair_amino_acid_to), decreasing = TRUE)
 Each excursion starts with a substitution into K,K or E,E and resolves with
 the next non-synonymous substitution at the same pair -- either completing
 the toggle (landing on the opposite compatible configuration) or reverting.
-Count the completed toggles and how long each intermediate lasted:
+A small helper classifies each excursion and records how long the
+intermediate lasted:
 
 ```{r}
-compatible <- c("K,E", "E,K")
-toggles <- 0
-waits <- c()
-for (s0 in unique(ns$site)) {
-  for (nd in unique(ns$node)) {
-    g <- ns[ns$site == s0 & ns$node == nd, ]
-    if (nrow(g) < 2) next
-    g <- g[order(g$time), ]
-    for (i in seq_len(nrow(g) - 1)) {
-      if (!(g$pair_amino_acid_to[i] %in% compatible) &&
-           (g$pair_amino_acid_to[i + 1] %in% compatible)) {
-        waits <- c(waits, g$time[i + 1] - g$time[i])
-        if (g$pair_amino_acid_from[i] != g$pair_amino_acid_to[i + 1])
-          toggles <- toggles + 1
+count_toggles <- function(substitutions, compatible = c("K,E", "E,K")) {
+  toggles <- 0; reversions <- 0; waits <- c()
+  for (s0 in unique(substitutions$site)) {
+    for (nd in unique(substitutions$node)) {
+      g <- substitutions[substitutions$site == s0 & substitutions$node == nd, ]
+      if (nrow(g) < 2) next
+      g <- g[order(g$time), ]
+      for (i in seq_len(nrow(g) - 1)) {
+        entered  <- !(g$pair_amino_acid_to[i] %in% compatible)
+        resolved <- g$pair_amino_acid_to[i + 1] %in% compatible
+        if (entered && resolved) {
+          waits <- c(waits, g$time[i + 1] - g$time[i])
+          if (g$pair_amino_acid_from[i] != g$pair_amino_acid_to[i + 1]) {
+            toggles <- toggles + 1
+          } else {
+            reversions <- reversions + 1
+          }
+        }
       }
     }
   }
+  list(toggles = toggles, reversions = reversions, waits = waits)
 }
-toggles
-median(waits)
+
+excursions <- count_toggles(ns)
+excursions$toggles
+excursions$reversions
+median(excursions$waits)
 ```
 
-The median wait in the intermediate is well under one percent of a typical
-branch length, so the compensating substitution follows essentially
+Completed toggles and reversions occur in the expected 1:1 ratio, and the
+median wait in the intermediate is well under one percent of a typical
+branch length -- the compensating substitution follows essentially
 immediately.
 
 ## Substitution history
