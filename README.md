@@ -23,13 +23,19 @@ Substitution histories simulated under a mutation–selection model with
 epistasis between site pairs; joint states of the interacting sites are shown
 alongside the events on the tree:
 
-![Mutation-selection model with epistasis](docs/img/mutsel-epi.png)
+<picture>
+<source media="(prefers-color-scheme: dark)" srcset="docs/img/mutsel-epi.png">
+<img src="docs/img/mutsel-epi-light.png" alt="Mutation-selection model with epistasis">
+</picture>
 
 A fitness shift under a time-heterogeneous mutation–selection model; each dot
 is a substitution (synonymous in green, non-synonymous in red), with the site's fitness
 profile shown as a logo:
 
-![Fitness shift under a time-heterogeneous mutation-selection model](docs/img/fitness-shift.png)
+<picture>
+<source media="(prefers-color-scheme: dark)" srcset="docs/img/fitness-shift.png">
+<img src="docs/img/fitness-shift-light.png" alt="Fitness shift under a time-heterogeneous mutation-selection model">
+</picture>
 
 ## Recent updates
 
