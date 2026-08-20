@@ -77,8 +77,8 @@ ms_5k <- MutationSelection(
     fitness = psi)
 
 # Larger population size
-ms_8k <- MutationSelection(
-    population_size = 8000,
+ms_30k <- MutationSelection(
+    population_size = 30000,
     mutation_rate = 1e-8,
     nucleotide_model = hky,
     fitness = psi)
@@ -95,7 +95,7 @@ Simulate:
 sim <- simulate_over_interval_phylogeny(
     phylogeny = mammals,
     mode_phylogeny = mammal_switches,
-    models = list(ms_5k, ms_8k),
+    models = list(ms_5k, ms_30k),
     sequence = s,
     start_mode = 0)
 ```
@@ -111,11 +111,28 @@ plot(sim, sites = 0:24, circle_opacity = 0.6)
 ```
 
 Synonymous substitutions are shown in green, non-synonymous in red, and branch modes as colored branches.
-A population-size increase is expected to produce a transient burst of non-synonymous substitutions just after
-the shift -- stronger selection removes variants that had drifted to fixation under the smaller population --
-followed by a slightly lower long-run non-synonymous rate. With a modest expansion like this one (5,000 to
-8,000) the signature is subtle, and the two regimes look broadly similar in a single 100-site simulation: a
-realistic picture of how weak the footprint of a moderate population-size shift is.
+A population-size increase produces a transient burst of non-synonymous substitutions after the shift --
+stronger selection removes variants that had drifted to fixation under the smaller population -- before
+settling to a lower long-run rate. The shifted clade here is short enough that it sits inside that
+transient: its non-synonymous rate is modestly elevated, and the fitness direction of its changes is
+strongly biased.
+
+The direction bias is the clearest signature. At stationarity, uphill and downhill substitutions balance
+exactly; after the expansion, purging makes uphill changes dominate until the clade re-equilibrates. The
+`intervals` table maps each branch to its mode, so the comparison is direct:
+
+```{r}
+aa <- c("A", "C", "D", "E", "F", "G", "H", "I", "K", "L",
+        "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y")
+nsyn <- subset(sim$substitutions, !synonymous)
+nsyn$mode <- sim$intervals$state[match(nsyn$node, sim$intervals$node)]
+d_psi <- psi[match(nsyn$amino_acid_to, aa)] - psi[match(nsyn$amino_acid_from, aa)]
+direction <- ifelse(d_psi > 0, "uphill", ifelse(d_psi < 0, "downhill", "level"))
+table(mode = nsyn$mode, direction)
+```
+
+The constant-population branches sit near the stationary uphill:downhill balance, while on the
+expanded-population branches nearly every amino-acid change is an uphill move.
 
 Check substitution history table:
 
