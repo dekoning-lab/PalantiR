@@ -156,10 +156,24 @@ static double rescale_solve_tau(const mat& Q, const mat& Estep_aug,
                                 double budget, vec& exit_forecast,
                                 vec& knot_tau, vec& knot_F)
 {
-    // March the row vector [p', p' * int e^{Qu} du] through the precomputed
-    // augmented step matrix. Each step costs one vector-matrix product; F and
-    // f are exact at every grid point. Stop when the budget is bracketed and
-    // invert the final interval with a monotone Hermite cubic.
+    // March the row vector [p', p' * int e^{Qu} du] through augmented step
+    // matrices. Each step costs one vector-matrix product; F and f are exact
+    // at every grid point. Stop when the budget is bracketed and invert the
+    // final interval with a monotone Hermite cubic.
+    //
+    // FIX (2026-08-21): the grid used to be uniform at dtau. When the entering
+    // forecast is far from the mode's equilibrium the class flux can start
+    // orders of magnitude above its equilibrium value of ~1 (measured 634x on
+    // a disjoint-profile switch), so a single dtau step delivered several
+    // units of budget and the knot table could not resolve the transient:
+    // event positions interpolated across one coarse knot interval were badly
+    // wrong (4.6x too many class events reported by branch position 0.1),
+    // even though the events themselves and the exit forecast were correct.
+    // Steps now refine adaptively: a step that would deliver more than DF_MAX
+    // of budget is retried at half the step size (halved-step matrices are
+    // built lazily and cached per level), and the march coarsens again once
+    // the flux has relaxed. The knot grid is therefore non-uniform, and
+    // rescale_budget_at locates intervals by binary search.
     const uword n = Q.n_rows;
 
     // FIX (2026-08-20): a non-positive budget -- what a zero-length interval
@@ -181,21 +195,52 @@ static double rescale_solve_tau(const mat& Q, const mat& Estep_aug,
     v.head(n) = p0.t();
     rowvec v_prev = v;
 
+    // Halved-step matrices, built lazily: level l steps by dtau / 2^l.
+    std::vector<mat> steps(1, Estep_aug);
+    auto step_at = [&](int l) -> const mat& {
+        while ((int)steps.size() <= l) {
+            mat aug(2 * n, 2 * n, fill::zeros);
+            aug.submat(0, 0, n - 1, n - 1) = Q;
+            aug.submat(0, n, n - 1, 2 * n - 1) = eye(n, n);
+            steps.push_back(expmat(aug * std::ldexp(dtau, -(int)steps.size())));
+        }
+        return steps[l];
+    };
+    // Budget resolution per knot. 0.01 matches the equilibrium regime, where
+    // the class flux is ~1 and a dtau = 0.01 step delivers ~0.01 of budget;
+    // small budgets get a proportionally finer bound so the bracketing
+    // interval stays small relative to what it has to resolve.
+    const double DF_MAX = std::min(0.01, std::max(budget / 4.0, 1e-8));
+    const int LMAX = 60;
+
     std::vector<double> taus(1, 0.0), Fs(1, 0.0);
     double f_prev = std::max(dot(p0, g), 1e-300);
     double F_prev = 0.0;
     double f_cur = f_prev, F_cur = 0.0;
-    const ullong kmax = (ullong)(std::max(budget, 1.0) / dtau) * 100 + 1000;
+    double tau_cur = 0.0, h_last = dtau;
+    int level = 0;
+    const ullong kmax = (ullong)(std::max(budget, 1.0) / DF_MAX) * 100 + 1000;
     ullong k = 0;
     while (F_cur < budget && k < kmax) {
+        rowvec cand = v * step_at(level);
+        double F_cand = as_scalar(cand.tail(n) * g);
+        if (F_cand - F_cur > DF_MAX && level < LMAX) {
+            level++;
+            continue;
+        }
         v_prev = v;
-        v = v * Estep_aug;
+        v = cand;
         k++;
         f_prev = f_cur; F_prev = F_cur;
         f_cur = std::max(as_scalar(v.head(n) * g), 1e-300);
-        F_cur = as_scalar(v.tail(n) * g);
-        taus.push_back(k * dtau);
+        F_cur = F_cand;
+        h_last = std::ldexp(dtau, -level);
+        tau_cur += h_last;
+        taus.push_back(tau_cur);
         Fs.push_back(F_cur);
+        if (level > 0 && F_cur - F_prev < DF_MAX / 4) {
+            level--;
+        }
     }
     if (F_cur < budget) {
         throw logic_error("Exact rescaler failed to reach the event budget; "
@@ -210,23 +255,23 @@ static double rescale_solve_tau(const mat& Q, const mat& Estep_aug,
         double h10 = a * (1 - a) * (1 - a);
         double h01 = a * a * (3 - 2 * a);
         double h11 = a * a * (a - 1);
-        double Fh = h00 * F_prev + h10 * dtau * f_prev
-                  + h01 * F_cur + h11 * dtau * f_cur;
+        double Fh = h00 * F_prev + h10 * h_last * f_prev
+                  + h01 * F_cur + h11 * h_last * f_cur;
         double dh = 6 * a * (a - 1) * (F_prev - F_cur)
-                  + (3 * a * a - 4 * a + 1) * dtau * f_prev
-                  + (3 * a * a - 2 * a) * dtau * f_cur;
+                  + (3 * a * a - 4 * a + 1) * h_last * f_prev
+                  + (3 * a * a - 2 * a) * h_last * f_cur;
         double step = (Fh - budget) / std::max(dh, 1e-300);
         a -= step;
         if (a < 0) a = 0;
         if (a > 1) a = 1;
         if (std::fabs(Fh - budget) < 1e-12 * std::max(1.0, budget)) break;
     }
-    double tau = (k - 1) * dtau + a * dtau;
+    double tau = taus[taus.size() - 2] + a * h_last;
 
     // Exit forecast: v_prev holds the exact state at the last full grid
     // point; one small exponential covers the partial step.
     exit_forecast = trans(rowvec(v_prev.head(n)) *
-                          expmat(Q * (tau - (k - 1) * dtau)));
+                          expmat(Q * (tau - taus[taus.size() - 2])));
 
     knot_tau = conv_to<vec>::from(taus);
     knot_F = conv_to<vec>::from(Fs);
@@ -246,13 +291,14 @@ static double rescale_budget_at(const vec& knot_tau, const vec& knot_F, double t
     // non-positive budget): knot_tau[0] is 0, so every positive tau_e leaves
     // here with a delivered budget of 0 and the K - 1 below is never reached.
     if(tau_e >= knot_tau[K]) return knot_F[K];
-    // uniform grid except possibly the final (partial) interval
-    double dtau = (K >= 2) ? knot_tau[1] : knot_tau[K];
-    // FIX (2026-08-20): a guard here re-seated j to K - 2 when it landed on the
-    // final interval below knot_tau[K - 1]. That cannot happen: reaching j ==
-    // K - 1 requires tau_e >= (K - 1) * dtau == knot_tau[K - 1], which is the
-    // negation of the guard's own second condition. Removed as dead code.
-    uword j = std::min((uword)(tau_e / dtau), K - 1);
+    // The knot grid is non-uniform (adaptive refinement in rescale_solve_tau),
+    // so locate the bracketing interval by binary search.
+    uword lo = 0, hi = K;
+    while (hi - lo > 1) {
+        uword mid = lo + (hi - lo) / 2;
+        if (knot_tau[mid] <= tau_e) lo = mid; else hi = mid;
+    }
+    uword j = lo;
     double w = (tau_e - knot_tau[j]) /
                std::max(knot_tau[j + 1] - knot_tau[j], 1e-300);
     return knot_F[j] * (1.0 - w) + knot_F[j + 1] * w;

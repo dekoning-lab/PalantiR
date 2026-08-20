@@ -1,3 +1,21 @@
+# PalantiR 1.2.1
+
+## Bug fixes
+
+- `rescale_method = "exact"`: event positions through a stiff transient are
+  now reported correctly. The exact rescaler's knot table marched at a fixed
+  intrinsic-time step; when the entering forecast was far from the new mode's
+  equilibrium the scaled class flux could start orders of magnitude above its
+  equilibrium value (634x measured on a disjoint-profile switch), the whole
+  boundary layer fell inside one knot interval, and the piecewise-linear
+  inverse time change misplaced early events (4.6x too many class events
+  reported by branch position 0.1). Event identities, total counts, and the
+  exit forecast were unaffected. The knot grid now refines adaptively so that
+  no knot interval delivers more than 1% of the branch's event budget, and
+  the inverse time change locates intervals by binary search. Found by the
+  engine validation notebook's transient test (`validation/`); guarded by
+  regression test E1.
+
 # PalantiR 1.2.0
 
 Comprehensive fixes following a full source review
