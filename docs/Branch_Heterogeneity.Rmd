@@ -134,6 +134,81 @@ table(mode = nsyn$mode, direction)
 The constant-population branches sit near the stationary uphill:downhill balance, while on the
 expanded-population branches nearly every amino-acid change is an uphill move.
 
+## Visualizing the purging transient
+
+The synonymous/non-synonymous colouring above cannot show this bias, but the plot honours per-event
+colours through the substitution table's `color` column. Recolouring each substitution by its fitness
+direction makes the purging visible on the tree itself:
+
+```{r}
+sub <- sim$substitutions
+d_all <- psi[match(sub$amino_acid_to, aa)] - psi[match(sub$amino_acid_from, aa)]
+sub$color <- ifelse(sub$synonymous, "#BBBBBB",
+             ifelse(d_all > 0, "#E84B2A", ifelse(d_all < 0, "#2166AC", "#888888")))
+sim_dir <- sim
+sim_dir$substitutions <- sub
+plot(sim_dir, sites = 0:24, circle_opacity = 0.6)
+```
+
+Uphill changes are red, downhill blue, synonymous light grey. Outside the shifted clade red and blue
+appear in near-equal numbers; inside it the substitutions are almost exclusively red.
+
+To see that the burst is concentrated at the base of the shifted clade, measure the substitution rate as
+a function of time since the shift, normalising each time slice by the lineage length present in it. The
+branch start depths come from a short walk over the phylogeny's JSON representation:
+
+```{r}
+library(jsonlite)
+branches <- data.frame()
+walk <- function(node, start) {
+  len <- if (is.null(node$length)) 0 else node$length
+  branches <<- rbind(branches, data.frame(node = node$index, start = start, length = len))
+  if (!is.null(node$children)) for (ch in node$children) walk(ch, start + len)
+}
+walk(fromJSON(mammals$json, simplifyVector = FALSE), 0)
+branches$mode <- sim$intervals$state[match(branches$node, sim$intervals$node)]
+
+switch_depth <- min(branches$start[branches$mode == 1], na.rm = TRUE)
+nsyn$depth <- branches$start[match(nsyn$node, branches$node)] + nsyn$time - switch_depth
+
+clade <- subset(branches, mode == 1 & length > 0)
+clade$s0 <- clade$start - switch_depth
+edges <- seq(0, max(clade$s0 + clade$length) + 1e-9, length.out = 8)
+exposure <- sapply(seq_len(length(edges) - 1), function(i)
+  100 * sum(pmax(0, pmin(clade$s0 + clade$length, edges[i + 1]) - pmax(clade$s0, edges[i]))))
+up <- hist(nsyn$depth[nsyn$mode == 1 & direction == "uphill"],   breaks = edges, plot = FALSE)$counts
+dn <- hist(nsyn$depth[nsyn$mode == 1 & direction == "downhill"], breaks = edges, plot = FALSE)$counts
+
+total_m0 <- 100 * sum(branches$length[branches$mode == 0], na.rm = TRUE)
+base_up <- sum(nsyn$mode == 0 & direction == "uphill",   na.rm = TRUE) / total_m0
+base_dn <- sum(nsyn$mode == 0 & direction == "downhill", na.rm = TRUE) / total_m0
+```
+
+```{r, fig.height=5.5}
+mids <- (head(edges, -1) + tail(edges, -1)) / 2
+up_rate <- up / exposure
+se <- sqrt(up) / exposure
+plot(mids, up_rate, type = "b", pch = 19, col = "#E84B2A",
+     ylim = c(0, max(up_rate + se) * 1.05),
+     xlab = "Time since the population-size shift (branch-length units)",
+     ylab = "Non-synonymous substitutions / site / unit length")
+arrows(mids, up_rate - se, mids, up_rate + se,
+       angle = 90, code = 3, length = 0.04, col = "#E84B2A")
+lines(mids, dn / exposure, type = "b", pch = 19, col = "#2166AC")
+abline(h = base_up, lty = 2, col = "#E84B2A")
+abline(h = base_dn, lty = 2, col = "#2166AC")
+legend("topright", bty = "n",
+       c("uphill, shifted clade", "downhill, shifted clade",
+         "uphill baseline (constant N)", "downhill baseline (constant N)"),
+       col = rep(c("#E84B2A", "#2166AC"), 2), lty = c(1, 1, 2, 2), pch = c(19, 19, NA, NA))
+```
+
+The uphill rate immediately after the shift is about four times the constant-N baseline and roughly
+double its own later level, while the downhill rate collapses to near zero. Even deep in the clade the
+uphill rate stays about twice the baseline: the purging transient is strongest at the stem and the clade
+has not yet re-equilibrated to the larger population size (error bars are Poisson standard errors from a
+single 100-site simulation).
+
 Check substitution history table:
 
 ```{r, results='hide'}
