@@ -45,6 +45,10 @@ profile shown as a logo:
 
 ## Recent updates
 
+Version 1.2.1 fixes event-position reporting through stiff transients under
+`rescale_method = "exact"`; the defect was found by the engine validation
+notebook (below) and is guarded by a regression test.
+
 Version 1.2.0 follows a full source review: 31 verified findings were fixed,
 including corrected `CoEvolution` scaling and double-substitution semantics, a
 proper GTR switching process for Markov-modulated models, input validation
@@ -181,3 +185,22 @@ Rscript examples/simulate_time_heterogeneous.R --population-sizes=5000,30000
 Each script writes codon and amino-acid `FASTA` alignments, the complete
 substitution history, an interactive substitution-history plot, and a
 `run_info.txt` recording parameters, seed, and package versions.
+
+# Engine validation
+
+[`validation/engine_validation.Rmd`](validation/engine_validation.Rmd) tests
+the simulation engine against exact expectations and renders a standalone
+report with a pre-stated pass criterion and a computed verdict for each test:
+branch-length calibration under the three scaling modes, the stationary
+distribution against observed state frequencies, and the transient between
+two equilibria in a time-heterogeneous simulation, compared with the master
+equation under both rescale methods.
+
+The [current report](https://dekoning-lab.github.io/PalantiR/engine_validation.html)
+passes all tests (version 1.2.1; also verified under two further seeds). To
+rerun it with your own seed and simulation size:
+
+```r
+# in validation/, with PalantiR and rmarkdown installed
+rmarkdown::render("engine_validation.Rmd", params = list(seed = 1, n_sites = 3000))
+```

@@ -40,7 +40,7 @@ following pages:
 * [Rate Scaling](Rate_Scaling.html)
 * [Temporal Heterogeneity Rescaling](Temporal_Heterogeneity_Rescaling.html)
 
-# What's new in 1.2.0
+# What's new in 1.2
 
 Following a full source review: reproducible simulations via
 `set_palantir_seed()`; an exact time-change alternative to the segment
@@ -49,6 +49,21 @@ Markov-modulated model semantics; input validation throughout; and repaired
 datasets and documentation. See
 [NEWS.md](https://github.com/dekoning-lab/PalantiR/blob/master/NEWS.md) for
 the complete list, including breaking changes.
+
+# Engine validation
+
+The simulation engine is validated by a rerunnable notebook that tests
+branch-length calibration under each scaling mode, the stationary
+distribution, and the transient between two equilibria in a
+time-heterogeneous simulation, each against an exact expectation with a
+pre-stated pass criterion. Read the
+[current validation report](engine_validation.html) (all tests pass,
+version 1.2.1), or rerun it from a clone of the repository:
+
+```r
+# in validation/, with PalantiR installed
+rmarkdown::render("engine_validation.Rmd", params = list(seed = 1))
+```
 
 <table style="border: none;"><tr style="background: none;">
 <td style="border: none; text-align: center;">
