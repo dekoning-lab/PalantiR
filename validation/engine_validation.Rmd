@@ -1,0 +1,297 @@
+---
+title: "PalantiR engine validation"
+output:
+  html_document:
+    self_contained: true
+    toc: true
+    toc_float: true
+params:
+  seed: 20260821
+  n_sites: 3000
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.width = 9, fig.height = 5, warning = FALSE, message = FALSE)
+suppressMessages(library(PalantiR))
+set_palantir_seed(params$seed)
+
+verdicts <- list()
+verdict <- function(id, ok, detail) {
+    verdicts[[id]] <<- ok
+    cat(sprintf("**%s: %s** — %s\n", id, ifelse(ok, "PASS", "FAIL"), detail))
+}
+has_logo <- requireNamespace("ggseqlogo", quietly = TRUE)
+
+aa_of <- unname(GeneticCode())
+aa_levels <- sort(unique(aa_of))
+
+# Sequence logo of one or more amino-acid frequency distributions
+# (columns of `freqs`), with a barplot fallback if ggseqlogo is absent.
+plot_freqs <- function(freqs, labels) {
+    if (has_logo) {
+        m <- as.matrix(freqs); rownames(m) <- aa_levels; colnames(m) <- labels
+        print(ggseqlogo::ggseqlogo(m, method = "custom", seq_type = "aa") +
+              ggplot2::scale_x_continuous(breaks = seq_along(labels), labels = labels) +
+              ggplot2::ylab("frequency"))
+    } else {
+        barplot(t(as.matrix(freqs)), beside = TRUE, names.arg = aa_levels,
+                legend.text = labels, ylab = "frequency")
+    }
+}
+
+codon_to_aa <- function(codon_counts) as.numeric(tapply(codon_counts, aa_of, sum))
+tv <- function(p, q) 0.5 * sum(abs(p - q))
+```
+
+This notebook tests the core simulation engine against exact expectations.
+Each test states its expectation, runs a fresh simulation, compares the
+result statistically and visually, and prints a PASS or FAIL verdict against
+a criterion stated in advance. To rerun everything with a different seed or
+simulation size:
+
+```r
+rmarkdown::render("engine_validation.Rmd", params = list(seed = 1, n_sites = 3000))
+```
+
+All tests use the fitness profiles shipped with the package (`psi_c50_1`,
+amino-acid equilibrium frequencies converted to fitness with
+`equilibrium_to_fitness`) and the mutation–selection codon model.
+
+```{r inputs}
+data(psi_c50_1)
+hky <- HasegawaKishinoYano(equilibrium = rep(0.25, 4))
+psi_1 <- equilibrium_to_fitness(as.numeric(psi_c50_1[1, ]), 1000)
+psi_2 <- equilibrium_to_fitness(as.numeric(psi_c50_1[2, ]), 1000)
+n_sites <- params$n_sites
+```
+
+# Test 1: branch-length calibration under the three scaling modes
+
+**Expectation.** A model built with `scaling_type = "synonymous"`,
+`"non-synonymous"`, or `"substitution"` is normalized so that one unit of
+branch length delivers, at stationarity, one expected substitution of that
+class per codon site: synonymous, non-synonymous, or of any kind,
+respectively. Simulating `r sprintf("%d", 3000)` sites over a two-taxon tree
+with branch lengths 1, the mean number of class events per site per unit
+branch length should equal 1.
+
+**Criterion.** For each scaling mode, the observed mean is within three
+standard errors of 1.
+
+```{r test1}
+tree2 <- tempfile(fileext = ".newick"); writeLines("(A:1.0,B:1.0);", tree2)
+p2 <- Phylogeny(tree2)
+
+t1 <- do.call(rbind, lapply(c("synonymous", "non-synonymous", "substitution"),
+  function(sc) {
+    ms <- MutationSelection(1000, 1e-8, hky, psi_1, scaling_type = sc)
+    sim <- simulate_over_phylogeny(p2, ms, sample_sequence(ms, n_sites))
+    sub <- sim$substitutions
+    in_class <- switch(sc,
+        synonymous       = sub$synonymous,
+        "non-synonymous" = !sub$synonymous,
+        substitution     = rep(TRUE, nrow(sub)))
+    per_site <- tabulate(sub$site[in_class] + 1L, nbins = n_sites) / 2
+    data.frame(scaling = sc, mean = mean(per_site),
+               se = sd(per_site) / sqrt(n_sites),
+               z = (mean(per_site) - 1) / (sd(per_site) / sqrt(n_sites)))
+}))
+knitr::kable(t1, digits = 4)
+```
+
+```{r test1-verdict, results="asis"}
+verdict("Test 1", all(abs(t1$z) < 3),
+        sprintf("class events per site per unit length: %s (|z| max %.2f, criterion < 3)",
+                paste(sprintf("%.3f", t1$mean), collapse = ", "), max(abs(t1$z))))
+```
+
+# Test 2: stationary distribution
+
+**Expectation.** The model's stationary distribution (`model$equilibrium`) is
+both the distribution the root sequence is sampled from and the invariant
+distribution of the substitution process, so the states observed at the end
+of a branch of any length are draws from it. Comparing the codon frequencies
+at a tip across `r sprintf("%d", 3000)` independent sites against the
+computed stationary distribution tests the equilibrium computation, the root
+sampler, and the propagation together.
+
+**Criterion.** Monte-Carlo chi-square goodness of fit, observed tip codon
+counts against the stationary distribution, p > 0.01 at both the codon and
+the amino-acid level.
+
+```{r test2}
+ms <- MutationSelection(1000, 1e-8, hky, psi_1)
+sim <- simulate_over_phylogeny(p2, ms, sample_sequence(ms, n_sites))
+codons <- names(GeneticCode())
+obs_codon <- as.numeric(table(factor(sim$alignment["A", ], levels = codons)))
+pi_codon <- as.numeric(ms$equilibrium)
+
+chi_codon <- chisq.test(obs_codon, p = pi_codon, rescale.p = TRUE,
+                        simulate.p.value = TRUE, B = 5000)
+obs_aa <- codon_to_aa(obs_codon); th_aa <- codon_to_aa(pi_codon)
+chi_aa <- chisq.test(obs_aa, p = th_aa, rescale.p = TRUE,
+                     simulate.p.value = TRUE, B = 5000)
+```
+
+The stationary and observed amino-acid distributions as sequence logos
+(letter height = frequency):
+
+```{r test2-logo, fig.height=4}
+plot_freqs(data.frame(stationary = th_aa, observed = obs_aa / sum(obs_aa)),
+           c("stationary", "observed"))
+```
+
+```{r test2-verdict, results="asis"}
+verdict("Test 2", chi_codon$p.value > 0.01 && chi_aa$p.value > 0.01,
+        sprintf("chi-square p = %.3f (codon), %.3f (amino acid); TV(observed, stationary) = %.4f at the amino-acid level; criterion p > 0.01",
+                chi_codon$p.value, chi_aa$p.value, tv(obs_aa / sum(obs_aa), th_aa)))
+```
+
+# Test 3: the transient between two equilibria
+
+**Expectation.** In a time-heterogeneous simulation the sequence starts at
+the stationary distribution of the first model and relaxes to the stationary
+distribution of the second. The state distribution along the way follows the
+master equation of the second model's generator, expressed in the branch's
+own units: branch position is measured in expected substitutions of the
+scaled class, so the predicted trajectory is obtained by integrating
+$dp/du = pQ / g(p)$, where $g(p)$ is the class flux under the current state
+distribution. This is a demanding construction: the two fitness profiles
+used here are nearly disjoint, so the class flux starts at several hundred
+times its equilibrium value and the branch begins with a burst of
+substitutions. (This test found the defect fixed in version 1.2.1: the
+exact rescaler's knot table could not resolve that burst and misplaced early
+event positions.)
+
+**Criterion.** Under both rescale methods (`"segments"` and `"exact"`):
+cumulative class events per site track branch position to within 0.04 at
+every checkpoint, and Monte-Carlo chi-square of the observed amino-acid
+distribution against the predicted trajectory gives p ≥ 0.001 at every
+checkpoint with at most two of the twelve p-values below 0.05.
+
+```{r test3-setup}
+mA <- MutationSelection(1000, 1e-8, hky, psi_1, scaling_type = "non-synonymous")
+mB <- MutationSelection(1000, 1e-8, hky, psi_2, scaling_type = "non-synonymous")
+Q <- mB$transition
+p0 <- as.numeric(mA$equilibrium)
+piB <- as.numeric(mB$equilibrium)
+W <- Q; W[outer(aa_of, aa_of, "==")] <- 0; diag(W) <- 0
+w <- rowSums(W)                       # non-synonymous outflux per state
+
+# Predicted state distribution as a function of branch position u:
+# fourth-order Runge-Kutta on dp/du = pQ / g(p).
+predict_traj <- function(p0, Q, w, L, du = 0.002) {
+    f <- function(p) as.numeric(p %*% Q) / sum(p * w)
+    n <- ceiling(L / du)
+    P <- matrix(NA, n + 1, length(p0)); P[1, ] <- p0
+    p <- p0
+    for (k in 1:n) {
+        k1 <- f(p); k2 <- f(p + du/2 * k1); k3 <- f(p + du/2 * k2); k4 <- f(p + du * k3)
+        p <- p + du/6 * (k1 + 2*k2 + 2*k3 + k4)
+        p[p < 0] <- 0; p <- p / sum(p)
+        P[k + 1, ] <- p
+    }
+    list(u = seq(0, n * du, by = du), P = P)
+}
+L <- 8
+traj <- predict_traj(p0, Q, w, L)
+pred_at <- function(u) traj$P[which.min(abs(traj$u - u)), ]
+
+treeT <- tempfile(fileext = ".newick"); writeLines(sprintf("(A:%f,B:0.01);", L), treeT)
+modeT <- tempfile(fileext = ".newick"); writeLines("(A:1,B:0);", modeT)
+pT <- Phylogeny(treeT); mT <- Phylogeny(modeT, type = "mode")
+
+checkpoints <- c(0.25, 0.5, 1, 2, 4, 8)
+run_method <- function(method) {
+    root <- sample_sequence(mA, n_sites)
+    sim <- simulate_over_interval_phylogeny(pT, mT, list(mA, mB), root,
+                                            start_mode = 0, rescale_method = method)
+    nodeA <- sim$intervals$node[sim$intervals$state == 1]
+    subA <- sim$substitutions[sim$substitutions$node %in% nodeA, ]
+    subA <- subA[order(subA$site, subA$time), ]
+    ns_time <- subA$time[aa_of[subA$from + 1] != aa_of[subA$to + 1]]
+    state_at <- function(u) {
+        st <- root$index[, 1]
+        sel <- subA[subA$time <= u, ]
+        if (nrow(sel)) {
+            last <- sel[!duplicated(sel$site, fromLast = TRUE), ]
+            st[last$site + 1] <- last$to
+        }
+        st
+    }
+    rows <- lapply(checkpoints, function(u) {
+        emp <- tabulate(state_at(u) + 1L, nbins = length(p0))
+        pr <- pred_at(u)
+        emp_aa <- codon_to_aa(emp); pr_aa <- codon_to_aa(pr)
+        keep <- pr_aa * n_sites >= 5
+        chi <- chisq.test(c(emp_aa[keep], sum(emp_aa[!keep])),
+                          p = c(pr_aa[keep], sum(pr_aa[!keep])),
+                          rescale.p = TRUE, simulate.p.value = TRUE, B = 5000)
+        data.frame(method = method, u = u,
+                   cum_class = sum(ns_time <= u) / n_sites,
+                   p = chi$p.value,
+                   tv_obs_pred = tv(emp_aa / n_sites, pr_aa),
+                   tv_pred_eqB = tv(pr_aa, codon_to_aa(piB)))
+    })
+    list(table = do.call(rbind, rows), state_at = state_at)
+}
+res_seg <- run_method("segments")
+res_ex  <- run_method("exact")
+t3 <- rbind(res_seg$table, res_ex$table)
+knitr::kable(t3, digits = 4)
+```
+
+The distance from the new equilibrium decays along the branch, and the
+observed distributions (points) follow the predicted trajectory (line) under
+both methods:
+
+```{r test3-curve}
+u_dense <- seq(0, L, by = 0.1)
+tv_pred <- sapply(u_dense, function(u) tv(codon_to_aa(pred_at(u)), codon_to_aa(piB)))
+plot(u_dense, tv_pred, type = "l", lwd = 2,
+     xlab = "Branch position (expected non-synonymous substitutions per site)",
+     ylab = "Total variation distance from the new equilibrium")
+u_pts <- seq(0.1, L, by = 0.26)
+for (r in list(list(res_seg, "#E84B2A", 19), list(res_ex, "#2166AC", 1))) {
+    tv_obs <- sapply(u_pts, function(u)
+        tv(codon_to_aa(tabulate(r[[1]]$state_at(u) + 1L, nbins = length(p0))) / n_sites,
+           codon_to_aa(piB)))
+    points(u_pts, tv_obs, col = r[[2]], pch = r[[3]])
+}
+legend("topright", bty = "n",
+       c("predicted trajectory", "observed (segments)", "observed (exact)"),
+       lwd = c(2, NA, NA), pch = c(NA, 19, 1), col = c("black", "#E84B2A", "#2166AC"))
+```
+
+Amino-acid distributions at the start, in mid-transient, and at the end of
+the branch — predicted against observed (segments method):
+
+```{r test3-logo, fig.height=4}
+plot_freqs(data.frame(
+    start_pred = codon_to_aa(p0),
+    u0.5_pred  = codon_to_aa(pred_at(0.5)),
+    u0.5_obs   = codon_to_aa(tabulate(res_seg$state_at(0.5) + 1L, nbins = length(p0))) / n_sites,
+    u8_pred    = codon_to_aa(pred_at(8)),
+    u8_obs     = codon_to_aa(tabulate(res_seg$state_at(8) + 1L, nbins = length(p0))) / n_sites,
+    eq_B       = codon_to_aa(piB)),
+    c("start", "u=0.5 pred", "u=0.5 obs", "u=8 pred", "u=8 obs", "equilibrium B"))
+```
+
+```{r test3-verdict, results="asis"}
+calib_ok <- all(abs(t3$cum_class - t3$u) < 0.04)
+p_ok <- min(t3$p) >= 0.001 && sum(t3$p < 0.05) <= 2
+verdict("Test 3", calib_ok && p_ok,
+        sprintf("max |cumulative class events - u| = %.3f (criterion < 0.04); chi-square p range %.3f-%.3f with %d of %d below 0.05 (criterion: min >= 0.001, at most 2)",
+                max(abs(t3$cum_class - t3$u)), min(t3$p), max(t3$p), sum(t3$p < 0.05), nrow(t3)))
+```
+
+# Summary
+
+```{r summary, results="asis"}
+for (id in names(verdicts)) {
+    cat(sprintf("- **%s: %s**\n", id, ifelse(verdicts[[id]], "PASS", "FAIL")))
+}
+cat(sprintf("\n**Overall: %s** (PalantiR %s, seed %d, %d sites per test)\n",
+    ifelse(all(unlist(verdicts)), "PASS", "FAIL"),
+    as.character(packageVersion("PalantiR")), params$seed, n_sites))
+```
