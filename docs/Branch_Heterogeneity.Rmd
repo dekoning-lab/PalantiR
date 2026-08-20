@@ -58,7 +58,7 @@ nuc_pi <- c(.3, .2, .25, .25)
 # so keep the twenty amino-acid columns)
 aa_pi <- as.matrix(read.table("../inst/extdata/psi-c50-1.txt"))[, 1:20]
 
-psi <- equilibrium_to_fitness(aa_pi[1, ], 1000)
+psi <- equilibrium_to_fitness(aa_pi[1, ], 5000)
 ```
 
 Create models:
@@ -69,17 +69,17 @@ hky <- HasegawaKishinoYano(nuc_pi)
 
 # Create codon models
 
-# Small population size
-ms_1k <- MutationSelection(
-    population_size = 1000, 
-    mutation_rate = 1e-8, 
+# Smaller population size
+ms_5k <- MutationSelection(
+    population_size = 5000,
+    mutation_rate = 1e-8,
     nucleotide_model = hky,
     fitness = psi)
 
-# Large population size
-ms_20k <- MutationSelection(
-    population_size = 20000,
-    mutation_rate = 1e-8, 
+# Larger population size
+ms_8k <- MutationSelection(
+    population_size = 8000,
+    mutation_rate = 1e-8,
     nucleotide_model = hky,
     fitness = psi)
 
@@ -87,7 +87,7 @@ ms_20k <- MutationSelection(
 
 Sample sequence from model equilibrium distribution to start at root:
 ```{r sample_sequence}
-s <- sample_sequence(ms_1k, 100)
+s <- sample_sequence(ms_5k, 100)
 ```
 
 Simulate:
@@ -95,7 +95,7 @@ Simulate:
 sim <- simulate_over_interval_phylogeny(
     phylogeny = mammals,
     mode_phylogeny = mammal_switches,
-    models = list(ms_1k, ms_20k),
+    models = list(ms_5k, ms_8k),
     sequence = s,
     start_mode = 0)
 ```
@@ -107,12 +107,15 @@ Note that we have to specify which mode the root starts with using `start_mode` 
 Plot substitution history:
 
 ```{r plot_sim}
-plot(sim, circle_opacity = 0.1)
+plot(sim, sites = 0:24, circle_opacity = 0.6)
 ```
 
-Synonymous substiutions are shown in green, non-synonymous in red. Branch modes are shown as colored branches.
-According to expectation, we observe a burst of non-synonymous substitutions at the start of the population size shift.
-As time progresses, the number of non-synonymous substitutions goes down.
+Synonymous substitutions are shown in green, non-synonymous in red, and branch modes as colored branches.
+A population-size increase is expected to produce a transient burst of non-synonymous substitutions just after
+the shift -- stronger selection removes variants that had drifted to fixation under the smaller population --
+followed by a slightly lower long-run non-synonymous rate. With a modest expansion like this one (5,000 to
+8,000) the signature is subtle, and the two regimes look broadly similar in a single 100-site simulation: a
+realistic picture of how weak the footprint of a moderate population-size shift is.
 
 Check substitution history table:
 
