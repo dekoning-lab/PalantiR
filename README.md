@@ -8,12 +8,13 @@
 implemented as an `R` package with a `C++` backend and interactive `js`
 visualizations.
 
-What distinguishes `PalantiR` is the simulation and visualization of complete
-substitution histories — every substitution event, with its time, codon, and
-fitness context — under time-heterogeneous mutation–selection codon
-substitution models and other advanced models, including site-specific fitness
-profiles, epistasis between sites, and changes in effective population size or
-fitness along a phylogeny.
+The package facilitates the simulation and visualization of complete
+substitution histories, including every substitution event, with its time, 
+codon states, and fitnesses - under time-heterogeneous mutation–selection codon
+substitution models and other advanced models. Models support site-specific fitness
+profiles, models with epistasis between sites ("mutation-selection-epistasis" codon
+models), and changes in effective population size or fitness assignmenets along the
+phylogeny.
 
 See the documentation at
 [dekoning-lab.github.io/PalantiR](https://dekoning-lab.github.io/PalantiR)
@@ -25,7 +26,7 @@ alongside the events on the tree:
 ![Mutation-selection model with epistasis](docs/img/mutsel-epi.png)
 
 A fitness shift under a time-heterogeneous mutation–selection model; each dot
-is a substitution, coloured by its fitness effect, with the site's fitness
+is a substitution (synonymous in green, non-synonymous in red), with the site's fitness
 profile shown as a logo:
 
 ![Fitness shift under a time-heterogeneous mutation-selection model](docs/img/fitness-shift.png)
@@ -35,8 +36,8 @@ profile shown as a logo:
 Version 1.1.0 corrects the transient rescaler used on branches where the model
 changes (the forecast now advances at the site's rate multiplier) and adds an
 opt-in exact alternative to it: `rescale_method = "exact"` replaces the branch
-segmentation with a closed-form time change; it delivers the expected number
-of substitutions per unit branch length exactly and runs faster than the
+segmentation with a closed-form time change. The rescaler insures the expected number
+of substitutions per unit branch length are exact, and runs faster than the
 segmented approach.
 
 # Installation
