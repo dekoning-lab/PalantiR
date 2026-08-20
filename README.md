@@ -1,12 +1,43 @@
+<p align="center">
+<img src="docs/img/palantir.png" width="420" alt="PalantiR">
+</p>
+
 # PalantiR
 
-`PalantiR` is a framework for phylogenetic simulation and visualization.
+`PalantiR` is a framework for phylogenetic simulation and visualization,
+implemented as an `R` package with a `C++` backend and interactive `js`
+visualizations.
 
-See the documentation at [dekoning-lab.github.io/PalantiR](https://dekoning-lab.github.io/PalantiR)
+What distinguishes `PalantiR` is the simulation and visualization of complete
+substitution histories — every substitution event, with its time, codon, and
+fitness context — under time-heterogeneous mutation–selection codon
+substitution models and other advanced models, including site-specific fitness
+profiles, epistasis between sites, and changes in effective population size or
+fitness along a phylogeny.
 
-The framework focuses on Mutation-Selection codon models and temporal heterogeneity.
+See the documentation at
+[dekoning-lab.github.io/PalantiR](https://dekoning-lab.github.io/PalantiR)
 
-`PalantiR` is implemented as an `R` package, with a `C++` backend, and interactive `js` visualizations.
+Substitution histories simulated under a mutation–selection model with
+epistasis between site pairs; joint states of the interacting sites are shown
+alongside the events on the tree:
+
+![Mutation-selection model with epistasis](docs/img/mutsel-epi.png)
+
+A fitness shift under a time-heterogeneous mutation–selection model; each dot
+is a substitution, coloured by its fitness effect, with the site's fitness
+profile shown as a logo:
+
+![Fitness shift under a time-heterogeneous mutation-selection model](docs/img/fitness-shift.png)
+
+## Recent updates
+
+Version 1.1.0 corrects the transient rescaler used on branches where the model
+changes (the forecast now advances at the site's rate multiplier) and adds an
+opt-in exact alternative to it: `rescale_method = "exact"` replaces the branch
+segmentation with a closed-form time change; it delivers the expected number
+of substitutions per unit branch length exactly and runs faster than the
+segmented approach.
 
 # Installation
 
@@ -16,12 +47,12 @@ The package can be installed automatically with `devtools`:
 devtools::install_github("dekoning-lab/PalantiR")
 ```
 
-If you are installing from a local clone, use:	
- ```R	
-devtools::install_local("path/to/palantir/clone")	
-```	
+If you are installing from a local clone, use:
+```R
+devtools::install_local("path/to/palantir/clone")
+```
 
-*Note: Rccparmadillo is a required package. Compiling against it will require `gfortran`*	
+*Note: `RcppArmadillo` is a required package. Compiling against it will require `gfortran`*
 
 For MacOS, a copy of `gfortran` binaries can be downloaded from [CRAN tools](https://cran.r-project.org/bin/macosx/tools)
 
@@ -35,7 +66,7 @@ git clone https://github.com/dekoning-lab/PalantiR.git
 
 ## Dependencies
 
-The dependencies for the `R` package can be istalled as follows:
+The dependencies for the `R` package can be installed as follows:
 
 ```R
 install.packages(c("RcppArmadillo", "htmlwidgets"))
@@ -88,7 +119,7 @@ s <- sample_sequence(model = ms, length = 100)
 sim <- simulate_over_phylogeny(phylogeny = p, model = ms, sequence = s)
 ```
 
-We can view the resuling alignment:
+We can view the resulting alignment:
 
 ```R
 # examine alignment
