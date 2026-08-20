@@ -1,5 +1,8 @@
 ---
 title: "PalantiR"
+output:
+  html_document:
+    self_contained: no
 ---
 
 <p align="center"><img src="img/palantir.png" width="380" alt="PalantiR"></p>
