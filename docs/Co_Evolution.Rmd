@@ -21,71 +21,117 @@ For example, $\delta_{A, K} > 1$ means that $AK$ is a favoured pair, while $\del
 
 The selection coefficient is calculated for a pair of sites, assuming additive fitness.
 
-For a substitution from codon pair $ij$ to codon pair $kl$:
+For a substitution from codon pair $ij$ to codon pair $kj$ (a change at the
+first site; changes at the second site are symmetric):
 
 $$
-s_{ij, kl} = (\psi_k + \psi_l)\delta_{kl} - (\psi_i + \psi_j)\delta_{ij} \\
-Q_{ij, kl} = 2N_e \mu_{ik} \mu_{jl} \frac{1-e ^ {s_{ij, kl}}}{1-e^{-2 N_e s_{ij, kl}}}
+s_{ij, kj} = (\psi_k + \psi_j)\delta_{kj} - (\psi_i + \psi_j)\delta_{ij} \\
+Q_{ij, kj} = 2N_e \, \mu_{ik} \, \frac{1-e ^ {-s_{ij, kj}}}{1-e^{-2 N_e s_{ij, kj}}}
 $$
-Only codons differing in one nucleotide positions are considered. Rates of transitions for multiple codon differences are $0$.
+
+Only single-nucleotide codon changes at a single site of the pair have
+non-zero instantaneous rate; simultaneous changes at both sites have rate
+zero (as of version 1.2.0), so compensated pairs arise as two rapid
+sequential substitutions.
 
 * $N_e$ is the effective population size
 * $\mu_{ij}$ is the mutation rate between a pair of nucleotides. This rate is taken from a nucleotide substitution model, such as Hasegawa Kishino Yano [[1](https://www.ncbi.nlm.nih.gov/pubmed/3934395)].
 * $\psi_i$ is the absolute fitness of amino acid for codon $i$. Values of $\psi$ for the first and second pair can be specified from different fitness vectors.
 * $s_{ij, kl}$ is selection coefficient for a pair substitution. If either substitution in a pair is synonymous, the second term of the product will be equal to $1$.
 
-# Example
+# Example: compensatory evolution at a salt bridge
+
+We construct a pair landscape in which only two amino-acid configurations
+have high fitness: lysine--glutamate and glutamate--lysine, the classic
+charge-swap of an electrostatic interaction. The single-mismatch
+configurations (K,K and E,E) are mildly deleterious, so the pair can pass
+through them, and every other configuration is strongly deleterious. With
+this landscape the pair should toggle between K,E and E,K through brief
+intermediates: a substitution at one site followed rapidly by the
+compensating substitution at the other.
 
 ## Setup
-
-Load model parameters:
 
 ```{r}
 # Load phylogeny
 mammals <- Phylogeny("../inst/extdata/mammals.newick")
 
-# Load nucleotide equilibrium distribution
-# Nucleotide order is T,C,A,G
-nuc_pi <- c(.3, .2, .25, .25)
+# Flat site fitness: all structure comes from the pair coupling
+f <- rep(1, 20)
 
-# Load amino acid fitness vector
 # Amino acid order is:
 # A, C, D, E, F, G, H, I, K, L, M, N, P, Q, R, S, T, V, W, Y
-aa_psi <- as.matrix(read.csv("../inst/extdata/amino_acid_fitness_N_1000.csv"))
+K <- 9; E <- 4
 
-# Create a "flat" delta matrix - all pairs are independent
-delta <- matrix(rep(1, 20 * 20), nrow = 20)
+# Three-tier coupling. With fitness_1 + fitness_2 = 2 and N = 1000, a pair
+# with delta = 1 - g/4000 sits a scaled gap of 2*N*2*(g/4000) = g below the
+# compatible pairs:
+delta <- matrix(1 - 20/4000, 20, 20)   # everything else:      gap 20
+delta[K, K] <- 1 - 4/4000              # mismatch K,K:         gap  4
+delta[E, E] <- 1 - 4/4000              # mismatch E,E:         gap  4
+delta[K, E] <- 1                       # compatible:           gap  0
+delta[E, K] <- 1
 ```
 
-Create model:
+## Model
+
+Non-synonymous scaling makes one unit of branch length one expected
+amino-acid-changing substitution per codon, so the compensatory events are
+delivered at a rate the tree's branch lengths control directly.
 
 ```{r}
-# Create nucleotide substitution model
-hky <- HasegawaKishinoYano(nuc_pi)
+hky <- HasegawaKishinoYano(equilibrium = rep(0.25, 4))
 
-# Create codon pair substitution model
 co <- CoEvolution(
     population_size = 1000,
-    mutation_rate = 1e-8,
-    nucleotide_mode = hky,
-    fitness_1 = aa_psi[1,],
-    fitness_2 = aa_psi[2,],
-    delta = delta)
+    mutation_rate = 1e-6,
+    nucleotide_model = hky,
+    fitness_1 = f,
+    fitness_2 = f,
+    delta = delta,
+    scaling_type = "non-synonymous")
 ```
 
-Sample sequence from model equilibrium distribution to start at root:
+At equilibrium the two compatible configurations hold essentially all the
+mass:
 
 ```{r}
-s <- sample_sequence(model = co, length = 100)
+eq <- as.numeric(co$equilibrium)
+sum(sort(eq, decreasing = TRUE)[1:8])   # the 8 codon pairs spelling K,E / E,K
 ```
 
-Simulate:
+## Simulation
 
 ```{r}
+s <- sample_sequence(model = co, length = 30)
+
 sim <- simulate_over_phylogeny(
     phylogeny = mammals,
     model = co,
     sequence = s)
+```
+
+The pair states visited confirm the design -- the two compatible
+configurations dominate, with the designed intermediates and nothing else:
+
+```{r}
+sort(table(sim$substitutions$pair_amino_acid_to), decreasing = TRUE)
+```
+
+Count the completed toggles between the two compatible configurations:
+
+```{r}
+toggles <- 0
+for (s0 in unique(sim$substitutions$site)) {
+  for (nd in unique(sim$substitutions$node)) {
+    g <- subset(sim$substitutions, site == s0 & node == nd)
+    if (!nrow(g)) next
+    states <- g$pair_amino_acid_to[order(g$time)]
+    states <- rle(states[states %in% c("K,E", "E,K")])$values
+    if (length(states) > 1) toggles <- toggles + sum(states[-1] != states[-length(states)])
+  }
+}
+toggles
 ```
 
 ## Substitution history
@@ -93,10 +139,15 @@ sim <- simulate_over_phylogeny(
 Plot substitution history:
 
 ```{r}
-plot(sim)
+plot(sim, sites = 0:7)
 ```
 
-Synonymous substiutions are shown in green, non-synonymous in red.
+Each substitution event is drawn as two stacked dots: the top dot colours
+the first site of the pair, the bottom dot the second (green synonymous,
+red non-synonymous). The compensated toggles appear as red marks in close
+succession on a branch -- a top-red event at one site followed almost
+immediately by a bottom-red event at the other, as the pair passes through
+its brief intermediate.
 
 Check substitution history table:
 
