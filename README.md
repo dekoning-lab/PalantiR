@@ -4,10 +4,10 @@
 
 # PalantiR
 
-> :star: **Recently refreshed (August 2026):** version 1.2.0 contains
-> correctness and validation fixes from a full source review, the
-> [documentation site](https://dekoning-lab.github.io/PalantiR) has been
-> rebuilt with reproducible examples, and the repository now includes
+> :star: **Recently updated (August 2026):** version 1.2.0 contains
+> substantial correctness fixes and polishing updates, following a full
+> source review. The docs [documentation site](https://dekoning-lab.github.io/PalantiR)
+> have been rebuilt with reproducible examples, and the repository now includes
 > [stand-alone command-line simulation scripts](examples/).
 
 `PalantiR` is a framework for the simulation and visualization of sequence
