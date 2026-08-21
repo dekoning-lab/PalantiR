@@ -380,19 +380,20 @@ point, the simulation continues with substitution rate <code>Q1</code>
 and equilibrium distribution <code>π1</code>, corresponding to the model
 <code>1</code> (blue branch segment).</p>
 </div>
-<div id="the-exact-time-change-v1.1.0" class="section level2">
-<h2>The exact time change (v1.1.0)</h2>
+<div id="the-exact-time-change-default-since-v1.2.2"
+class="section level2">
+<h2>The exact time change (default since v1.2.2)</h2>
 <p>Because every rescaled segment applies a scalar multiple of one rate
 matrix, an out-of-equilibrium branch is exactly the homogeneous process
 run for an adjusted intrinsic duration, and that duration can be
-computed in closed form instead of segment by segment. Passing
-<code>rescale_method = "exact"</code> to
-<code>simulate_over_interval_phylogeny</code> selects this method: it
-delivers the branch’s expected substitution budget exactly (the segment
-scheme delivers it to within the segment discretisation), runs faster,
-and reports event times in the same branch-position units, so output is
-interchangeable between the two methods. The segment scheme remains the
-default.</p>
+computed in closed form instead of segment by segment. This method
+(<code>rescale_method = "exact"</code>, introduced in v1.1.0 and the
+default since v1.2.2; pass <code>rescale_method = "segments"</code> for
+the original scheme) delivers the branch’s expected substitution budget
+exactly (the segment scheme delivers it to within the segment
+discretisation), runs faster, and reports event times in the same
+branch-position units, so output is interchangeable between the two
+methods. The segment scheme remains the default.</p>
 <p>Also note that since v1.0.1 the segment forecast advances at the
 site’s rate multiplier; earlier versions under-delivered substitutions
 on fast sites during the transient.</p>

@@ -59,7 +59,7 @@ namespace Palantir
                 double segment_length = 0.001,
                 double tolerance = 0.001,
                 string scaling_type = "synonymous",
-                string rescale_method = "segments");
+                string rescale_method = "exact");
 
         vector<IntervalHistory> switching_intervals(
                 const Phylogeny& tree,

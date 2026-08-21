@@ -6,8 +6,8 @@
 
 > :star: **Recently updated (August 2026):** version 1.2.0 contains
 > substantial correctness fixes and polishing updates, following a full
-> source review. The docs [documentation site](https://dekoning-lab.github.io/PalantiR)
-> have been rebuilt with reproducible examples, and the repository now includes
+> source review. The [documentation site](https://dekoning-lab.github.io/PalantiR)
+> has been rebuilt with reproducible examples, and the repository now includes
 > [stand-alone command-line simulation scripts](examples/).
 
 `PalantiR` is a framework for the simulation and visualization of sequence
@@ -38,7 +38,7 @@ alongside the events on the tree:
 <img src="docs/img/mutsel-epi-light.png" alt="Mutation-selection model with epistasis">
 </picture>
 
-A fitness shift under a time-heterogeneous mutation–selection model; each dot
+2. A fitness shift under a time-heterogeneous mutation–selection model; each dot
 is a substitution (synonymous in green, non-synonymous in red), with the site's stationary
 distribution summarized as a frequency logo:
 
@@ -62,7 +62,7 @@ Some of these fixes change simulated output relative to earlier versions;
 [NEWS.md](NEWS.md) lists critical changes in full.
 
 Version 1.1.0 corrects the transient rescaler for time-heterogeneous simulations, which
-previously. did not correctly account for rate variation. We've also added an opt-in to 
+previously did not correctly account for rate variation. We've also added an opt-in to 
 a faster, exact approach for simulating the transient approach to a new stationary
 distribution using `rescale_method = "exact"`. This approach replaces our branch segmentation
 algorithm with a closed-form time change. The rescaler ensures the expected number of
@@ -205,7 +205,7 @@ The [current report](https://dekoning-lab.github.io/PalantiR/engine_validation.h
 passes all tests (version 1.2.1; also verified under two further seeds). To
 rerun it with your own seed and simulation size:
 
-```r
+```
 # in validation/, with PalantiR and rmarkdown installed
 rmarkdown::render("engine_validation.Rmd", params = list(seed = 1, n_sites = 3000))
 ```

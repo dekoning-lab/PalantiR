@@ -1,3 +1,12 @@
+# PalantiR 1.2.2
+
+- `rescale_method = "exact"` is now the default for
+  `simulate_over_interval_phylogeny`. The exact time change replaces the
+  branch-segmentation scheme it approximated: it delivers the branch's event
+  budget identically rather than to within the segment tolerance, runs
+  several-fold faster, and (since 1.2.1) resolves stiff transients correctly.
+  The segment scheme remains available with `rescale_method = "segments"`.
+
 # PalantiR 1.2.1
 
 ## Bug fixes

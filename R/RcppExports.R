@@ -49,7 +49,7 @@ phylogeny_to_intervals <- function(phylogeny, mode_phylogeny) {
     .Call('_PalantiR_phylogeny_to_intervals', PACKAGE = 'PalantiR', phylogeny, mode_phylogeny)
 }
 
-simulate_over_interval_phylogeny <- function(phylogeny, mode_phylogeny, models, sequence, start_mode, rate = 1, segment_length = 0.001, tolerance = 0.001, rescale_method = "segments") {
+simulate_over_interval_phylogeny <- function(phylogeny, mode_phylogeny, models, sequence, start_mode, rate = 1, segment_length = 0.001, tolerance = 0.001, rescale_method = "exact") {
     .Call('_PalantiR_simulate_over_interval_phylogeny', PACKAGE = 'PalantiR', phylogeny, mode_phylogeny, models, sequence, start_mode, rate, segment_length, tolerance, rescale_method)
 }
 

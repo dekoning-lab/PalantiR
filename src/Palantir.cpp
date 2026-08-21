@@ -261,7 +261,7 @@ List simulate_over_interval_phylogeny(
     double rate = 1,
     double segment_length = 0.001,
     double tolerance = 0.001,
-    std::string rescale_method = "segments")
+    std::string rescale_method = "exact")
 {
 
     // Type checking

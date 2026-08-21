@@ -44,13 +44,14 @@ Once the `RMSD` between the two equilibrium vectors is within user-specified bou
 At this point, the simulation continues with substitution rate `Q1` and equilibrium distribution `π1`, corresponding to the model `1` (blue branch segment).
 
 
-## The exact time change (v1.1.0)
+## The exact time change (default since v1.2.2)
 
 Because every rescaled segment applies a scalar multiple of one rate matrix,
 an out-of-equilibrium branch is exactly the homogeneous process run for an
 adjusted intrinsic duration, and that duration can be computed in closed form
-instead of segment by segment. Passing `rescale_method = "exact"` to
-`simulate_over_interval_phylogeny` selects this method: it delivers the
+instead of segment by segment. This method (`rescale_method = "exact"`,
+introduced in v1.1.0 and the default since v1.2.2; pass
+`rescale_method = "segments"` for the original scheme) delivers the
 branch's expected substitution budget exactly (the segment scheme delivers it
 to within the segment discretisation), runs faster, and reports event times in
 the same branch-position units, so output is interchangeable between the two
