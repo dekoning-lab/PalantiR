@@ -8,4 +8,6 @@ src/*.so
 src/*.dll
 *.*.swp
 .DS_Store
+.ipynb_checkpoints/
+.virtual_documents/
 /runs/

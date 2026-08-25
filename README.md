@@ -217,11 +217,13 @@ relative rates among classes are retained. See the
 [GY94 model page](https://dekoning-lab.github.io/PalantiR/Goldman_Yang_94.html)
 for frequency formats, scaling conventions, and output metadata.
 
-The [GY94 history-validation notebook](validation/gy94_deep_tree_history_dnds.ipynb)
-provides a larger feature demonstration: 5,000 codons on a 50-taxon tree with
-two branch-specific omega values. It reconstructs Goldman--Yang dN/dS from the
-complete recorded histories and visualizes both event-level and across-site
-behavior. A polished
+The [live R/PalantiR history-validation notebook](validation/gy94_deep_tree_history_dnds_R.ipynb)
+provides a larger feature demonstration: it constructs the model, simulates
+5,000 codons on a 50-taxon tree with two branch-specific omega values, inspects
+the native interactive alignment and history viewers, and reconstructs
+Goldman--Yang dN/dS from the complete recorded histories in one R kernel. A
+separate [Python audit notebook](validation/gy94_deep_tree_history_dnds.ipynb)
+independently recomputes the production artifact, and a polished
 [reader view](https://dekoning-lab.github.io/PalantiR/GY94_History_Validation.html)
 is also available.
 
@@ -263,7 +265,7 @@ rmarkdown::render("engine_validation.Rmd", params = list(seed = 1, n_sites = 300
 ```
 
 The separate
-[GY94 history-validation notebook](validation/gy94_deep_tree_history_dnds.ipynb)
+[live R/PalantiR GY94 history-validation notebook](validation/gy94_deep_tree_history_dnds_R.ipynb)
 tests branch-specific omega recovery from complete substitution histories; its
 [rendered report](https://dekoning-lab.github.io/PalantiR/GY94_History_Validation.html)
 also serves as a compact GY94 feature demonstration.

@@ -39,18 +39,44 @@ Rscript validation/gy94_deep_tree_history_dnds.R \
   --out=runs/gy94-deep-tree-dnds-20260825
 ```
 
-The executed Jupyter notebook
+The primary feature demonstration is the executed R-kernel notebook
+[`gy94_deep_tree_history_dnds_R.ipynb`](gy94_deep_tree_history_dnds_R.ipynb).
+It loads the PalantiR checkout, constructs the tree and branch-heterogeneous
+GY94 model, performs the complete 5,000-site simulation, examines the resulting
+R objects through PalantiR's native interactive alignment and history widgets,
+and reconstructs the headline values from all 762,540 events. The full
+fixed-seed simulation takes only a few seconds, so the notebook does not use a
+reduced toy run.
+
+Install and register an R kernel once if Jupyter does not already list one:
+
+```r
+install.packages(c("IRkernel", "pkgload"))
+IRkernel::installspec()
+```
+
+Rebuild and execute the live notebook from the repository root:
+
+```sh
+python3 validation/build_gy94_deep_tree_history_r_notebook.py
+python3 -m jupyter nbconvert --execute --to notebook --inplace \
+  --ExecutePreprocessor.kernel_name=ir \
+  --ExecutePreprocessor.timeout=240 \
+  validation/gy94_deep_tree_history_dnds_R.ipynb
+```
+
+The separately preserved Python notebook
 [`gy94_deep_tree_history_dnds.ipynb`](gy94_deep_tree_history_dnds.ipynb)
-recomputes the headline values from all 762,540 history rows, presents the
-Goldman--Yang opportunity calculation, and includes three figures: assigned
-versus recovered dN/dS, a complete representative-site history on the tree,
-and the across-site distribution of synonymous and nonsynonymous counts. The
-polished HTML reader is available both
+is an independent audit: it streams the committed production history rather
+than invoking the simulator and checks the same event totals and Goldman--Yang
+normalization. It also provides three static figures: assigned versus recovered
+dN/dS, a complete representative-site history, and the across-site distribution
+of synonymous and nonsynonymous counts. Its polished HTML reader is available
+both
 [locally](gy94_deep_tree_history_dnds.html) and on the
 [documentation site](https://dekoning-lab.github.io/PalantiR/GY94_History_Validation.html).
 
-Rebuild the notebook source with `build_gy94_deep_tree_history_notebook.py`,
-execute it top-to-bottom, and regenerate the reader with Pandoc:
+Rebuild the independent audit and regenerate its reader with Pandoc:
 
 ```sh
 python3 validation/build_gy94_deep_tree_history_notebook.py

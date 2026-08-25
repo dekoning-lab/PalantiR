@@ -22,10 +22,13 @@
 - `ZNYBranchSiteModel()` constructs the four standard Zhang--Nielsen--Yang
   branch-site classes (0, 1, 2a, and 2b) as a special case of the general
   discrete-class simulator.
-- A rerunnable 50-taxon, 5,000-codon validation notebook demonstrates
-  branch-heterogeneous GY94 simulation under synonymous scaling. It reconstructs
-  Goldman--Yang dN/dS directly from all 762,540 recorded events, visualizes a
-  complete site history on the tree, and compares realized with exact rates.
+- A rerunnable R-kernel notebook now performs the complete 50-taxon,
+  5,000-codon branch-heterogeneous GY94 simulation directly with PalantiR under
+  synonymous scaling. It explores the live alignment and history widgets,
+  reconstructs Goldman--Yang dN/dS from all 762,540 recorded events, visualizes
+  a complete site history, and compares realized with exact rates. The original
+  Python notebook remains as an independent audit of the saved production
+  artifact.
 
 # PalantiR 1.2.2
 

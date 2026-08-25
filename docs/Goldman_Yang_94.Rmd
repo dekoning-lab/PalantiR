@@ -274,6 +274,12 @@ branch-heterogeneous model definitions. The generating `GY94SiteModel` also
 records `class_weights`, the `mixture_scaling` denominator for each branch
 mode, and `stationary_class_rates` relative to that denominator.
 
+For a complete executable example, the
+[live R/PalantiR history-validation notebook](../validation/gy94_deep_tree_history_dnds_R.ipynb)
+constructs a 50-taxon branch-heterogeneous GY94 model, simulates 5,000 codon
+sites, explores the native interactive viewers, and recovers branch-specific
+$d_N/d_S$ directly from all recorded substitution histories.
+
 # References
 
 1. Goldman, N. and Yang, Z. (1994). A codon-based model of nucleotide
