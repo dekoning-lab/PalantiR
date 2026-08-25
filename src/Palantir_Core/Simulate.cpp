@@ -1,4 +1,5 @@
 #include "Simulate.hpp"
+#include "CodonModel.hpp"
 
 deque<double> Palantir::Simulate::poisson(double time, double rate)
 {
@@ -135,20 +136,7 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_phylogeny(
 static vec rescale_class_outflux(const mat& Q, const string& scaling_type,
                                  const Palantir::GeneticCode& g)
 {
-    vec out(Q.n_rows, fill::zeros);
-    for(const Palantir::Codon& i : g) {
-        for(const Palantir::Codon& j : g) {
-            if(Palantir::Codon::_distance(i, j) <= 1 && i != j) {
-                bool syn = Palantir::Codon::_synonymous(i, j);
-                if(scaling_type == "substitution" ||
-                   (scaling_type == "synonymous" && syn) ||
-                   (scaling_type == "non-synonymous" && !syn)) {
-                    out[i.index] += Q.at(i.index, j.index);
-                }
-            }
-        }
-    }
-    return out;
+    return Palantir::CodonModel::class_outflux(Q, scaling_type, g);
 }
 
 static double rescale_solve_tau(const mat& Q, const mat& Estep_aug,
@@ -443,7 +431,7 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
                     // for that to mean anything, and neither was checked.
                     // See PROJECT-RECORD 8H.
 
-                    // (1) MutationSelection::scaling sizes its accumulator by the
+                    // (1) CodonModel::scaling sizes its accumulator by the
                     // number of sense codons, so it is only applicable to
                     // single-codon models. A CoEvolution ("codon_pair") model has
                     // n_codons^2 states and previously died here with an opaque
@@ -453,7 +441,7 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
                     if (local_Q[mode].n_rows != g.size) {
                         throw logic_error(
                             "The transient segment rescaler supports single-codon "
-                            "models only (MutationSelection). This model has " +
+                            "models only. This model has " +
                             to_string(local_Q[mode].n_rows) + " states against " +
                             to_string(g.size) + " sense codons in the active "
                             "genetic code. Either simulate without mode changes, "
@@ -534,7 +522,7 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
                             // the scaled class, for every site.
                             current_pi = trans(current_pi.t() * ((current_Q * (s_length * rate)) + I));
 
-                            double rho = MutationSelection::scaling(
+                            double rho = CodonModel::scaling(
                                     current_pi, local_Q[mode], scaling_type, g);
 
                             current_mode = mode;

@@ -1,4 +1,5 @@
 #include "MutationSelection.hpp"
+#include "CodonModel.hpp"
 
 double Palantir::MutationSelection::fixation_probability(ullong population_size, double selection)
 {
@@ -112,37 +113,5 @@ double Palantir::MutationSelection::scaling(
         const string scaling_type,
         const GeneticCode& g)
 {
-
-    string st = scaling_type;
-    if (st != "none" && st != "substitution" && st != "synonymous" && st != "non-synonymous") {
-        // Previously this printed to stdout and fell back to "none", i.e. no
-        // scaling at all -- a silent wrong answer. The 2016 fork of this package
-        // called the total-rate option "standard", so passing that name here
-        // produced unscaled rate matrices with only a message on stdout, which
-        // R does not show. Fail loudly instead.
-        throw logic_error("Unknown scaling type '" + st + "'. Valid values are "
-                          "\"none\", \"substitution\", \"synonymous\" and "
-                          "\"non-synonymous\" (the 2016 fork's \"standard\" is "
-                          "called \"substitution\" here).");
-    }
-    if (st == "none") {
-        return sum(equilibrium);
-    }
-    vec scale(g.size, fill::zeros);
-
-    for(const Codon& i : g) {
-        for(const Codon& j : g) {
-            if (Codon::_distance(i, j) <= 1 && i != j) {
-                if(st == "substitution") {
-                    scale[i.index] += transition.at(i.index, j.index);
-                } else if(st == "synonymous" && Codon::_synonymous(i, j)) {
-                    scale[i.index] += transition.at(i.index, j.index);
-                } else if(st == "non-synonymous" && (!Codon::_synonymous(i, j))) {
-                    scale[i.index] += transition.at(i.index, j.index);
-                }
-            }
-        }
-    }
-    return sum(equilibrium % scale);
+    return CodonModel::scaling(equilibrium, transition, scaling_type, g);
 }
-

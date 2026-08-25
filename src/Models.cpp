@@ -4,6 +4,8 @@
 #include "Palantir_Core/HasegawaKishinoYano.hpp"
 #include "Palantir_Core/GeneralTimeReversible.hpp"
 #include "Palantir_Core/MutationSelection.hpp"
+#include "Palantir_Core/CodonModel.hpp"
+#include "Palantir_Core/GoldmanYang94.hpp"
 #include "Palantir_Core/CoEvolution.hpp"
 #include "Palantir_Core/MarkovModel.hpp"
 #include "Palantir_Core/MarkovModulated.hpp"
@@ -62,6 +64,7 @@ List MutationSelection(
         std::string scaling_type = "synonymous")
 {
     Palantir::GeneticCode g(get_genetic_code_name());
+    scaling_type = Palantir::CodonModel::canonical_scaling_type(scaling_type);
 
     if(!has_class(nucleotide_model, "SubstitutionModel") || get_attr(nucleotide_model, "type") != "nucleotide") {
         stop("Argument `nucleotide_model` should be a nucleotide substitution model");
@@ -117,6 +120,7 @@ List CoEvolution(
     std::string scaling_type = "synonymous")
 {
     Palantir::GeneticCode g(get_genetic_code_name());
+    scaling_type = Palantir::CodonModel::canonical_scaling_type(scaling_type);
 
     if(!has_class(nucleotide_model, "SubstitutionModel") || get_attr(nucleotide_model, "type") != "nucleotide") {
         stop("Argument `nucleotide_model` should be a nucleotide substitution model");
@@ -161,6 +165,86 @@ List CoEvolution(
 
     ms.attr("class") = "SubstitutionModel";
     return ms;
+}
+
+// [[Rcpp::export(name = ".GoldmanYang94Cpp")]]
+List GoldmanYang94Cpp(
+        arma::vec equilibrium,
+        double omega,
+        double kappa,
+        std::string frequency_model,
+        std::string scaling_type = "substitution")
+{
+    Palantir::GeneticCode g(get_genetic_code_name());
+    scaling_type = Palantir::CodonModel::canonical_scaling_type(scaling_type);
+
+    if(!std::isfinite(omega) || omega <= 0) {
+        stop("Argument `omega` should be a finite number greater than 0");
+    }
+    if(!std::isfinite(kappa) || kappa <= 0) {
+        stop("Argument `kappa` should be a finite number greater than 0");
+    }
+    if(equilibrium.n_elem != g.size) {
+        stop("Argument `equilibrium` should have " +
+             std::to_string(g.size) + " elements (one per sense codon under "
+             "the active genetic code), not " +
+             std::to_string(equilibrium.n_elem));
+    }
+    if(!equilibrium.is_finite() || equilibrium.min() <= 0) {
+        stop("Argument `equilibrium` should contain strictly positive finite "
+             "sense-codon frequencies");
+    }
+    double equilibrium_sum = arma::sum(equilibrium);
+    if(std::abs(equilibrium_sum - 1.0) > 1e-10) {
+        stop("Argument `equilibrium` should sum to 1 (received " +
+             std::to_string(equilibrium_sum) + ")");
+    }
+
+    if(frequency_model == "FEqual") {
+        frequency_model = "Fequal";
+    }
+    if(frequency_model != "Fequal" && frequency_model != "F1x4" &&
+       frequency_model != "F3x4" && frequency_model != "F61") {
+        stop("Argument `frequency_model` should be one of \"Fequal\", "
+             "\"F1x4\", \"F3x4\" or \"F61\"");
+    }
+
+    arma::mat transition = Palantir::GoldmanYang94::transition(
+        equilibrium, omega, kappa, g);
+    double scaling = Palantir::CodonModel::scaling(
+        equilibrium, transition, scaling_type, g);
+    if(!std::isfinite(scaling) || scaling <= 0) {
+        stop("The requested scaling class has a non-positive or non-finite "
+             "stationary rate for this GY94 model");
+    }
+    transition /= scaling;
+    arma::mat sampling = Palantir::sampling(transition);
+
+    CharacterVector codon_names(g.size);
+    for(ullong i = 0; i < g.size; i++) {
+        codon_names[i] = g.sequence[i];
+    }
+    NumericVector codon_frequencies = wrap(equilibrium);
+    codon_frequencies.attr("names") = codon_names;
+
+    List gy = List::create(
+        _["model"] = "GY94",
+        _["genetic_code"] = get_genetic_code_name(),
+        _["equilibrium"] = codon_frequencies,
+        _["codon_frequencies"] = codon_frequencies,
+        _["transition"] = transition,
+        _["sampling"] = sampling,
+        _["omega"] = omega,
+        _["kappa"] = kappa,
+        _["frequency_model"] = frequency_model,
+        _["scaling"] = scaling,
+        _["scaling_type"] = scaling_type,
+        _["n_states"] = g.size,
+        _["type"] = "codon"
+    );
+    gy.attr("class") = CharacterVector::create(
+        "GoldmanYang94", "SubstitutionModel");
+    return gy;
 }
 
 //[[Rcpp::export]]
