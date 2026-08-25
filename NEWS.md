@@ -9,10 +9,14 @@
   and stored canonically as `"substitution"`.
 - `GY94BranchModel()` assigns different GY94 processes to branches using a mode
   tree, including changes in omega, kappa, or stationary codon frequencies.
-  The existing transient rescalers preserve the selected branch-length
+  The existing transient rescalers preserve the requested branch-length
   currency when the process changes.
 - `GY94SiteModel()` and `simulate_gy94_site_model()` provide arbitrary discrete
   site classes, each of which may be time homogeneous or branch heterogeneous.
+  Classes share one mixture-weighted scaling denominator, with a separate
+  denominator for each branch type in branch-site models, following the PAML
+  convention. Relative rates among classes are retained; individual component
+  rates need not equal one.
   Site-class assignments are retained in the simulation, alignment metadata,
   substitution table, and interactive alignment viewer.
 - `ZNYBranchSiteModel()` constructs the four standard Zhang--Nielsen--Yang

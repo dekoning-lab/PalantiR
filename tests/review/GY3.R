@@ -75,12 +75,13 @@ result <- try({
           length(sim$intervals) == 6L && identical(names(sim$intervals), as.character(0:5)),
           "mixed site simulation does not have one named interval entry per site")
     if(is.list(sim$intervals) && length(sim$intervals) == 6L) {
-        slow_sites <- which(assignment == "slow")
-        branch_sites <- which(assignment == "branch")
-        check(all(vapply(sim$intervals[slow_sites], is.null, logical(1))),
-              "homogeneous-class sites unexpectedly have branch intervals")
-        check(all(vapply(sim$intervals[branch_sites], is.data.frame, logical(1))),
-              "branch-class sites lost their interval tables")
+        # A homogeneous biological process acquires branch-specific scalar
+        # copies when another class changes by branch: the mixture-wide
+        # denominator, rather than its omega or equilibrium, changes.
+        check(all(vapply(sim$intervals, is.data.frame, logical(1))),
+              "a site class lost the common branch-mode normalization")
+        check(all(vapply(site_model$models, inherits, logical(1), "GY94BranchModel")),
+              "a homogeneous class was not represented under each mixture branch scale")
     }
 
     # Alignment subsetting must subset, not drop or renumber, the class metadata.

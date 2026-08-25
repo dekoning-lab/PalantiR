@@ -20,7 +20,8 @@ namespace Palantir
                 const string& scaling_type,
                 const GeneticCode& g);
 
-        // Stationary expected event rate for the selected substitution class.
+        // Stationary expected event rate for the set of transitions that
+        // determines branch-length scaling.
         double scaling(
                 const vec& equilibrium,
                 const mat& transition,

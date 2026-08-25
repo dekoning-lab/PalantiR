@@ -129,9 +129,9 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_phylogeny(
 // the homogeneous chain run for an intrinsic duration tau*. With p0 the
 // forecast entering the branch and g the per-state class outflux, the budget
 // delivered by intrinsic time tau is F(tau) = p0' (int_0^tau e^{Qu} du) g,
-// strictly increasing with F'(tau) = p0' e^{Qtau} g -> 1, so F(tau*) = t*rate
-// has a unique root. F and F' come from one exponential of the augmented
-// matrix [[Q, I], [0, 0]].
+// strictly increasing with F'(tau) = p0' e^{Qtau} g approaching the mode's
+// stationary target r*. Thus F(tau*) = t*rate*r* has a unique root. F and F'
+// come from one exponential of the augmented matrix [[Q, I], [0, 0]].
 
 static vec rescale_class_outflux(const mat& Q, const string& scaling_type,
                                  const Palantir::GeneticCode& g)
@@ -305,7 +305,8 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
         double segment_length,
         double tolerance,
         string scaling_type,
-        string rescale_method)
+        string rescale_method,
+        vec scaling_targets)
 {
     if (rescale_method != "segments" && rescale_method != "exact") {
         throw logic_error("rescale_method must be \"segments\" or \"exact\"");
@@ -325,6 +326,15 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
     }
     if (tree_intervals.size() != tree.n_nodes) {
         throw logic_error("Intervals must correspond to tree nodes");
+    }
+
+    if (scaling_targets.n_elem == 0) {
+        scaling_targets = vec(transition.size(), fill::ones);
+    }
+    if (scaling_targets.n_elem != transition.size() ||
+        !scaling_targets.is_finite() || scaling_targets.min() <= 0) {
+        throw logic_error("Scaling targets must contain one positive finite "
+                          "stationary rate for every substitution mode");
     }
 
     vector<vec> local_pi = equilibrium;
@@ -356,6 +366,7 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
     vector<vec> tc_tau;
     vector<vec> tc_F;
     vector<double> tc_start;
+    vector<double> tc_target;
     vector<deque<ullong>> tree_segment_tc(tree.n_nodes);
 
     // What a branch hands to its children: the forecast where it ends and the
@@ -452,10 +463,12 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
                     if (rescale_method == "exact") {
                         // Exact time change: one homogeneous stretch of the
                         // mode's own matrix for intrinsic duration tau*, with
-                        // the budget (finish-start)*rate delivered identically.
-                        // Event times on this branch are reported in intrinsic
-                        // time, a strictly monotone reparameterisation of
-                        // branch position.
+                        // the mode's stationary class-rate target over
+                        // (finish-start)*rate delivered identically. Standalone
+                        // models target one; a site-mixture component retains
+                        // its rate relative to the common mixture denominator.
+                        // Event times are mapped from intrinsic time back to
+                        // physical branch position using the same budget.
                         vec g_class = rescale_class_outflux(local_Q[mode], scaling_type, g);
                         if (exact_step.count(mode) == 0) {
                             const uword nn = local_Q[mode].n_rows;
@@ -469,12 +482,14 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
                                                        exact_step[mode],
                                                        EXACT_DTAU, current_pi,
                                                        g_class,
-                                                       (finish - start) * rate,
+                                                       (finish - start) * rate *
+                                                           scaling_targets[mode],
                                                        exit_forecast,
                                                        knot_tau, knot_F);
                         tc_tau.push_back(knot_tau);
                         tc_F.push_back(knot_F);
                         tc_start.push_back(start);
+                        tc_target.push_back(scaling_targets[mode]);
                         push_segment(n, start, start + tau / rate,
                                      mode, 1.0, tc_tau.size() - 1);
                         current_pi = exit_forecast;
@@ -526,7 +541,7 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
                                     current_pi, local_Q[mode], scaling_type, g);
 
                             current_mode = mode;
-                            current_scal = 1.0 / rho;
+                            current_scal = scaling_targets[mode] / rho;
                             current_Q = local_Q[mode] * current_scal;
 
                             // the segmenter tiles [start, finish] exactly, but
@@ -634,7 +649,8 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
                                 double tau_e = s.time[e] * rate;
                                 s.time[e] = tc_start[i_tc]
                                     + rescale_budget_at(tc_tau[i_tc],
-                                                        tc_F[i_tc], tau_e) / rate;
+                                                        tc_F[i_tc], tau_e) /
+                                          (rate * tc_target[i_tc]);
                             }
                         } else {
                             s.fast_forward(i_start);

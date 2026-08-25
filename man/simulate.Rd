@@ -11,7 +11,8 @@ simulate_over_phylogeny(phylogeny, model, sequence, rate = 1)
 simulate_over_interval_phylogeny(phylogeny, mode_phylogeny, models, sequence,
                                  start_mode, rate = 1,
                                  segment_length = 0.001, tolerance = 0.001,
-                                 rescale_method = "exact")
+                                 rescale_method = "exact",
+                                 scaling_targets = NULL)
 
 simulate_with_shared_substitution_heterogeneity(phylogeny, switching_model,
                                  substitution_models, sequence, start_mode,
@@ -48,6 +49,10 @@ branch lengths seen by \code{switching_model} only.}
 \item{rescale_method}{Which renormalisation to use on a branch whose mode has
 just changed, either \code{"exact"} (the default) or \code{"segments"}. See
 Details.}
+\item{scaling_targets}{Optional positive stationary rates, one per mode, for
+the set of transitions that determines scaling. \code{NULL} uses one for every
+mode. This is supplied automatically by \code{simulate_gy94_site_model} so
+components retain their rates relative to a common mixture denominator.}
 }
 \value{
 A list of class \code{Simulation}. \code{simulate_over_phylogeny} returns

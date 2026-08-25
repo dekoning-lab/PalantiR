@@ -98,13 +98,15 @@ the codon state ordering may no longer agree.
 
 # Branch-length scaling
 
-The unscaled matrix is divided by
+Let \(\mathcal A\) be the set of ordered codon transitions that determines
+scaling. For one GY94 process, the corresponding stationary event rate is
 
 $$
-S_t = \sum_i \pi_i \sum_{j\in t}\widetilde q_{ij},
+S_{\mathcal A} = \sum_i \pi_i
+\sum_{j:(i,j)\in\mathcal A}\widetilde q_{ij}.
 $$
 
-where (t) is the selected event class:
+The available choices for \(\mathcal A\) are:
 
 * `"standard"` or `"substitution"`: all codon substitutions;
 * `"non-synonymous"`: amino-acid-changing substitutions only;
@@ -112,15 +114,43 @@ where (t) is the selected event class:
 * `"none"`: no normalization.
 
 `"standard"` is an input alias for `"substitution"`; the model stores the
-canonical value `"substitution"`. With a scaled model, one branch-length unit
-means one expected event of the selected class per codon at that model's
-stationary distribution.
+canonical value `"substitution"`. A standalone model uses
+\(Q=\widetilde Q/S_{\mathcal A}\), so one branch-length unit represents one
+expected event from \(\mathcal A\) per codon at stationarity.
 
-In a discrete site mixture, **each class is scaled independently**. A branch of
-length 0.1 therefore represents 0.1 expected events of the selected class per
-site within every site class at its own stationary distribution. PalantiR does
-not compute one mixture-wide normalization across classes. All branch modes
-within one time-heterogeneous class must use the same scaling type.
+For a discrete mixture with class proportions \(p_k\), PalantiR follows the
+mixture-wide convention used for codon site models in PAML:
+
+$$
+\overline S_{\mathcal A}=\sum_k p_k S_{\mathcal A,k},
+\qquad
+Q_k=\widetilde Q_k/\overline S_{\mathcal A}.
+$$
+
+Every component therefore shares one denominator, while its stationary rate
+\(S_{\mathcal A,k}/\overline S_{\mathcal A}\) is retained. The
+mixture-weighted mean of those rates is one; individual component rates need
+not be one. Under synonymous or non-synonymous scaling, independent
+normalization would erase omega-dependent rate differences among classes.
+
+For a branch-site model, PalantiR computes the weighted denominator separately
+for each branch type, because the collection of active class-specific
+generators differs between background and foreground branches:
+
+$$
+\overline S_{\mathcal A,b}=\sum_k p_k S_{\mathcal A,k,b}.
+$$
+
+All site classes active on branch type \(b\) share
+\(\overline S_{\mathcal A,b}\). Thus, under standard scaling, branch length is
+the expected number of codon substitutions per site averaged over the whole
+mixture. Synonymous and non-synonymous scaling give the analogous mean for the
+specified transition set. This is the convention implemented for site and
+branch-site models in the [PAML `codeml`
+source](https://github.com/abacus-gene/paml/blob/master/src/codeml.c#L2580-L2629),
+which notes that scaling applies to all class-specific matrices for the whole
+branch. All classes and branch modes within one mixture must use the same
+scaling type.
 
 # Branch heterogeneity
 
@@ -145,9 +175,11 @@ episodic <- GY94BranchModel(
 When stationary frequencies change, descendants enter the new process with the
 state distribution inherited from the parent; they are not redrawn from the
 new equilibrium. PalantiR simulates the resulting transient and uses the
-selected temporal rescaling method to preserve the chosen branch-length
-currency. The exact time change is the default; the segment approximation
-remains available through `rescale_method = "segments"`.
+requested temporal rescaling method to preserve each component's rate relative
+to the common mixture denominator. The mixture-weighted rate therefore retains
+the chosen branch-length currency. The exact time change is the default; the
+segment approximation remains available through
+`rescale_method = "segments"`.
 
 # Arbitrary discrete site classes
 
@@ -155,7 +187,10 @@ remains available through `rescale_method = "segments"`.
 time-heterogeneous `GY94BranchModel` specifications. Supply either `n_sites`,
 one count per class, or `site_classes`, one assignment per output position.
 Character assignments refer to class labels; numeric assignments are one-based
-indices into `models`. Output `site` and `class_index` fields are zero-based.
+indices into `models`. Branch-heterogeneous classes in one mixture must use the
+same mode phylogeny and number of branch models, because their generators are
+normalized together on each branch type. Output `site` and `class_index` fields
+are zero-based.
 
 ```{r}
 site_model <- GY94SiteModel(
@@ -235,13 +270,21 @@ interactive alignment header displays the class label. Every event in
 `sim$substitutions` carries `site_class` and `class_index`, which also appear in
 substitution-history tooltips. `sim$site_model` retains the general class
 specification and `sim$site_class_models` maps labels to their homogeneous or
-branch-heterogeneous model definitions.
+branch-heterogeneous model definitions. The generating `GY94SiteModel` also
+records `class_weights`, the `mixture_scaling` denominator for each branch
+mode, and `stationary_class_rates` relative to that denominator.
 
 # References
 
 1. Goldman, N. and Yang, Z. (1994). A codon-based model of nucleotide
    substitution for protein-coding DNA sequences. *Molecular Biology and
    Evolution* **11**, 725--736.
-2. Zhang, J., Nielsen, R. and Yang, Z. (2005). Evaluation of an improved
+2. Yang, Z., Nielsen, R., Goldman, N. and Pedersen, A.-M. K. (2000).
+   Codon-substitution models for heterogeneous selection pressure at amino
+   acid sites. *Genetics* **155**, 431--449.
+3. Yang, Z. and Nielsen, R. (2002). Codon-substitution models for detecting
+   molecular adaptation at individual sites along specific lineages.
+   *Molecular Biology and Evolution* **19**, 908--917.
+4. Zhang, J., Nielsen, R. and Yang, Z. (2005). Evaluation of an improved
    branch-site likelihood method for detecting positive selection at the
    molecular level. *Molecular Biology and Evolution* **22**, 2472--2479.

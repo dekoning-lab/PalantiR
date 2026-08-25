@@ -294,7 +294,8 @@ List simulate_over_interval_phylogeny(
     double rate = 1,
     double segment_length = 0.001,
     double tolerance = 0.001,
-    std::string rescale_method = "exact")
+    std::string rescale_method = "exact",
+    Rcpp::Nullable<Rcpp::NumericVector> scaling_targets = R_NilValue)
 {
 
     // Type checking
@@ -382,8 +383,14 @@ List simulate_over_interval_phylogeny(
     // with "substitution" models it changes behaviour, and pinning the TOTAL
     // rate during the transient is not what the analysis wants. Use synonymous.
     string scaling_type = get_attr(first_model, "scaling_type");
+    arma::vec target_rates;
+    if(scaling_targets.isNotNull()) {
+        target_rates = Rcpp::as<arma::vec>(Rcpp::NumericVector(scaling_targets));
+    }
     vector<Palantir::SiteSimulation> sims = Palantir::Simulate::sequence_over_intervals(
-        p, tree_intervals, equilibrium, transition, sampling, codons, start_mode, g, rate, segment_length, tolerance, scaling_type, rescale_method);
+        p, tree_intervals, equilibrium, transition, sampling, codons, start_mode,
+        g, rate, segment_length, tolerance, scaling_type, rescale_method,
+        target_rates);
 
     List substitutions = site_simulations_to_list(sims, p);
 

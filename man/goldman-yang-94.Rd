@@ -126,29 +126,40 @@ the remaining sense codons. A \code{CodonFrequencies} object is tied to the
 genetic code under which it was constructed and cannot be reused after the
 active code changes.
 
-\strong{Scaling.} Let \eqn{\widetilde Q} denote the unscaled generator. It is
-divided by \eqn{S_t = \sum_i \pi_i \sum_{j\in t}\widetilde q_{ij}}, where
-\eqn{t} is all, synonymous, or non-synonymous substitutions. Thus one branch-
-length unit is one expected event of the selected class per codon at
-stationarity. \code{"standard"} is accepted as an alias and stored as the
-canonical value \code{"substitution"}.
+\strong{Scaling.} Let \eqn{\mathcal A} be the set of ordered codon transitions
+that determines scaling and let \eqn{\widetilde Q} denote the unscaled
+generator. Its stationary rate is
+\eqn{S_{\mathcal A}=\sum_i\pi_i\sum_{j:(i,j)\in\mathcal A}
+\widetilde q_{ij}}, where \eqn{\mathcal A} contains all, synonymous, or
+non-synonymous substitutions. A standalone model is divided by
+\eqn{S_{\mathcal A}}. \code{"standard"} is accepted as an alias and stored as
+the canonical value \code{"substitution"}.
 
-Each model in a discrete site mixture is scaled independently against its own
-stationary distribution. PalantiR does not apply one mixture-wide normalizing
-constant. All modes within one \code{GY94BranchModel} must select the same
-scaling type.
+For a discrete mixture with class proportions \eqn{p_k}, every class shares
+the mixture-wide denominator
+\eqn{\overline S_{\mathcal A}=\sum_k p_k S_{\mathcal A,k}}. Class \eqn{k}
+therefore has stationary scaled rate
+\eqn{S_{\mathcal A,k}/\overline S_{\mathcal A}}, and their weighted mean is
+one. For a branch-site model, a separate mixture-wide denominator is computed
+for each branch type, and all classes active on that branch type share it. This
+retains relative rates among site classes and follows the PAML convention. All
+classes and modes in one mixture must use the same scaling type.
 
 \strong{Branch heterogeneity.} A \code{GY94BranchModel} may change omega, kappa,
 or stationary codon frequencies among branches. Following a frequency change,
 the child process starts from the distribution inherited from its parent; it is
 not redrawn from the new equilibrium. The normal transient-rescaling machinery
-preserves the selected event-class currency during this approach to the new
-stationary distribution.
+preserves each class's rate relative to the common mixture denominator during
+this approach to the new stationary distribution, so the mixture-weighted
+branch-length currency is maintained.
 
 \strong{Discrete classes.} \code{GY94SiteModel} is the general representation.
 Each class may contain one homogeneous GY94 model or one branch-heterogeneous
 \code{GY94BranchModel}. Count-based assignments place classes in list order;
-explicit assignments are returned in the requested site order.
+explicit assignments are returned in the requested site order. All
+branch-heterogeneous classes in one mixture must use the same mode phylogeny and
+number of branch models so that one common denominator can be applied on each
+branch type.
 
 \strong{Zhang--Nielsen--Yang classes.} \code{ZNYBranchSiteModel} constructs
 class 0 as \eqn{\omega_0 \rightarrow \omega_0}, class 1 as
@@ -169,7 +180,9 @@ and genetic code.
 
 \code{GY94BranchModel} returns a branch-process specification and
 \code{GY94SiteModel}, \code{DiscreteGY94}, \code{ZNYBranchSiteModel}, and
-\code{ZNYBranchSite} return a \code{GY94SiteModel}.
+\code{ZNYBranchSite} return a \code{GY94SiteModel}. The latter records class
+weights, the common scaling denominator for every branch mode, and each
+class's stationary rate relative to that denominator.
 
 \code{simulate_gy94_site_model} returns a \code{Simulation}. Its
 \code{site_classes} data frame contains every zero-based site, its character
@@ -183,6 +196,14 @@ specification.
 Goldman, N. and Yang, Z. (1994). A codon-based model of nucleotide substitution
 for protein-coding DNA sequences. \emph{Molecular Biology and Evolution}
 \bold{11}, 725--736.
+
+Yang, Z., Nielsen, R., Goldman, N. and Pedersen, A.-M. K. (2000).
+Codon-substitution models for heterogeneous selection pressure at amino acid
+sites. \emph{Genetics} \bold{155}, 431--449.
+
+Yang, Z. and Nielsen, R. (2002). Codon-substitution models for detecting
+molecular adaptation at individual sites along specific lineages.
+\emph{Molecular Biology and Evolution} \bold{19}, 908--917.
 
 Zhang, J., Nielsen, R. and Yang, Z. (2005). Evaluation of an improved branch-
 site likelihood method for detecting positive selection at the molecular

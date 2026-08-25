@@ -194,6 +194,100 @@ GY94 <- GoldmanYang94
     invisible(model)
 }
 
+.gy94_standalone_scaling <- function(model) {
+    if(!is.null(model$standalone_scaling)) {
+        return(as.numeric(model$standalone_scaling))
+    }
+    as.numeric(model$scaling)
+}
+
+.gy94_apply_mixture_scaling <- function(model, common_scaling) {
+    standalone_scaling <- .gy94_standalone_scaling(model)
+    current_scaling <- as.numeric(model$scaling)
+    if(length(common_scaling) != 1L || !is.finite(common_scaling) ||
+       common_scaling <= 0) {
+        stop("The mixture-wide GY94 scaling factor should be a positive finite number")
+    }
+
+    # Recover the unnormalised GY94 generator, then apply the common
+    # mixture-wide denominator. Multiplying a generator by a scalar does not
+    # change its jump-destination probabilities, so `sampling` remains valid.
+    model$transition <- model$transition * current_scaling / common_scaling
+    model$standalone_scaling <- standalone_scaling
+    model$scaling <- as.numeric(common_scaling)
+    model$stationary_scaled_rate <- standalone_scaling / common_scaling
+    model$scaling_scope <- "site_mixture"
+    model
+}
+
+.gy94_common_site_scaling <- function(models, weights) {
+    branch <- vapply(models, inherits, logical(1), "GY94BranchModel")
+    reference <- if(any(branch)) models[[which(branch)[1L]]] else NULL
+    n_modes <- if(is.null(reference)) 1L else length(reference$models)
+
+    if(any(branch)) {
+        reference_newick <- reference$mode_phylogeny$newick
+        compatible <- vapply(models[branch], function(specification) {
+            identical(specification$mode_phylogeny$newick, reference_newick) &&
+                length(specification$models) == n_modes
+        }, logical(1))
+        if(!all(compatible)) {
+            stop("All branch-heterogeneous classes in a GY94 site mixture should use ",
+                 "the same mode phylogeny and number of branch models")
+        }
+    }
+
+    underlying <- lapply(models, function(specification) {
+        if(.is_gy94(specification)) list(specification) else specification$models
+    })
+    all_models <- unlist(underlying, recursive = FALSE)
+    for(i in seq_along(all_models)) {
+        .check_gy94_model(all_models[[i]], "site-class model")
+    }
+    scaling_types <- vapply(all_models, `[[`, character(1), "scaling_type")
+    if(length(unique(scaling_types)) != 1L) {
+        stop("All GY94 site classes should use the same `scaling_type`")
+    }
+
+    standalone <- do.call(rbind, lapply(models, function(specification) {
+        values <- if(.is_gy94(specification)) {
+            rep(.gy94_standalone_scaling(specification), n_modes)
+        } else {
+            vapply(specification$models, .gy94_standalone_scaling, numeric(1))
+        }
+        as.numeric(values)
+    }))
+    common <- colSums(standalone * weights)
+
+    effective <- lapply(models, function(specification) {
+        if(.is_gy94(specification)) {
+            if(n_modes == 1L) {
+                return(.gy94_apply_mixture_scaling(specification, common[[1L]]))
+            }
+            branch_models <- lapply(common, function(scale) {
+                .gy94_apply_mixture_scaling(specification, scale)
+            })
+            GY94BranchModel(branch_models, reference$mode_phylogeny,
+                            start_mode = reference$start_mode)
+        } else {
+            branch_models <- Map(.gy94_apply_mixture_scaling,
+                                 specification$models, as.list(common))
+            GY94BranchModel(branch_models, specification$mode_phylogeny,
+                            start_mode = specification$start_mode)
+        }
+    })
+
+    rownames(standalone) <- names(models)
+    colnames(standalone) <- paste0("mode", seq_len(n_modes) - 1L)
+    names(common) <- colnames(standalone)
+    stationary_rates <- sweep(standalone, 2L, common, "/")
+    list(models = effective,
+         scaling_type = unique(scaling_types),
+         common_scaling = common,
+         stationary_rates = stationary_rates,
+         mode_phylogeny = if(is.null(reference)) NULL else reference$mode_phylogeny)
+}
+
 #' Describe a branch-heterogeneous GY94 process for one site class.
 GY94BranchModel <- function(models, mode_phylogeny, start_mode = 0L) {
     if(!is.list(models) || !length(models)) {
@@ -263,8 +357,20 @@ GY94SiteModel <- function(models, n_sites = NULL, site_classes = NULL,
         stop("Every model should be assigned to at least one site")
     }
 
-    structure(list(models = models, labels = labels, assignment = assignment,
-                   n_sites = tabulate(assignment, nbins = length(models))),
+    names(models) <- labels
+    n_sites <- tabulate(assignment, nbins = length(models))
+    weights <- n_sites / sum(n_sites)
+    normalized <- .gy94_common_site_scaling(models, weights)
+
+    structure(list(models = normalized$models,
+                   labels = labels,
+                   assignment = assignment,
+                   n_sites = n_sites,
+                   class_weights = setNames(as.numeric(weights), labels),
+                   scaling_type = normalized$scaling_type,
+                   mixture_scaling = normalized$common_scaling,
+                   stationary_class_rates = normalized$stationary_rates,
+                   mode_phylogeny = normalized$mode_phylogeny),
               class = "GY94SiteModel")
 }
 
@@ -363,6 +469,9 @@ simulate_gy94_site_model <- function(
         simulations[[i]] <- if(.is_gy94(specification)) {
             simulate_over_phylogeny(phylogeny, specification, root, rate = rate)
         } else {
+            scaling_targets <- vapply(specification$models, function(model) {
+                if(is.null(model$stationary_scaled_rate)) 1 else model$stationary_scaled_rate
+            }, numeric(1))
             simulate_over_interval_phylogeny(
                 phylogeny = phylogeny,
                 mode_phylogeny = specification$mode_phylogeny,
@@ -372,7 +481,8 @@ simulate_gy94_site_model <- function(
                 rate = rate,
                 segment_length = segment_length,
                 tolerance = tolerance,
-                rescale_method = rescale_method)
+                rescale_method = rescale_method,
+                scaling_targets = scaling_targets)
         }
         simulations[[i]] <- .label_site_class_simulation(
             simulations[[i]], site_model$labels[[i]], i - 1L)

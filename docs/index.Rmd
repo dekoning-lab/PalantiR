@@ -26,6 +26,7 @@ following pages:
 # Codon Models
 
 * [Mutation-Selection](Mutation_Selection.html)
+* [Goldman--Yang (GY94)](Goldman_Yang_94.html)
 * [Co-evolution](Co_Evolution.html)
 * [Markov-Modulated Mutation-Selection](Markov_Modulated_Mutation_Selection.html)
 

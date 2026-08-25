@@ -210,7 +210,10 @@ plot(gy_sim, sites = 0:9)    # event tooltips include the site class
 ```
 
 The general `GY94SiteModel()` constructor can instead mix any number of
-time-homogeneous and branch-heterogeneous GY94 classes. See the
+time-homogeneous and branch-heterogeneous GY94 classes. Site classes share one
+mixture-weighted scaling denominator (one per branch type in a branch-site
+model), so branch lengths measure the mean rate across the mixture while
+relative rates among classes are retained. See the
 [GY94 model page](https://dekoning-lab.github.io/PalantiR/Goldman_Yang_94.html)
 for frequency formats, scaling conventions, and output metadata.
 

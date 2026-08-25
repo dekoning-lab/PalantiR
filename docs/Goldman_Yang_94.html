@@ -463,16 +463,16 @@ interpretation is <code>omega &lt; 1</code> for purifying selection,
 <code>omega &gt; 1</code> for an excess of non-synonymous change,
 although the constructor does not impose those biological
 categories.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-init"><a href="#cb1-init" tabindex="-1"></a><span class="fu">use_genetic_code</span>(<span class="st">&quot;Standard nuclear&quot;</span>)</span>
-<span id="cb1-init-blank"><a href="#cb1-init-blank" tabindex="-1"></a></span>
-<span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>gy <span class="ot">&lt;-</span> <span class="fu">GoldmanYang94</span>(</span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>    <span class="at">omega =</span> <span class="fl">0.2</span>,</span>
-<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>    <span class="at">kappa =</span> <span class="dv">2</span>,</span>
-<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>    <span class="at">frequencies =</span> <span class="fu">c</span>(<span class="at">T =</span> <span class="fl">0.30</span>, <span class="at">C =</span> <span class="fl">0.20</span>, <span class="at">A =</span> <span class="fl">0.25</span>, <span class="at">G =</span> <span class="fl">0.25</span>),</span>
-<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>    <span class="at">frequency_model =</span> <span class="st">&quot;F1x4&quot;</span>,</span>
-<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>    <span class="at">scaling_type =</span> <span class="st">&quot;standard&quot;</span>)</span>
-<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a></span>
-<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>gy<span class="sc">$</span>omega</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">use_genetic_code</span>(<span class="st">&quot;Standard nuclear&quot;</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>gy <span class="ot">&lt;-</span> <span class="fu">GoldmanYang94</span>(</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>    <span class="at">omega =</span> <span class="fl">0.2</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>    <span class="at">kappa =</span> <span class="dv">2</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>    <span class="at">frequencies =</span> <span class="fu">c</span>(<span class="at">T =</span> <span class="fl">0.30</span>, <span class="at">C =</span> <span class="fl">0.20</span>, <span class="at">A =</span> <span class="fl">0.25</span>, <span class="at">G =</span> <span class="fl">0.25</span>),</span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>    <span class="at">frequency_model =</span> <span class="st">&quot;F1x4&quot;</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>    <span class="at">scaling_type =</span> <span class="st">&quot;standard&quot;</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a>gy<span class="sc">$</span>omega</span></code></pre></div>
 <pre><code>## [1] 0.2</code></pre>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>gy<span class="sc">$</span>scaling_type</span></code></pre></div>
 <pre><code>## [1] &quot;substitution&quot;</code></pre>
@@ -499,21 +499,21 @@ once.</li>
 </ul>
 <p>The nucleotide order for unnamed input is <code>T, C, A, G</code>.
 Named input may be in any order and is rearranged internally.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-init"><a href="#cb5-init" tabindex="-1"></a><span class="fu">use_genetic_code</span>(<span class="st">&quot;Standard nuclear&quot;</span>)</span>
-<span id="cb5-init-blank"><a href="#cb5-init-blank" tabindex="-1"></a></span>
-<span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>pi_equal <span class="ot">&lt;-</span> <span class="fu">FEqual</span>()</span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>pi_1x4 <span class="ot">&lt;-</span> <span class="fu">F1x4</span>(<span class="fu">c</span>(<span class="at">T =</span> <span class="fl">0.30</span>, <span class="at">C =</span> <span class="fl">0.20</span>, <span class="at">A =</span> <span class="fl">0.25</span>, <span class="at">G =</span> <span class="fl">0.25</span>))</span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a></span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>position_frequencies <span class="ot">&lt;-</span> <span class="fu">rbind</span>(</span>
-<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>    <span class="fu">c</span>(<span class="at">T =</span> <span class="fl">0.30</span>, <span class="at">C =</span> <span class="fl">0.20</span>, <span class="at">A =</span> <span class="fl">0.25</span>, <span class="at">G =</span> <span class="fl">0.25</span>),</span>
-<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>    <span class="fu">c</span>(<span class="at">T =</span> <span class="fl">0.20</span>, <span class="at">C =</span> <span class="fl">0.30</span>, <span class="at">A =</span> <span class="fl">0.30</span>, <span class="at">G =</span> <span class="fl">0.20</span>),</span>
-<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>    <span class="fu">c</span>(<span class="at">T =</span> <span class="fl">0.25</span>, <span class="at">C =</span> <span class="fl">0.25</span>, <span class="at">A =</span> <span class="fl">0.20</span>, <span class="at">G =</span> <span class="fl">0.30</span>))</span>
-<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>pi_3x4 <span class="ot">&lt;-</span> <span class="fu">F3x4</span>(position_frequencies)</span>
-<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a></span>
-<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>f61_input <span class="ot">&lt;-</span> <span class="fu">setNames</span>(<span class="fu">rep</span>(<span class="dv">1</span>, <span class="fu">length</span>(<span class="fu">GeneticCode</span>())), <span class="fu">names</span>(<span class="fu">GeneticCode</span>()))</span>
-<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>pi_61 <span class="ot">&lt;-</span> <span class="fu">F61</span>(f61_input)</span>
-<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a></span>
-<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a><span class="fu">sum</span>(pi_3x4)</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">use_genetic_code</span>(<span class="st">&quot;Standard nuclear&quot;</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>pi_equal <span class="ot">&lt;-</span> <span class="fu">FEqual</span>()</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>pi_1x4 <span class="ot">&lt;-</span> <span class="fu">F1x4</span>(<span class="fu">c</span>(<span class="at">T =</span> <span class="fl">0.30</span>, <span class="at">C =</span> <span class="fl">0.20</span>, <span class="at">A =</span> <span class="fl">0.25</span>, <span class="at">G =</span> <span class="fl">0.25</span>))</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>position_frequencies <span class="ot">&lt;-</span> <span class="fu">rbind</span>(</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>    <span class="fu">c</span>(<span class="at">T =</span> <span class="fl">0.30</span>, <span class="at">C =</span> <span class="fl">0.20</span>, <span class="at">A =</span> <span class="fl">0.25</span>, <span class="at">G =</span> <span class="fl">0.25</span>),</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>    <span class="fu">c</span>(<span class="at">T =</span> <span class="fl">0.20</span>, <span class="at">C =</span> <span class="fl">0.30</span>, <span class="at">A =</span> <span class="fl">0.30</span>, <span class="at">G =</span> <span class="fl">0.20</span>),</span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>    <span class="fu">c</span>(<span class="at">T =</span> <span class="fl">0.25</span>, <span class="at">C =</span> <span class="fl">0.25</span>, <span class="at">A =</span> <span class="fl">0.20</span>, <span class="at">G =</span> <span class="fl">0.30</span>))</span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>pi_3x4 <span class="ot">&lt;-</span> <span class="fu">F3x4</span>(position_frequencies)</span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>f61_input <span class="ot">&lt;-</span> <span class="fu">setNames</span>(<span class="fu">rep</span>(<span class="dv">1</span>, <span class="fu">length</span>(<span class="fu">GeneticCode</span>())), <span class="fu">names</span>(<span class="fu">GeneticCode</span>()))</span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a>pi_61 <span class="ot">&lt;-</span> <span class="fu">F61</span>(f61_input)</span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a></span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="fu">sum</span>(pi_3x4)</span></code></pre></div>
 <pre><code>## [1] 1</code></pre>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">head</span>(pi_3x4)</span></code></pre></div>
 <pre><code>##        TTT        TTC        TTA        TTG        TCT        TCC 
@@ -527,11 +527,15 @@ the codon state ordering may no longer agree.</p>
 </div>
 <div id="branch-length-scaling" class="section level1">
 <h1>Branch-length scaling</h1>
-<p>The unscaled matrix is divided by</p>
+<p>Let <span class="math inline">\(\mathcal A\)</span> be the set of
+ordered codon transitions that determines scaling. For one GY94 process,
+the corresponding stationary event rate is</p>
 <p><span class="math display">\[
-S_t = \sum_i \pi_i \sum_{j\in t}\widetilde q_{ij},
+S_{\mathcal A} = \sum_i \pi_i
+\sum_{j:(i,j)\in\mathcal A}\widetilde q_{ij}.
 \]</span></p>
-<p>where (t) is the selected event class:</p>
+<p>The available choices for <span class="math inline">\(\mathcal
+A\)</span> are:</p>
 <ul>
 <li><code>"standard"</code> or <code>"substitution"</code>: all codon
 substitutions;</li>
@@ -542,15 +546,43 @@ only;</li>
 </ul>
 <p><code>"standard"</code> is an input alias for
 <code>"substitution"</code>; the model stores the canonical value
-<code>"substitution"</code>. With a scaled model, one branch-length unit
-means one expected event of the selected class per codon at that model’s
-stationary distribution.</p>
-<p>In a discrete site mixture, <strong>each class is scaled
-independently</strong>. A branch of length 0.1 therefore represents 0.1
-expected events of the selected class per site within every site class
-at its own stationary distribution. PalantiR does not compute one
-mixture-wide normalization across classes. All branch modes within one
-time-heterogeneous class must use the same scaling type.</p>
+<code>"substitution"</code>. A standalone model uses <span
+class="math inline">\(Q=\widetilde Q/S_{\mathcal A}\)</span>, so one
+branch-length unit represents one expected event from <span
+class="math inline">\(\mathcal A\)</span> per codon at stationarity.</p>
+<p>For a discrete mixture with class proportions <span
+class="math inline">\(p_k\)</span>, PalantiR follows the mixture-wide
+convention used for codon site models in PAML:</p>
+<p><span class="math display">\[
+\overline S_{\mathcal A}=\sum_k p_k S_{\mathcal A,k},
+\qquad
+Q_k=\widetilde Q_k/\overline S_{\mathcal A}.
+\]</span></p>
+<p>Every component therefore shares one denominator, while its
+stationary rate <span class="math inline">\(S_{\mathcal A,k}/\overline
+S_{\mathcal A}\)</span> is retained. The mixture-weighted mean of those
+rates is one; individual component rates need not be one. Under
+synonymous or non-synonymous scaling, independent normalization would
+erase omega-dependent rate differences among classes.</p>
+<p>For a branch-site model, PalantiR computes the weighted denominator
+separately for each branch type, because the collection of active
+class-specific generators differs between background and foreground
+branches:</p>
+<p><span class="math display">\[
+\overline S_{\mathcal A,b}=\sum_k p_k S_{\mathcal A,k,b}.
+\]</span></p>
+<p>All site classes active on branch type <span
+class="math inline">\(b\)</span> share <span
+class="math inline">\(\overline S_{\mathcal A,b}\)</span>. Thus, under
+standard scaling, branch length is the expected number of codon
+substitutions per site averaged over the whole mixture. Synonymous and
+non-synonymous scaling give the analogous mean for the specified
+transition set. This is the convention implemented for site and
+branch-site models in the <a
+href="https://github.com/abacus-gene/paml/blob/master/src/codeml.c#L2580-L2629">PAML
+<code>codeml</code> source</a>, which notes that scaling applies to all
+class-specific matrices for the whole branch. All classes and branch
+modes within one mixture must use the same scaling type.</p>
 </div>
 <div id="branch-heterogeneity" class="section level1">
 <h1>Branch heterogeneity</h1>
@@ -573,9 +605,11 @@ codon frequencies.</p>
 <p>When stationary frequencies change, descendants enter the new process
 with the state distribution inherited from the parent; they are not
 redrawn from the new equilibrium. PalantiR simulates the resulting
-transient and uses the selected temporal rescaling method to preserve
-the chosen branch-length currency. The exact time change is the default;
-the segment approximation remains available through
+transient and uses the requested temporal rescaling method to preserve
+each component’s rate relative to the common mixture denominator. The
+mixture-weighted rate therefore retains the chosen branch-length
+currency. The exact time change is the default; the segment
+approximation remains available through
 <code>rescale_method = "segments"</code>.</p>
 </div>
 <div id="arbitrary-discrete-site-classes" class="section level1">
@@ -586,8 +620,11 @@ the segment approximation remains available through
 <code>n_sites</code>, one count per class, or <code>site_classes</code>,
 one assignment per output position. Character assignments refer to class
 labels; numeric assignments are one-based indices into
-<code>models</code>. Output <code>site</code> and
-<code>class_index</code> fields are zero-based.</p>
+<code>models</code>. Branch-heterogeneous classes in one mixture must
+use the same mode phylogeny and number of branch models, because their
+generators are normalized together on each branch type. Output
+<code>site</code> and <code>class_index</code> fields are
+zero-based.</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>site_model <span class="ot">&lt;-</span> <span class="fu">GY94SiteModel</span>(</span>
 <span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>    <span class="at">models =</span> <span class="fu">list</span>(</span>
 <span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>        <span class="at">constrained =</span> background,</span>
@@ -679,7 +716,11 @@ interactive alignment header displays the class label. Every event in
 <code>class_index</code>, which also appear in substitution-history
 tooltips. <code>sim$site_model</code> retains the general class
 specification and <code>sim$site_class_models</code> maps labels to
-their homogeneous or branch-heterogeneous model definitions.</p>
+their homogeneous or branch-heterogeneous model definitions. The
+generating <code>GY94SiteModel</code> also records
+<code>class_weights</code>, the <code>mixture_scaling</code> denominator
+for each branch mode, and <code>stationary_class_rates</code> relative
+to that denominator.</p>
 </div>
 <div id="references" class="section level1">
 <h1>References</h1>
@@ -687,6 +728,13 @@ their homogeneous or branch-heterogeneous model definitions.</p>
 <li>Goldman, N. and Yang, Z. (1994). A codon-based model of nucleotide
 substitution for protein-coding DNA sequences. <em>Molecular Biology and
 Evolution</em> <strong>11</strong>, 725–736.</li>
+<li>Yang, Z., Nielsen, R., Goldman, N. and Pedersen, A.-M. K. (2000).
+Codon-substitution models for heterogeneous selection pressure at amino
+acid sites. <em>Genetics</em> <strong>155</strong>, 431–449.</li>
+<li>Yang, Z. and Nielsen, R. (2002). Codon-substitution models for
+detecting molecular adaptation at individual sites along specific
+lineages. <em>Molecular Biology and Evolution</em> <strong>19</strong>,
+908–917.</li>
 <li>Zhang, J., Nielsen, R. and Yang, Z. (2005). Evaluation of an
 improved branch-site likelihood method for detecting positive selection
 at the molecular level. <em>Molecular Biology and Evolution</em>
