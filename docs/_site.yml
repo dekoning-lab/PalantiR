@@ -15,6 +15,8 @@ navbar:
           href: General_Time_Reversible.html
     - text: "Codon Models"
       menu:
+        - text: "Goldman-Yang (GY94)"
+          href: Goldman_Yang_94.html
         - text: "Mutation-Selection"
           href: Mutation_Selection.html
         - text: "Co-Evolution"

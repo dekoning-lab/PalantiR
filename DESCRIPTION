@@ -1,17 +1,18 @@
 Package: PalantiR
 Type: Package
 Title: Simulation and Visualisation of Phylogenetic Substitution Histories
-Version: 1.2.2
+Version: 1.3.0
 Author: Ivan Krukov [aut], Nathan Escandor [aut], Aaron Mathankeri [aut],
     A. P. Jason de Koning [aut, cre]
 Maintainer: A. P. Jason de Koning <jason.de.koning@gmail.com>
 Description: Simulates codon and amino-acid sequence evolution along a phylogeny
     under models of heterogeneous molecular function, including
     mutation-selection models with site-specific amino-acid fitnesses and
-    effective population sizes that vary across the tree. Records the complete
-    substitution history of every simulation, not only the resulting alignment,
-    and provides interactive visualisations of phylogenies, alignments and
-    substitution histories.
+    Goldman-Yang codon models with discrete omega classes. Model parameters,
+    stationary codon frequencies, and effective population sizes may vary across
+    the tree. Records the complete substitution history of every simulation, not
+    only the resulting alignment, and provides interactive visualisations of
+    phylogenies, alignments and substitution histories.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

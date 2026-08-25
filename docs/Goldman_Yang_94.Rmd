@@ -1,0 +1,243 @@
+---
+title: "Goldman--Yang (GY94) codon models"
+output:
+  html_document:
+    self_contained: no
+---
+
+```{r, include=FALSE}
+library(PalantiR)
+library(knitr)
+set_palantir_seed(20260825)
+knitr::opts_chunk$set(fig.height = 7, fig.width = 9)
+```
+
+# Model
+
+The Goldman--Yang 1994 (GY94) model describes codon substitutions using a
+transition/transversion rate ratio, `kappa`, and a non-synonymous/synonymous
+rate ratio, `omega`. For distinct sense codons (i) and (j), PalantiR first
+constructs the unscaled generator
+
+$$
+\widetilde q_{ij} =
+\begin{cases}
+0, & \text{if }i\text{ and }j\text{ differ at more than one nucleotide},\\
+\pi_j, & \text{synonymous transversion},\\
+\kappa\pi_j, & \text{synonymous transition},\\
+\omega\pi_j, & \text{non-synonymous transversion},\\
+\omega\kappa\pi_j, & \text{non-synonymous transition}.
+\end{cases}
+$$
+
+Here (pi_j) is the stationary frequency of target codon (j). Diagonal
+entries are the negative row sums. Both `omega` and `kappa` must be finite and
+strictly positive. The familiar interpretation is `omega < 1` for purifying
+selection, `omega = 1` for neutral amino-acid evolution, and `omega > 1` for an
+excess of non-synonymous change, although the constructor does not impose those
+biological categories.
+
+```{r}
+gy <- GoldmanYang94(
+    omega = 0.2,
+    kappa = 2,
+    frequencies = c(T = 0.30, C = 0.20, A = 0.25, G = 0.25),
+    frequency_model = "F1x4",
+    scaling_type = "standard")
+
+gy$omega
+gy$scaling_type
+```
+
+`GY94()` is a short alias for `GoldmanYang94()`.
+
+# Stationary codon frequencies
+
+All frequency adapters operate on the sense codons of the active genetic code.
+They remove stop codons and normalize the resulting sense-codon probabilities
+to sum to one.
+
+* `FEqual()` assigns equal probability to every sense codon.
+* `F1x4()` accepts four nucleotide frequencies shared by all three codon
+  positions.
+* `F3x4()` accepts a 3 by 4 matrix (positions by nucleotides), its 4 by 3
+  transpose, or a length-12 vector in three position blocks.
+* `F61()` accepts one positive value per sense codon. The name is conventional:
+  the actual length follows the active genetic code. Named input is safest and
+  must contain every sense codon exactly once.
+
+The nucleotide order for unnamed input is `T, C, A, G`. Named input may be in
+any order and is rearranged internally.
+
+```{r}
+pi_equal <- FEqual()
+pi_1x4 <- F1x4(c(T = 0.30, C = 0.20, A = 0.25, G = 0.25))
+
+position_frequencies <- rbind(
+    c(T = 0.30, C = 0.20, A = 0.25, G = 0.25),
+    c(T = 0.20, C = 0.30, A = 0.30, G = 0.20),
+    c(T = 0.25, C = 0.25, A = 0.20, G = 0.30))
+pi_3x4 <- F3x4(position_frequencies)
+
+f61_input <- setNames(rep(1, length(GeneticCode())), names(GeneticCode()))
+pi_61 <- F61(f61_input)
+
+sum(pi_3x4)
+head(pi_3x4)
+```
+
+`codon_frequencies()` performs the same adaptation and can infer F1x4, F3x4,
+or F61 from input length. An explicit `frequency_model` is recommended in
+reproducible scripts. A `CodonFrequencies` object records the active genetic
+code; PalantiR rejects it if the genetic code is subsequently changed, because
+the codon state ordering may no longer agree.
+
+# Branch-length scaling
+
+The unscaled matrix is divided by
+
+$$
+S_t = \sum_i \pi_i \sum_{j\in t}\widetilde q_{ij},
+$$
+
+where (t) is the selected event class:
+
+* `"standard"` or `"substitution"`: all codon substitutions;
+* `"non-synonymous"`: amino-acid-changing substitutions only;
+* `"synonymous"`: synonymous substitutions only;
+* `"none"`: no normalization.
+
+`"standard"` is an input alias for `"substitution"`; the model stores the
+canonical value `"substitution"`. With a scaled model, one branch-length unit
+means one expected event of the selected class per codon at that model's
+stationary distribution.
+
+In a discrete site mixture, **each class is scaled independently**. A branch of
+length 0.1 therefore represents 0.1 expected events of the selected class per
+site within every site class at its own stationary distribution. PalantiR does
+not compute one mixture-wide normalization across classes. All branch modes
+within one time-heterogeneous class must use the same scaling type.
+
+# Branch heterogeneity
+
+`GY94BranchModel()` uses the same mode-tree convention as other PalantiR
+time-heterogeneous models. Mode labels are zero-based indices into `models`, and
+`start_mode` specifies the process at the root. Any GY94 parameter may change
+between modes, including `omega`, `kappa`, and the stationary codon frequencies.
+
+```{r}
+mammals <- Phylogeny("../inst/extdata/mammals.newick")
+mammal_modes <- Phylogeny("../inst/extdata/mammals_switch.newick", type = "mode")
+
+background <- GY94(omega = 0.2, kappa = 2, frequencies = pi_1x4)
+foreground <- GY94(omega = 3.0, kappa = 2, frequencies = pi_3x4)
+
+episodic <- GY94BranchModel(
+    models = list(background, foreground),
+    mode_phylogeny = mammal_modes,
+    start_mode = 0)
+```
+
+When stationary frequencies change, descendants enter the new process with the
+state distribution inherited from the parent; they are not redrawn from the
+new equilibrium. PalantiR simulates the resulting transient and uses the
+selected temporal rescaling method to preserve the chosen branch-length
+currency. The exact time change is the default; the segment approximation
+remains available through `rescale_method = "segments"`.
+
+# Arbitrary discrete site classes
+
+`GY94SiteModel()` accepts any collection of homogeneous `GY94` models and
+time-heterogeneous `GY94BranchModel` specifications. Supply either `n_sites`,
+one count per class, or `site_classes`, one assignment per output position.
+Character assignments refer to class labels; numeric assignments are one-based
+indices into `models`. Output `site` and `class_index` fields are zero-based.
+
+```{r}
+site_model <- GY94SiteModel(
+    models = list(
+        constrained = background,
+        neutral = GY94(omega = 1, kappa = 2, frequencies = pi_1x4),
+        episodic = episodic),
+    n_sites = c(40, 30, 30),
+    labels = c("constrained", "neutral", "episodic"))
+```
+
+For an explicit interleaved assignment, use for example
+`site_classes = c("constrained", "episodic", "neutral", ...)`; the simulator
+restores that requested order after efficiently simulating sites in class
+blocks.
+
+# Zhang--Nielsen--Yang branch-site model
+
+`ZNYBranchSiteModel()` builds the four standard branch-site classes as a
+special case of the general site-class representation:
+
+| Site class | Background omega | Foreground omega |
+|:----------:|:----------------:|:----------------:|
+| 0          | `omega0`         | `omega0`         |
+| 1          | 1                | 1                |
+| 2a         | `omega0`         | `omega2`         |
+| 2b         | 1                | `omega2`         |
+
+The mode tree must label background branches `0` and foreground branches `1`.
+`site_counts` gives counts in the order 0, 1, 2a, 2b. Foreground frequencies
+default to the background frequencies, but may be supplied separately when the
+stationary codon distribution also changes on foreground branches.
+
+```{r}
+branch_site <- ZNYBranchSiteModel(
+    mode_phylogeny = mammal_modes,
+    site_counts = c(4, 4, 4, 4),
+    omega0 = 0.2,
+    omega2 = 3,
+    kappa = 2,
+    frequencies = c(T = 0.30, C = 0.20, A = 0.25, G = 0.25),
+    frequency_model = "F1x4",
+    scaling_type = "standard")
+```
+
+`ZNYBranchSite()` is a short alias.
+
+# Simulation and output metadata
+
+The simulator samples a root state for each site from the equilibrium of that
+class's root model unless a codon `Sequence` is supplied explicitly.
+
+```{r, eval=FALSE}
+sim <- simulate_gy94_site_model(mammals, branch_site)
+
+head(sim$site_classes)
+head(sim$substitutions)
+plot(sim$alignment)
+plot(sim, sites = 0:9)
+```
+
+For the class counts above, `sim$site_classes` begins:
+
+```
+  site site_class class_index
+1    0          0           0
+2    1          0           0
+3    2          0           0
+4    3          0           0
+5    4          1           1
+6    5          1           1
+```
+
+The complete assignment table is stored in `sim$site_classes`, including sites
+with no substitutions. The same table is attached to `sim$alignment`; the
+interactive alignment header displays the class label. Every event in
+`sim$substitutions` carries `site_class` and `class_index`, which also appear in
+substitution-history tooltips. `sim$site_model` retains the general class
+specification and `sim$site_class_models` maps labels to their homogeneous or
+branch-heterogeneous model definitions.
+
+# References
+
+1. Goldman, N. and Yang, Z. (1994). A codon-based model of nucleotide
+   substitution for protein-coding DNA sequences. *Molecular Biology and
+   Evolution* **11**, 725--736.
+2. Zhang, J., Nielsen, R. and Yang, Z. (2005). Evaluation of an improved
+   branch-site likelihood method for detecting positive selection at the
+   molecular level. *Molecular Biology and Evolution* **22**, 2472--2479.

@@ -1,3 +1,24 @@
+# PalantiR 1.3.0
+
+## New features
+
+- `GoldmanYang94()` (also `GY94()`) implements the Goldman--Yang 1994 codon
+  model with `omega`, `kappa`, and Fequal, F1x4, F3x4, or F61 stationary-codon
+  frequencies. It supports standard/all-substitution, synonymous, and
+  non-synonymous branch-length scaling; `"standard"` is accepted as an alias
+  and stored canonically as `"substitution"`.
+- `GY94BranchModel()` assigns different GY94 processes to branches using a mode
+  tree, including changes in omega, kappa, or stationary codon frequencies.
+  The existing transient rescalers preserve the selected branch-length
+  currency when the process changes.
+- `GY94SiteModel()` and `simulate_gy94_site_model()` provide arbitrary discrete
+  site classes, each of which may be time homogeneous or branch heterogeneous.
+  Site-class assignments are retained in the simulation, alignment metadata,
+  substitution table, and interactive alignment viewer.
+- `ZNYBranchSiteModel()` constructs the four standard Zhang--Nielsen--Yang
+  branch-site classes (0, 1, 2a, and 2b) as a special case of the general
+  discrete-class simulator.
+
 # PalantiR 1.2.2
 
 - `rescale_method = "exact"` is now the default for

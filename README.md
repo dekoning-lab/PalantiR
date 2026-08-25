@@ -173,6 +173,43 @@ head(sim$substitutions)
 
 ![simulation](docs/img/PalantiR-simulation.gif)
 
+# Goldman--Yang branch-site simulation
+
+`PalantiR` also supports GY94 models with discrete site classes and branch
+heterogeneity. This example constructs the four standard Zhang--Nielsen--Yang
+classes: classes 0 and 1 retain their background omega on the foreground,
+whereas classes 2a and 2b switch to `omega2`.
+
+```R
+tree <- Phylogeny(system.file("extdata", "mammals.newick", package = "PalantiR"))
+foreground <- Phylogeny(
+    system.file("extdata", "mammals_switch.newick", package = "PalantiR"),
+    type = "mode")
+
+branch_site <- ZNYBranchSiteModel(
+    mode_phylogeny = foreground,
+    site_counts = c(40, 20, 20, 20), # classes 0, 1, 2a, and 2b
+    omega0 = 0.2,
+    omega2 = 3,
+    kappa = 2,
+    frequencies = c(T = 0.25, C = 0.25, A = 0.25, G = 0.25),
+    frequency_model = "F1x4",
+    scaling_type = "standard")
+
+set_palantir_seed(20260825)
+gy_sim <- simulate_gy94_site_model(tree, branch_site)
+
+head(gy_sim$site_classes)
+head(gy_sim$substitutions)
+plot(gy_sim$alignment)       # site-class labels appear above the alignment
+plot(gy_sim, sites = 0:9)    # event tooltips include the site class
+```
+
+The general `GY94SiteModel()` constructor can instead mix any number of
+time-homogeneous and branch-heterogeneous GY94 classes. See the
+[GY94 model page](https://dekoning-lab.github.io/PalantiR/Goldman_Yang_94.html)
+for frequency formats, scaling conventions, and output metadata.
+
 # Command-line simulation
 
 The [`examples/`](examples/) directory contains stand-alone scripts that run
