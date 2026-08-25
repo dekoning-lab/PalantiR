@@ -22,3 +22,19 @@ rmarkdown::render("engine_validation.Rmd", params = list(seed = 1, n_sites = 300
 
 Requires PalantiR and rmarkdown; `ggseqlogo` is optional (barplots are drawn
 without it).
+
+## GY94 history-level dN/dS diagnostic
+
+`gy94_deep_tree_history_dnds.R` simulates 5,000 codon sites on a fully
+bifurcating 50-taxon tree of depth 20 in synonymous-scaled branch units. Its
+two 25-taxon subtrees use omega values 0.1 and 1.0. The script estimates dN/dS
+from the complete substitution histories using Goldman and Yang's neutral
+synonymous and nonsynonymous opportunity counts, rather than the raw event
+count ratio. It writes the alignment, compressed history, tree and mode tree,
+per-site counts, opportunity calculation, summary, and checksummed manifest to
+a persistent artifact directory:
+
+```sh
+Rscript validation/gy94_deep_tree_history_dnds.R \
+  --out=runs/gy94-deep-tree-dnds-20260825
+```
