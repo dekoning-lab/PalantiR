@@ -38,7 +38,8 @@ fitnesses. \strong{Order matters and is not checked}: see Details.}
 \item{delta}{Matrix of pairwise interaction terms for the co-evolution model.}
 \item{scaling_type}{How the rate matrix is normalised. One of
 \code{"synonymous"}, \code{"non-synonymous"}, \code{"substitution"} or
-\code{"none"}. See Details.}
+\code{"none"}; \code{"standard"} is accepted as an alias of
+\code{"substitution"}. See Details.}
 \item{switching_model}{An exchangeable model governing switching between modes.}
 \item{mutation_selection_models}{List of mutation-selection models, one per mode.}
 }
@@ -68,9 +69,9 @@ class per codon. \code{"synonymous"} makes branch lengths count synonymous
 substitutions, \code{"non-synonymous"} amino-acid-changing substitutions,
 \code{"substitution"} all substitutions, and \code{"none"} applies no scaling.
 Choose the class matching the units in which the guide tree's branch lengths were
-estimated. An unrecognised name raises an error; note that the option called
-\code{"standard"} in the 2016 version of this package is \code{"substitution"}
-here.
+estimated. An unrecognised name raises an error. For compatibility with the
+2016 version of this package, \code{"standard"} is accepted as an alias and
+stored canonically as \code{"substitution"}.
 }
 \references{
 Halpern, A. L. and Bruno, W. J. (1998) Evolutionary distances for protein-coding

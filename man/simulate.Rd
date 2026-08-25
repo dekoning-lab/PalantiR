@@ -11,7 +11,7 @@ simulate_over_phylogeny(phylogeny, model, sequence, rate = 1)
 simulate_over_interval_phylogeny(phylogeny, mode_phylogeny, models, sequence,
                                  start_mode, rate = 1,
                                  segment_length = 0.001, tolerance = 0.001,
-                                 rescale_method = "segments")
+                                 rescale_method = "exact")
 
 simulate_with_shared_substitution_heterogeneity(phylogeny, switching_model,
                                  substitution_models, sequence, start_mode,
@@ -46,7 +46,7 @@ branch lengths seen by \code{switching_model} only.}
 \item{segment_length}{Step size for the transient renormalisation.}
 \item{tolerance}{Convergence criterion for the transient renormalisation.}
 \item{rescale_method}{Which renormalisation to use on a branch whose mode has
-just changed, either \code{"segments"} (the default) or \code{"exact"}. See
+just changed, either \code{"exact"} (the default) or \code{"segments"}. See
 Details.}
 }
 \value{
@@ -93,7 +93,7 @@ parent's, the sequence begins out of equilibrium with respect to its new model,
 and the realised substitution rate departs from the model's equilibrium rate. Two
 renormalisations are available, chosen with \code{rescale_method}.
 
-\code{"segments"}, the default, splits the branch into steps of
+\code{"segments"} splits the branch into steps of
 \code{segment_length}, advances the transient distribution along each, and
 renormalises the rate matrix against that distribution rather than the
 equilibrium one, so that branch lengths retain their meaning across the change.
