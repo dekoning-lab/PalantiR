@@ -122,6 +122,8 @@ library(PalantiR)
 Below we show how to run a simulation with the Mutation-Selection model:
 
 ```R
+use_genetic_code("Standard nuclear")
+
 # read phylogeny (from a clone, this file is inst/extdata/mammals.newick)
 p <- Phylogeny(system.file("extdata", "mammals.newick", package = "PalantiR"))
 
@@ -181,6 +183,8 @@ classes: classes 0 and 1 retain their background omega on the foreground,
 whereas classes 2a and 2b switch to `omega2`.
 
 ```R
+use_genetic_code("Standard nuclear")
+
 tree <- Phylogeny(system.file("extdata", "mammals.newick", package = "PalantiR"))
 foreground <- Phylogeny(
     system.file("extdata", "mammals_switch.newick", package = "PalantiR"),

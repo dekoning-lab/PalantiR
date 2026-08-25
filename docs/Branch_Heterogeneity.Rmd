@@ -48,6 +48,8 @@ In the example below, we simulate on a mammalian phylogeny with a population siz
 Load model parameters:
 
 ```{r}
+use_genetic_code("Standard nuclear")
+
 # Load nucleotide equilibrium distribution
 # Nucleotide order is T,C,A,G
 nuc_pi <- c(.3, .2, .25, .25)

@@ -90,6 +90,8 @@ amino-acid-changing substitution per codon, so the compensatory events are
 delivered at a rate the tree's branch lengths control directly.
 
 ```{r}
+use_genetic_code("Standard nuclear")
+
 hky <- HasegawaKishinoYano(equilibrium = rep(0.25, 4))
 
 co <- CoEvolution(

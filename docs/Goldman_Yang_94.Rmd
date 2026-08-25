@@ -38,6 +38,8 @@ excess of non-synonymous change, although the constructor does not impose those
 biological categories.
 
 ```{r}
+use_genetic_code("Standard nuclear")
+
 gy <- GoldmanYang94(
     omega = 0.2,
     kappa = 2,
@@ -70,6 +72,8 @@ The nucleotide order for unnamed input is `T, C, A, G`. Named input may be in
 any order and is rearranged internally.
 
 ```{r}
+use_genetic_code("Standard nuclear")
+
 pi_equal <- FEqual()
 pi_1x4 <- F1x4(c(T = 0.30, C = 0.20, A = 0.25, G = 0.25))
 

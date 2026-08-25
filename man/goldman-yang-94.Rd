@@ -189,6 +189,8 @@ site likelihood method for detecting positive selection at the molecular
 level. \emph{Molecular Biology and Evolution} \bold{22}, 2472--2479.
 }
 \examples{
+use_genetic_code("Standard nuclear")
+
 pi <- F1x4(c(T = 0.3, C = 0.2, A = 0.25, G = 0.25))
 purifying <- GY94(omega = 0.2, kappa = 2, frequencies = pi)
 neutral <- GY94(omega = 1, kappa = 2, frequencies = pi)

@@ -13,6 +13,7 @@ params:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(fig.width = 9, fig.height = 5, warning = FALSE, message = FALSE)
 suppressMessages(library(PalantiR))
+use_genetic_code("Standard nuclear")
 set_palantir_seed(params$seed)
 
 verdicts <- list()

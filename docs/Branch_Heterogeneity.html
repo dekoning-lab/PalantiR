@@ -481,7 +481,9 @@ population size expansion on the primate lineage.</p>
 <div id="setup" class="section level2">
 <h2>Setup</h2>
 <p>Load model parameters:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># Load nucleotide equilibrium distribution</span></span>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-init"><a href="#cb5-init" tabindex="-1"></a><span class="fu">use_genetic_code</span>(<span class="st">&quot;Standard nuclear&quot;</span>)</span>
+<span id="cb5-init-blank"><a href="#cb5-init-blank" tabindex="-1"></a></span>
+<span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># Load nucleotide equilibrium distribution</span></span>
 <span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="co"># Nucleotide order is T,C,A,G</span></span>
 <span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>nuc_pi <span class="ot">&lt;-</span> <span class="fu">c</span>(.<span class="dv">3</span>, .<span class="dv">2</span>, .<span class="dv">25</span>, .<span class="dv">25</span>)</span>
 <span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a></span>

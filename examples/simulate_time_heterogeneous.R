@@ -45,6 +45,7 @@
 #   Rscript simulate_time_heterogeneous.R --population-sizes=5000,8000 --sites=300
 
 suppressMessages(library(PalantiR))
+use_genetic_code("Standard nuclear")
 
 # ---------------------------------------------------------------------------
 # Command-line options

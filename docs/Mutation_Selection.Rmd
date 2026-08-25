@@ -37,6 +37,8 @@ The substitution rates are also scaled to assign particular meaning to branch le
 Load model parameters:
 
 ```{r}
+use_genetic_code("Standard nuclear")
+
 # Load phylogeny
 mammals <- Phylogeny("../inst/extdata/mammals.newick")
 

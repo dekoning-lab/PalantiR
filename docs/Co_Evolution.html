@@ -542,7 +542,9 @@ faster.</p>
 <p>Non-synonymous scaling makes one unit of branch length one expected
 amino-acid-changing substitution per codon, so the compensatory events
 are delivered at a rate the tree’s branch lengths control directly.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>hky <span class="ot">&lt;-</span> <span class="fu">HasegawaKishinoYano</span>(<span class="at">equilibrium =</span> <span class="fu">rep</span>(<span class="fl">0.25</span>, <span class="dv">4</span>))</span>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-init"><a href="#cb2-init" tabindex="-1"></a><span class="fu">use_genetic_code</span>(<span class="st">&quot;Standard nuclear&quot;</span>)</span>
+<span id="cb2-init-blank"><a href="#cb2-init-blank" tabindex="-1"></a></span>
+<span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>hky <span class="ot">&lt;-</span> <span class="fu">HasegawaKishinoYano</span>(<span class="at">equilibrium =</span> <span class="fu">rep</span>(<span class="fl">0.25</span>, <span class="dv">4</span>))</span>
 <span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>co <span class="ot">&lt;-</span> <span class="fu">CoEvolution</span>(</span>
 <span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>    <span class="at">population_size =</span> Ne,</span>

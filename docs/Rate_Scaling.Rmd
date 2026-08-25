@@ -20,6 +20,7 @@ There are four scaling schemes implemented:
 Scaling type is specified as an optional parameter to substitution model constructors, _e.g._:
 
 ```{r, eval=F}
+use_genetic_code("Standard nuclear")
 MutationSelection(..., scaling_type = "synonymous")
 ```
 
