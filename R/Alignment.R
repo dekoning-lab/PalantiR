@@ -48,8 +48,52 @@
     }
 }
 
+.alignment_site_classes <- function(alignment) {
+    site_classes <- attr(alignment, "site_classes")
+    if(is.null(site_classes)) {
+        return(NULL)
+    }
+    if(!is.data.frame(site_classes)) {
+        stop("Alignment attribute `site_classes` should be a data frame")
+    }
+
+    required <- c("site", "site_class", "class_index")
+    missing <- setdiff(required, names(site_classes))
+    if(length(missing)) {
+        stop("Alignment attribute `site_classes` is missing required column(s): ",
+             paste(missing, collapse = ", "))
+    }
+    if(nrow(site_classes) != ncol(alignment)) {
+        stop("Alignment attribute `site_classes` should have one row per alignment column (",
+             ncol(alignment), "), not ", nrow(site_classes))
+    }
+
+    # Normalize common data-frame representations while rejecting values that
+    # would make the widget labels ambiguous. In particular, R < 4 creates a
+    # factor from character class labels by default.
+    for(name in c("site", "class_index")) {
+        value <- site_classes[[name]]
+        if(!is.numeric(value) || any(!is.finite(value)) ||
+           any(value < 0) || any(value != floor(value))) {
+            stop("Alignment attribute `site_classes$", name,
+                 "` should contain non-negative whole numbers")
+        }
+        site_classes[[name]] <- as.integer(value)
+    }
+    if(anyDuplicated(site_classes$site)) {
+        stop("Alignment attribute `site_classes$site` should contain unique site indices")
+    }
+    if(anyNA(site_classes$site_class)) {
+        stop("Alignment attribute `site_classes$site_class` should not contain missing values")
+    }
+    site_classes$site_class <- as.character(site_classes$site_class)
+
+    site_classes
+}
+
 AlignmentPlot <- function(alignment, width = NULL, height = NULL) {
     type <- attr(alignment, "type")
+    site_classes <- .alignment_site_classes(alignment)
 
     alignment <- .normalize(alignment, type)
 
@@ -72,7 +116,15 @@ AlignmentPlot <- function(alignment, width = NULL, height = NULL) {
     # FIX (2026-08-20, MIN8): as in PhyloPlot(), toJSON()'s default digits = 4
     # rounds every number in the payload. Nothing here is numeric today, but the
     # two widget payloads should not disagree about precision.
-    data <- jsonlite::toJSON(sequences, auto_unbox = T, digits = NA)
+    # Keep the original array payload when no metadata is present, so ordinary
+    # Alignment widgets render exactly as they did before site classes were
+    # introduced. A metadata-bearing alignment uses an explicit envelope.
+    payload <- if(is.null(site_classes)) {
+        sequences
+    } else {
+        list(sequences = sequences, site_classes = site_classes)
+    }
+    data <- jsonlite::toJSON(payload, auto_unbox = T, digits = NA)
 
     htmlwidgets::createWidget(
         name = "AlignmentPlot",
@@ -108,9 +160,19 @@ AlignmentPlotRender <- function(expr, env = parent.frame(), quoted = FALSE) {
 # so a one-site or one-taxon slice is still an alignment.
 `[.Alignment` <- function(x, i, j, ..., drop = FALSE) {
     type <- attr(x, "type")
+    site_classes <- attr(x, "site_classes")
+    if(!is.null(site_classes) && !missing(j)) {
+        column_index <- seq_len(ncol(x))
+        names(column_index) <- colnames(x)
+        selected_columns <- column_index[j]
+        site_classes <- site_classes[selected_columns, , drop = FALSE]
+    }
     subset <- NextMethod("[", drop = drop)
     if(is.matrix(subset)) {
         attr(subset, "type") <- type
+        if(!is.null(site_classes)) {
+            attr(subset, "site_classes") <- site_classes
+        }
         class(subset) <- "Alignment"
     }
     subset
@@ -129,4 +191,4 @@ as.fasta.Alignment <- function(x, file = "", ...) {
     }
 }
 
-plot.Alignment <- function(x, ...) AlignmentPlot(x)
+plot.Alignment <- function(x, ...) AlignmentPlot(x, ...)

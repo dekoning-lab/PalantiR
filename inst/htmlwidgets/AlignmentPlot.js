@@ -10,9 +10,18 @@ HTMLWidgets.widget({
         var plot = {};
 
         var render = function(data, plot, width, height) {
-            data = data;
+            // Historical widgets receive the sequence array directly. Site-
+            // class-aware widgets wrap that array together with one metadata
+            // record per alignment column.
+            var sequences = Array.isArray(data) ? data : data.sequences;
+            var site_classes = Array.isArray(data) ? null : data.site_classes;
+            var has_site_classes = site_classes &&
+                site_classes.length === sequences[0].sequence.length;
 
-            var sites = Array.apply(null, Array(data[0].sequence.length)).map(function (_, i) { return i; });
+            var sites = Array.apply(null, Array(sequences[0].sequence.length)).map(function (_, i) {
+                if (has_site_classes) return site_classes[i];
+                return i;
+            });
 
             var table_styles = {
                 "font-family": "Courier, monospace",
@@ -53,7 +62,7 @@ HTMLWidgets.widget({
 
             var cells = plot.alignment.table
                 .selectAll("tr")
-                .data(data)
+                .data(sequences)
                 .enter()
                 .append("tr")
                 .selectAll("td")
@@ -92,7 +101,7 @@ HTMLWidgets.widget({
                 .styles(table_styles);
 
             plot.taxa.table.selectAll("tr")
-                .data(data)
+                .data(sequences)
                 .enter()
                 .append("tr")
                 .append("td")
@@ -130,11 +139,17 @@ HTMLWidgets.widget({
                 .styles({
                     "border": "1px solid black",
                     "font-size": "10px",
-                    "padding-bottom": "15px",
+                    "padding-bottom": has_site_classes ? "55px" : "15px",
                     "transform": "rotate(-90deg)  translate(0px, 5px)",
                 })
+                .attr("title", function(d) {
+                    if (!has_site_classes) return null;
+                    return "Site " + d.site + "; site class " + d.site_class +
+                        " (class index " + d.class_index + ")";
+                })
                 .text(function(d) {
-                    return d;
+                    if (!has_site_classes) return d;
+                    return d.site + " \u00b7 " + d.site_class;
                 });
 
             // reposition
