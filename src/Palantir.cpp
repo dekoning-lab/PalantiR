@@ -32,6 +32,38 @@ static void check_phylogeny_type(List phylogeny, std::string expected, std::stri
     }
 }
 
+// GY94 objects carry the active genetic code explicitly because their state
+// indices and F61 frequency order depend on it.  The package-wide code can be
+// changed after a model is constructed; rejecting that mismatch here prevents
+// a valid 61-state matrix from being simulated and decorated under a different
+// 61-state ordering.  The shape checks also turn malformed hand-built
+// SubstitutionModel lists into boundary errors instead of out-of-bounds reads.
+static void check_substitution_model_state_space(List model, std::string argument)
+{
+    arma::vec equilibrium = model["equilibrium"];
+    arma::mat transition = model["transition"];
+    arma::mat sampling = model["sampling"];
+    if(transition.n_rows != transition.n_cols ||
+       transition.n_rows != equilibrium.n_elem ||
+       sampling.n_rows != transition.n_rows ||
+       sampling.n_cols != transition.n_cols) {
+        stop("Argument `" + argument + "` has inconsistent equilibrium, "
+             "transition, and sampling dimensions");
+    }
+    if(has_class(model, "GoldmanYang94")) {
+        if(!model.containsElementNamed("genetic_code")) {
+            stop("Argument `" + argument + "` is a GY94 model without its "
+                 "required `genetic_code` field");
+        }
+        std::string model_code = as<std::string>(model["genetic_code"]);
+        std::string active_code = get_genetic_code_name();
+        if(model_code != active_code) {
+            stop("Argument `" + argument + "` was built under genetic code `" +
+                 model_code + "`, but the active code is `" + active_code + "`");
+        }
+    }
+}
+
 // FIX (2026-08-20, M4): Phylogeny() used to accept anything ifstream could
 // open -- a directory, an empty file, arbitrary text, or a file holding several
 // trees (only the first was used). The newick parser then either built a
@@ -192,6 +224,7 @@ List simulate_over_phylogeny(
     if(!has_class(model, "SubstitutionModel")) {
         stop("Argument `substitution_model` should be of class `SubstitutionModel`");
     }
+    check_substitution_model_state_space(model, "substitution_model");
     if(!has_class(sequence, "Sequence")) {
         stop("Argument `sequence` should be of class `Sequence`");
     }
@@ -282,10 +315,17 @@ List simulate_over_interval_phylogeny(
         if(!has_class(s, "SubstitutionModel")) {
             stop("Each argument in `substitution_models` should be of class `SubstitutionModel`");
         }
+        check_substitution_model_state_space(
+            s, "substitution_models[[" + std::to_string(i + 1) + "]]");
     }
 
     List first_model = models[0];
     string model_type = get_attr(first_model, "type");
+    arma::mat first_transition = first_model["transition"];
+
+    if(start_mode >= (unsigned long long) models.size()) {
+        stop("Argument `start_mode` should be a zero-based index into `substitution_models`");
+    }
 
     for(ullong i = 0; i < models.size(); i++) {
         List s = models[i];
@@ -295,9 +335,16 @@ List simulate_over_interval_phylogeny(
         if(get_attr(s, "scaling_type") != get_attr(first_model, "scaling_type")) {
             stop("All models in `substitution_models` should have the same `scaling_type`");
         }
+        arma::mat transition = s["transition"];
+        if(transition.n_rows != first_transition.n_rows) {
+            stop("All models in `substitution_models` should use the same state space");
+        }
     }
     if(!has_class(sequence, "Sequence")) {
         stop("Argument `sequence` should be of class `Sequence`");
+    }
+    if(model_type == "codon" && get_attr(sequence, "type") != "codon") {
+        stop("A single-codon model requires a sequence of type `codon`");
     }
 
     Palantir::GeneticCode g(get_genetic_code_name());

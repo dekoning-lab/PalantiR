@@ -21,6 +21,10 @@ CoEvolution <- function(population_size, mutation_rate, nucleotide_model, fitnes
     .Call('_PalantiR_CoEvolution', PACKAGE = 'PalantiR', population_size, mutation_rate, nucleotide_model, fitness_1, fitness_2, delta, scaling_type)
 }
 
+.GoldmanYang94Cpp <- function(equilibrium, omega, kappa, frequency_model, scaling_type = "substitution") {
+    .Call('_PalantiR_GoldmanYang94Cpp', PACKAGE = 'PalantiR', equilibrium, omega, kappa, frequency_model, scaling_type)
+}
+
 MarkovModulatedMutationSelection <- function(mutation_selection_models, switching_model) {
     .Call('_PalantiR_MarkovModulatedMutationSelection', PACKAGE = 'PalantiR', mutation_selection_models, switching_model)
 }
@@ -80,4 +84,3 @@ sample_sequence <- function(model, length) {
 as_amino_acid <- function(codons) {
     .Call('_PalantiR_as_amino_acid', PACKAGE = 'PalantiR', codons)
 }
-

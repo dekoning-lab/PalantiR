@@ -85,6 +85,23 @@ get_genetic_code <- function() .globals$genetic_code_name
 # models = list(NULL, NULL). One entry per simulation either way.
 .sim_models <- function(sim) if(is.null(sim$models)) sim$model else sim$models
 
+.simulation_site_classes <- function(sim, n_sites, offset) {
+    metadata <- sim$site_classes
+    if(is.null(metadata)) {
+        return(data.frame(
+            site = seq_len(n_sites) - 1L + offset,
+            site_class = rep(NA_character_, n_sites),
+            class_index = rep(NA_integer_, n_sites),
+            stringsAsFactors = FALSE))
+    }
+    if(!is.data.frame(metadata) || nrow(metadata) != n_sites ||
+       !all(c("site", "site_class", "class_index") %in% names(metadata))) {
+        stop("A simulation's `site_classes` should have one row per alignment column")
+    }
+    metadata$site <- metadata$site + offset
+    metadata
+}
+
 # Join simulations
 join <- function(...) {
     sims <- list(...)
@@ -96,7 +113,11 @@ join <- function(...) {
 
     stopifnot(.all_same(.get_member(phylogenies, "newick")))
     stopifnot(.all_same(.get_attr(alignments, "type")))
-    stopifnot(.all_same(.get_member(sims, "type")))
+    simulation_types <- unlist(.get_member(sims, "type"), use.names = FALSE)
+    compatible_codon_types <- all(simulation_types %in% c("codon", "compound_codon"))
+    if(!.all_same(simulation_types) && !compatible_codon_types) {
+        stop("Simulations should have the same type (ordinary and interval codon simulations may be mixed)")
+    }
 
     joined_alignment <- do.call(cbind, alignments)
     alignment_type <- attr(first$alignment, "type")
@@ -120,15 +141,38 @@ join <- function(...) {
         names(joined_intervals) <- as.character(seq_along(joined_intervals) - 1L)
     }
 
+    site_class_flags <- !vapply(.get_member(sims, "site_classes"), is.null, logical(1))
+    has_site_classes <- any(site_class_flags)
+    if(has_site_classes && !all(site_class_flags)) {
+        stop("Either every joined simulation should carry `site_classes`, or none should")
+    }
+    joined_site_classes <- NULL
+    if(has_site_classes) {
+        joined_site_classes <- do.call(rbind, Map(
+            .simulation_site_classes, sims, n_sites, offsets))
+        rownames(joined_site_classes) <- NULL
+        attr(joined_alignment, "site_classes") <- joined_site_classes
+    }
+
+    site_class_models <- unlist(.get_member(sims, "site_class_models"), recursive = FALSE)
+    if(!length(site_class_models)) site_class_models <- NULL
+
+    joined_type <- if(any(simulation_types == "compound_codon")) {
+        "compound_codon"
+    } else {
+        first$type
+    }
+
     joined_sim <- list(
         phylogeny = first$phylogeny,
         models = lapply(sims, .sim_models),
         substitutions = joined_subs,
         alignment = joined_alignment,
         intervals = joined_intervals,
-        type = first$type
+        site_classes = joined_site_classes,
+        site_class_models = site_class_models,
+        type = joined_type
     )
     class(joined_sim) <- "Simulation"
     return(joined_sim)
 }
-

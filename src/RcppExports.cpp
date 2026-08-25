@@ -73,6 +73,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// GoldmanYang94Cpp
+List GoldmanYang94Cpp(arma::vec equilibrium, double omega, double kappa, std::string frequency_model, std::string scaling_type);
+RcppExport SEXP _PalantiR_GoldmanYang94Cpp(SEXP equilibriumSEXP, SEXP omegaSEXP, SEXP kappaSEXP, SEXP frequency_modelSEXP, SEXP scaling_typeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type equilibrium(equilibriumSEXP);
+    Rcpp::traits::input_parameter< double >::type omega(omegaSEXP);
+    Rcpp::traits::input_parameter< double >::type kappa(kappaSEXP);
+    Rcpp::traits::input_parameter< std::string >::type frequency_model(frequency_modelSEXP);
+    Rcpp::traits::input_parameter< std::string >::type scaling_type(scaling_typeSEXP);
+    rcpp_result_gen = Rcpp::wrap(GoldmanYang94Cpp(equilibrium, omega, kappa, frequency_model, scaling_type));
+    return rcpp_result_gen;
+END_RCPP
+}
 // MarkovModulatedMutationSelection
 List MarkovModulatedMutationSelection(List mutation_selection_models, List switching_model);
 RcppExport SEXP _PalantiR_MarkovModulatedMutationSelection(SEXP mutation_selection_modelsSEXP, SEXP switching_modelSEXP) {
@@ -280,6 +295,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_PalantiR_GeneralTimeReversible", (DL_FUNC) &_PalantiR_GeneralTimeReversible, 2},
     {"_PalantiR_MutationSelection", (DL_FUNC) &_PalantiR_MutationSelection, 5},
     {"_PalantiR_CoEvolution", (DL_FUNC) &_PalantiR_CoEvolution, 7},
+    {"_PalantiR_GoldmanYang94Cpp", (DL_FUNC) &_PalantiR_GoldmanYang94Cpp, 5},
     {"_PalantiR_MarkovModulatedMutationSelection", (DL_FUNC) &_PalantiR_MarkovModulatedMutationSelection, 2},
     {"_PalantiR_Phylogeny", (DL_FUNC) &_PalantiR_Phylogeny, 2},
     {"_PalantiR_set_palantir_seed", (DL_FUNC) &_PalantiR_set_palantir_seed, 1},

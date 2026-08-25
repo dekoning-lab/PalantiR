@@ -4,3 +4,6 @@
 ^docs$
 ^\.github$
 ^validation$
+^runs$
+^src/.*\.o$
+^src/.*\.so$
