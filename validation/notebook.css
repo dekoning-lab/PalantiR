@@ -1,0 +1,96 @@
+:root {
+  --ink: #172033;
+  --muted: #667085;
+  --line: #d9dee7;
+  --paper: #ffffff;
+  --wash: #f5f7fb;
+  --blue: #2563eb;
+}
+
+body {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 2.5rem 3.5rem 5rem;
+  color: var(--ink);
+  background: var(--paper);
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.62;
+}
+
+h1, h2, h3 {
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+
+h1 {
+  font-size: 2.45rem;
+  line-height: 1.12;
+  margin-bottom: 0.25rem;
+}
+
+h2 {
+  margin-top: 2.6rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--line);
+}
+
+a { color: #1d4ed8; }
+
+pre, code, .sourceCode {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+pre {
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--wash);
+}
+
+/* Keep the reader view centered on results while leaving every notebook cell
+   available for reproducibility. Long executed inputs scroll in place. */
+.cell.code > .sourceCode {
+  max-height: 34rem;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--wash);
+}
+
+.cell.code > .sourceCode pre {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0 1.4rem;
+}
+
+th, td {
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--line);
+}
+
+th { background: #eef2f8; }
+
+img, svg { max-width: 100%; height: auto; }
+
+#TOC {
+  margin: 1.4rem 0 2.2rem;
+  padding: 1rem 1.2rem;
+  background: var(--wash);
+  border-left: 4px solid var(--blue);
+}
+
+.cell-output, .output {
+  margin: 0.8rem 0 1.5rem;
+}
+
+@media (max-width: 720px) {
+  body { padding: 1.4rem 1.1rem 3rem; }
+  h1 { font-size: 2rem; }
+}

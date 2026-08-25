@@ -27,6 +27,7 @@ following pages:
 
 * [Mutation-Selection](Mutation_Selection.html)
 * [Goldman--Yang (GY94)](Goldman_Yang_94.html)
+* [GY94 history validation and feature demonstration](GY94_History_Validation.html)
 * [Co-evolution](Co_Evolution.html)
 * [Markov-Modulated Mutation-Selection](Markov_Modulated_Mutation_Selection.html)
 
@@ -65,6 +66,12 @@ version 1.2.1), or rerun it from a clone of the repository:
 # in validation/, with PalantiR installed
 rmarkdown::render("engine_validation.Rmd", params = list(seed = 1))
 ```
+
+For a larger event-level demonstration, the
+[GY94 history-validation report](GY94_History_Validation.html) simulates 5,000
+codons on a 50-taxon tree, reconstructs Goldman--Yang dN/dS from all recorded
+substitutions, and visualizes the branch-specific histories. The executable
+Jupyter notebook is retained in the repository under `validation/`.
 
 <table style="border: none;"><tr style="background: none;">
 <td style="border: none; text-align: center;">

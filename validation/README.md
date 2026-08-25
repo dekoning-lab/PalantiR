@@ -38,3 +38,26 @@ a persistent artifact directory:
 Rscript validation/gy94_deep_tree_history_dnds.R \
   --out=runs/gy94-deep-tree-dnds-20260825
 ```
+
+The executed Jupyter notebook
+[`gy94_deep_tree_history_dnds.ipynb`](gy94_deep_tree_history_dnds.ipynb)
+recomputes the headline values from all 762,540 history rows, presents the
+Goldman--Yang opportunity calculation, and includes three figures: assigned
+versus recovered dN/dS, a complete representative-site history on the tree,
+and the across-site distribution of synonymous and nonsynonymous counts. The
+polished HTML reader is available both
+[locally](gy94_deep_tree_history_dnds.html) and on the
+[documentation site](https://dekoning-lab.github.io/PalantiR/GY94_History_Validation.html).
+
+Rebuild the notebook source with `build_gy94_deep_tree_history_notebook.py`,
+execute it top-to-bottom, and regenerate the reader with Pandoc:
+
+```sh
+python3 validation/build_gy94_deep_tree_history_notebook.py
+python3 -m jupyter nbconvert --execute --to notebook --inplace \
+  validation/gy94_deep_tree_history_dnds.ipynb
+pandoc validation/gy94_deep_tree_history_dnds.ipynb \
+  --from=ipynb --to=html5 --standalone --embed-resources --toc --mathml \
+  --css=validation/notebook.css \
+  --output=validation/gy94_deep_tree_history_dnds.html
+```
