@@ -5,14 +5,20 @@ string Palantir::CodonModel::canonical_scaling_type(const string& scaling_type)
     if(scaling_type == "standard") {
         return "substitution";
     }
+    if(scaling_type == "synonymous" || scaling_type == "dS" ||
+       scaling_type == "ds") {
+        return "dS";
+    }
     if(scaling_type == "none" || scaling_type == "substitution" ||
-       scaling_type == "synonymous" || scaling_type == "non-synonymous") {
+       scaling_type == "synonymous-per-codon" ||
+       scaling_type == "non-synonymous") {
         return scaling_type;
     }
     throw logic_error("Unknown scaling type '" + scaling_type + "'. Valid "
                       "values are \"standard\" (an alias of \"substitution\"), "
-                      "\"substitution\", \"synonymous\", \"non-synonymous\" "
-                      "and \"none\".");
+                      "\"substitution\", \"synonymous\" (the dS gauge), "
+                      "\"dS\", \"synonymous-per-codon\", "
+                      "\"non-synonymous\" and \"none\".");
 }
 
 vec Palantir::CodonModel::class_outflux(
@@ -30,6 +36,10 @@ vec Palantir::CodonModel::class_outflux(
     if(st == "none") {
         return outflux;
     }
+    if(st == "dS") {
+        throw logic_error("dS scaling requires a neutral reference generator; "
+                          "use neutral_dS_scaling rather than class_outflux");
+    }
 
     for(const Codon& i : g) {
         for(const Codon& j : g) {
@@ -38,7 +48,7 @@ vec Palantir::CodonModel::class_outflux(
             }
             const bool synonymous = Codon::_synonymous(i, j);
             if(st == "substitution" ||
-               (st == "synonymous" && synonymous) ||
+               (st == "synonymous-per-codon" && synonymous) ||
                (st == "non-synonymous" && !synonymous)) {
                 outflux[i.index] += transition.at(i.index, j.index);
             }
@@ -62,4 +72,14 @@ double Palantir::CodonModel::scaling(
         return sum(equilibrium);
     }
     return sum(equilibrium % class_outflux(transition, st, g));
+}
+
+double Palantir::CodonModel::neutral_dS_scaling(
+        const vec& neutral_equilibrium,
+        const mat& neutral_transition,
+        const GeneticCode& g)
+{
+    const double neutral_total = scaling(
+        neutral_equilibrium, neutral_transition, "substitution", g);
+    return neutral_total / 3.0;
 }

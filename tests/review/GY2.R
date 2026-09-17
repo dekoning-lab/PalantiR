@@ -33,12 +33,12 @@ result <- try({
     }
 
     pi <- F61(setNames(seq_len(S) + 10, codons))
-    for(type in c("standard", "substitution", "synonymous", "non-synonymous")) {
+    for(type in c("standard", "substitution", "synonymous-per-codon", "non-synonymous")) {
         m <- GY94(.6, 2.7, pi, scaling_type = type)
         mask <- switch(type,
                        standard = all_changes,
                        substitution = all_changes,
-                       synonymous = synonymous,
+                       `synonymous-per-codon` = synonymous,
                        `non-synonymous` = nonsynonymous)
         check(abs(class_rate(m, mask) - 1) < 2e-12,
               sprintf("%s stationary class rate is not one", type))
@@ -50,14 +50,36 @@ result <- try({
 
     lo <- .25
     hi <- 4
-    syn_lo <- GY94(lo, 2.7, pi, scaling_type = "synonymous")
-    syn_hi <- GY94(hi, 2.7, pi, scaling_type = "synonymous")
+    # The public "synonymous" name is the dS gauge. Its denominator is
+    # computed at omega=1, so it is independent of the selected omega and the
+    # neutral total rate is three substitutions per codon.
+    ds_lo <- GY94(lo, 2.7, pi, scaling_type = "synonymous")
+    ds_hi <- GY94(hi, 2.7, pi, scaling_type = "dS")
+    ds_neutral <- GY94(1, 2.7, pi, scaling_type = "ds")
+    check(identical(ds_lo$scaling_type, "dS") &&
+          identical(ds_hi$scaling_type, "dS") &&
+          identical(ds_neutral$scaling_type, "dS"),
+          "synonymous/dS aliases are not stored as the canonical dS gauge")
+    check(abs(ds_lo$scaling - ds_hi$scaling) < 2e-12,
+          "dS scaling depends on omega")
+    check(abs(class_rate(ds_neutral, all_changes) - 3) < 2e-12,
+          "neutral total rate under dS scaling is not three per codon")
+    check(abs(class_rate(ds_neutral, synonymous) -
+              ds_neutral$synonymous_opportunities) < 2e-12,
+          "neutral synonymous flux does not equal N_S under dS scaling")
+    check(abs(class_rate(ds_hi, nonsynonymous) /
+              class_rate(ds_lo, nonsynonymous) - hi / lo) < 2e-12,
+          "nonsynonymous flux is not proportional to omega under dS scaling")
+
+    # The historical event-count convention remains available explicitly.
+    syn_lo <- GY94(lo, 2.7, pi, scaling_type = "synonymous-per-codon")
+    syn_hi <- GY94(hi, 2.7, pi, scaling_type = "synonymous-per-codon")
     check(abs(class_rate(syn_lo, synonymous) - 1) < 2e-12 &&
           abs(class_rate(syn_hi, synonymous) - 1) < 2e-12,
-          "synonymous scaling does not pin synonymous flux")
-    check(abs(class_rate(syn_hi, nonsynonymous) /
-              class_rate(syn_lo, nonsynonymous) - hi / lo) < 2e-12,
-          "nonsynonymous flux is not proportional to omega under synonymous scaling")
+          "synonymous-per-codon scaling does not pin synonymous flux")
+    check(max(abs(ds_lo$transition -
+                  ds_lo$synonymous_opportunities * syn_lo$transition)) < 2e-12,
+          "Q_dS != N_S * Q_synonymous-per-codon")
 
     ns_lo <- GY94(lo, 2.7, pi, scaling_type = "non-synonymous")
     ns_hi <- GY94(hi, 2.7, pi, scaling_type = "non-synonymous")

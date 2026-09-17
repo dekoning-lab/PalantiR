@@ -119,6 +119,13 @@ with \code{scaling_type = "none"} it now raises an error instead of quietly
 running the segment scheme. It does not use \code{segment_length}, which
 therefore has no effect on a run made with \code{rescale_method = "exact"}.
 
+The event-budget renormalisations apply to \code{"substitution"},
+\code{"synonymous-per-codon"}, and \code{"non-synonymous"} scaling. Models
+built with the dS gauge (user input \code{"synonymous"}, \code{"dS"}, or
+\code{"ds"}) run for the supplied neutral-time branch duration without either
+event-budget time change. The two \code{rescale_method} values consequently
+give the same simulation path for dS models.
+
 Either renormalisation is defined for single-codon models only. A
 \code{CoEvolution} model reaching it raises an error naming the mismatch; pass a
 \code{tolerance} of 1 or more to keep it out of the path.

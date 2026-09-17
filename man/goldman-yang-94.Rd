@@ -67,9 +67,10 @@ and \code{F61}, it is the corresponding nucleotide or codon representation.}
 the representation is inferred from the dimensions of \code{frequencies};
 \code{NULL} selects FEqual.}
 \item{scaling_type}{Branch-length normalization. \code{"standard"} is an alias
-of \code{"substitution"}; the other scaled choices are
-\code{"non-synonymous"} and \code{"synonymous"}. \code{"none"} leaves the
-generator unscaled.}
+of \code{"substitution"}. \code{"synonymous"} is the dS gauge;
+\code{"dS"} and \code{"ds"} are explicit aliases. The other scaled choices
+are \code{"synonymous-per-codon"} and \code{"non-synonymous"}.
+\code{"none"} leaves the generator unscaled.}
 \item{models}{For \code{GY94BranchModel}, a list of GY94 models indexed by the
 mode labels. For \code{GY94SiteModel}, a list whose elements are either GY94
 models or \code{GY94BranchModel} specifications.}
@@ -126,14 +127,25 @@ the remaining sense codons. A \code{CodonFrequencies} object is tied to the
 genetic code under which it was constructed and cannot be reused after the
 active code changes.
 
-\strong{Scaling.} Let \eqn{\mathcal A} be the set of ordered codon transitions
+\strong{Scaling.} For \code{"synonymous"}, PalantiR constructs the neutral
+\eqn{\omega=1} generator \eqn{\widetilde Q^{(1)}} and divides the selected
+generator by
+\eqn{S_{dS}=-(1/3)\sum_i\pi_i\widetilde q^{(1)}_{ii}}. The neutral total rate
+is then three substitutions per codon, and branch length is dS per synonymous
+opportunity. This denominator is independent of the simulated \eqn{\omega}.
+The aliases \code{"dS"} and \code{"ds"} select the same gauge, stored as
+\code{"dS"}.
+
+For event-count scaling, let \eqn{\mathcal A} be the set of ordered codon transitions
 that determines scaling and let \eqn{\widetilde Q} denote the unscaled
 generator. Its stationary rate is
 \eqn{S_{\mathcal A}=\sum_i\pi_i\sum_{j:(i,j)\in\mathcal A}
-\widetilde q_{ij}}, where \eqn{\mathcal A} contains all, synonymous, or
-non-synonymous substitutions. A standalone model is divided by
+\widetilde q_{ij}}, where \eqn{\mathcal A} contains all,
+synonymous-per-codon, or non-synonymous substitutions. A standalone model is divided by
 \eqn{S_{\mathcal A}}. \code{"standard"} is accepted as an alias and stored as
-the canonical value \code{"substitution"}.
+the canonical value \code{"substitution"}. The explicit
+\code{"synonymous-per-codon"} name preserves PalantiR's earlier
+\code{"synonymous"} behavior.
 
 For a discrete mixture with class proportions \eqn{p_k}, every class shares
 the mixture-wide denominator
@@ -148,10 +160,11 @@ classes and modes in one mixture must use the same scaling type.
 \strong{Branch heterogeneity.} A \code{GY94BranchModel} may change omega, kappa,
 or stationary codon frequencies among branches. Following a frequency change,
 the child process starts from the distribution inherited from its parent; it is
-not redrawn from the new equilibrium. The normal transient-rescaling machinery
-preserves each class's rate relative to the common mixture denominator during
-this approach to the new stationary distribution, so the mixture-weighted
-branch-length currency is maintained.
+not redrawn from the new equilibrium. Event-count gauges use the normal
+transient-rescaling machinery to preserve the selected event budget during
+this approach. The dS gauge instead runs the selected generator for the
+supplied neutral-time branch duration; applying an event-budget time change
+would change its meaning back to synonymous events per codon.
 
 \strong{Discrete classes.} \code{GY94SiteModel} is the general representation.
 Each class may contain one homogeneous GY94 model or one branch-heterogeneous
@@ -176,7 +189,9 @@ branches 0 and foreground branches 1.
 \code{c("GoldmanYang94", "SubstitutionModel")} object containing the
 stationary distribution, normalized transition matrix, simulation sampling
 matrix, omega, kappa, frequency representation, scaling constant, scaling type,
-and genetic code.
+and genetic code. dS-scaled models also report the raw neutral total and
+synonymous rates and the Q-weighted synonymous opportunities used to define
+the gauge.
 
 \code{GY94BranchModel} returns a branch-process specification and
 \code{GY94SiteModel}, \code{DiscreteGY94}, \code{ZNYBranchSiteModel}, and

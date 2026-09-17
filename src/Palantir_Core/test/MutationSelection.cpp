@@ -18,7 +18,7 @@ TEST_CASE("MutationSelection")
                 1000, 1e-8, nucleotide_transition, fitness, g);
 
         double rho = MutationSelection::scaling(
-                codon_equilibrium, codon_transition, "synonymous", g);
+                codon_equilibrium, codon_transition, "synonymous-per-codon", g);
 
         codon_transition /= rho;
 
@@ -32,4 +32,3 @@ TEST_CASE("MutationSelection")
         REQUIRE(approximately_equal(o, z, 1e-4));
     }
 }
-

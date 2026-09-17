@@ -1,5 +1,19 @@
 # PalantiR 1.3.0
 
+## Corrected branch-length semantics
+
+- `scaling_type = "synonymous"` now implements dS per synonymous opportunity,
+  using a neutral total rate of three substitutions per codon. `"dS"` and
+  `"ds"` are explicit aliases; models store the canonical value `"dS"`.
+  The previous one-synonymous-event-per-codon convention remains available as
+  `"synonymous-per-codon"`.
+- GY94 dS scaling is computed from the `omega = 1` reference and is independent
+  of the simulated omega. Mutation--selection dS scaling is computed from the
+  mutation-only neutral reference, so site-specific fitness profiles sharing a
+  mutation model retain the same clock.
+- The transient event-budget rescalers are bypassed for dS branches. They
+  remain available for the three event-count currencies.
+
 ## New features
 
 - `GoldmanYang94()` (also `GY94()`) implements the Goldman--Yang 1994 codon

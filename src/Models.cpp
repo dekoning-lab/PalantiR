@@ -85,8 +85,33 @@ List MutationSelection(
         N, mutation_rate, nucleotide_equilibrium, fitness, g);
     arma::mat transition = Palantir::MutationSelection::transition(
         N, mutation_rate, nucleotide_transition, fitness, g);
-    double scaling = Palantir::MutationSelection::scaling(
-        equilibrium, transition, scaling_type, g);
+    double neutral_total_rate = NA_REAL;
+    double neutral_synonymous_rate = NA_REAL;
+    double synonymous_opportunities = NA_REAL;
+    double scaling;
+    if(scaling_type == "dS") {
+        // A dS branch is neutral nucleotide time, not one realised
+        // synonymous event per selected codon. Build the mutation-only
+        // reference once for this constructor. It is independent of the
+        // supplied amino-acid fitness profile, so site-heterogeneous models
+        // that share a mutation process retain a common clock.
+        arma::vec neutral_fitness(Palantir::AminoAcid::size, fill::zeros);
+        arma::vec neutral_equilibrium = Palantir::MutationSelection::equilibrium(
+            N, mutation_rate, nucleotide_equilibrium, neutral_fitness, g);
+        arma::mat neutral_transition = Palantir::MutationSelection::transition(
+            N, mutation_rate, nucleotide_transition, neutral_fitness, g);
+        scaling = Palantir::CodonModel::neutral_dS_scaling(
+            neutral_equilibrium, neutral_transition, g);
+        neutral_total_rate = 3.0 * scaling;
+        neutral_synonymous_rate = Palantir::CodonModel::scaling(
+            neutral_equilibrium, neutral_transition,
+            "synonymous-per-codon", g);
+        synonymous_opportunities =
+            3.0 * neutral_synonymous_rate / neutral_total_rate;
+    } else {
+        scaling = Palantir::MutationSelection::scaling(
+            equilibrium, transition, scaling_type, g);
+    }
     transition /= scaling;
 
     arma::mat sampling = Palantir::sampling(transition);
@@ -101,6 +126,9 @@ List MutationSelection(
         _["nucleotide_model"] = nucleotide_model,
         _["scaling"] = scaling,
         _["scaling_type"] = scaling_type,
+        _["neutral_total_rate"] = neutral_total_rate,
+        _["neutral_synonymous_rate"] = neutral_synonymous_rate,
+        _["synonymous_opportunities"] = synonymous_opportunities,
         _["n_states"] = n_states,
         _["type"] = "codon"
     );
@@ -143,7 +171,34 @@ List CoEvolution(
         N, mutation_rate, nucleotide_equilibrium, fitness_1, fitness_2, delta, g);
     arma::mat transition = Palantir::CoEvolution::transition(
         N, mutation_rate, nucleotide_transition, fitness_1, fitness_2, delta, g);
-    double scaling = Palantir::CoEvolution::scaling(equilibrium, transition, scaling_type, g);
+    double neutral_total_rate = NA_REAL;
+    double neutral_synonymous_rate = NA_REAL;
+    double synonymous_opportunities = NA_REAL;
+    double scaling;
+    if(scaling_type == "dS") {
+        // The neutral reference for a codon pair is the Kronecker sum of two
+        // identical single-codon mutation processes. Its rate per codon is
+        // therefore exactly the single-codon rate. Compute that 61-state
+        // reference directly instead of allocating a second 3721 x 3721
+        // matrix; this keeps dS construction negligible beside CoEvolution's
+        // selected generator.
+        arma::vec neutral_fitness(Palantir::AminoAcid::size, fill::zeros);
+        arma::vec neutral_equilibrium = Palantir::MutationSelection::equilibrium(
+            N, mutation_rate, nucleotide_equilibrium, neutral_fitness, g);
+        arma::mat neutral_transition = Palantir::MutationSelection::transition(
+            N, mutation_rate, nucleotide_transition, neutral_fitness, g);
+        scaling = Palantir::CodonModel::neutral_dS_scaling(
+            neutral_equilibrium, neutral_transition, g);
+        neutral_total_rate = 3.0 * scaling;
+        neutral_synonymous_rate = Palantir::CodonModel::scaling(
+            neutral_equilibrium, neutral_transition,
+            "synonymous-per-codon", g);
+        synonymous_opportunities =
+            3.0 * neutral_synonymous_rate / neutral_total_rate;
+    } else {
+        scaling = Palantir::CoEvolution::scaling(
+            equilibrium, transition, scaling_type, g);
+    }
     transition /= scaling;
 
     arma::mat sampling = Palantir::sampling(transition);
@@ -159,6 +214,9 @@ List CoEvolution(
         _["nucleotide_model"] = nucleotide_model,
         _["scaling"] = scaling,
         _["scaling_type"] = scaling_type,
+        _["neutral_total_rate"] = neutral_total_rate,
+        _["neutral_synonymous_rate"] = neutral_synonymous_rate,
+        _["synonymous_opportunities"] = synonymous_opportunities,
         _["n_states"] = n_states,
         _["type"] = "codon_pair"
     );
@@ -211,8 +269,26 @@ List GoldmanYang94Cpp(
 
     arma::mat transition = Palantir::GoldmanYang94::transition(
         equilibrium, omega, kappa, g);
-    double scaling = Palantir::CodonModel::scaling(
-        equilibrium, transition, scaling_type, g);
+    double neutral_total_rate = NA_REAL;
+    double neutral_synonymous_rate = NA_REAL;
+    double synonymous_opportunities = NA_REAL;
+    double scaling;
+    if(scaling_type == "dS") {
+        // Define the clock from omega=1 so changing selection does not change
+        // the meaning of the supplied branch length.
+        arma::mat neutral_transition = Palantir::GoldmanYang94::transition(
+            equilibrium, 1.0, kappa, g);
+        scaling = Palantir::CodonModel::neutral_dS_scaling(
+            equilibrium, neutral_transition, g);
+        neutral_total_rate = 3.0 * scaling;
+        neutral_synonymous_rate = Palantir::CodonModel::scaling(
+            equilibrium, neutral_transition, "synonymous-per-codon", g);
+        synonymous_opportunities =
+            3.0 * neutral_synonymous_rate / neutral_total_rate;
+    } else {
+        scaling = Palantir::CodonModel::scaling(
+            equilibrium, transition, scaling_type, g);
+    }
     if(!std::isfinite(scaling) || scaling <= 0) {
         stop("The requested scaling class has a non-positive or non-finite "
              "stationary rate for this GY94 model");
@@ -239,6 +315,9 @@ List GoldmanYang94Cpp(
         _["frequency_model"] = frequency_model,
         _["scaling"] = scaling,
         _["scaling_type"] = scaling_type,
+        _["neutral_total_rate"] = neutral_total_rate,
+        _["neutral_synonymous_rate"] = neutral_synonymous_rate,
+        _["synonymous_opportunities"] = synonymous_opportunities,
         _["n_states"] = g.size,
         _["type"] = "codon"
     );
@@ -266,11 +345,21 @@ List MarkovModulatedMutationSelection(
     mat exchangeability = switching_model["exchangeability"];
     vector<vec> substitution_equilibrium;
     vector<mat> substitution_transition;
+    string scaling_type;
 
     for(ullong i = 0; i < mutation_selection_models.size(); i++) {
         List ms_model = mutation_selection_models[i];
         if(!has_class(ms_model, "SubstitutionModel")) {
             stop("Each argument in `mutation_selection_models` should be of class `SubstitutionModel`");
+        }
+        if(get_attr(ms_model, "type") != "codon") {
+            stop("Each argument in `mutation_selection_models` should be a single-codon model");
+        }
+        string component_scaling = get_attr(ms_model, "scaling_type");
+        if(i == 0) {
+            scaling_type = component_scaling;
+        } else if(component_scaling != scaling_type) {
+            stop("All `mutation_selection_models` should use the same `scaling_type`");
         }
         substitution_equilibrium.push_back(ms_model["equilibrium"]);
         substitution_transition.push_back(ms_model["transition"]);
@@ -290,6 +379,7 @@ List MarkovModulatedMutationSelection(
         _["transition"] = transition,
         _["sampling"] = sampling,
         _["mutation_selection_models"] = mutation_selection_models,
+        _["scaling_type"] = scaling_type,
         _["n_states"] = n_states,
         _["type"] = "compound_codon"
     );

@@ -27,7 +27,7 @@ TEST_CASE("PopulationSwitching")
         mat codon_transition = MutationSelection::transition(
                 population_sizes.at(i), 1e-8, nucleotide_transition, fitness, g);
         double codon_rho = MutationSelection::scaling(
-                codon_equilibrium, codon_transition, "synonymous", g);
+                codon_equilibrium, codon_transition, "synonymous-per-codon", g);
         codon_transition /= codon_rho;
 
         substitution_equilibrium.push_back(codon_equilibrium);
@@ -65,4 +65,3 @@ TEST_CASE("PopulationSwitching")
         }
     }
 }
-

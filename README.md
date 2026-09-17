@@ -49,6 +49,14 @@ distribution summarized as a frequency logo:
 
 ## Recent updates
 
+Version 1.3.0 makes `scaling_type = "synonymous"` an explicit dS gauge:
+branch lengths are neutral synonymous substitutions per synonymous
+opportunity, matching neutral nucleotide substitutions per site. The previous
+one-synonymous-event-per-codon convention is available as
+`"synonymous-per-codon"`. GY94 uses its `omega = 1` reference;
+mutation--selection models use a mutation-only reference shared across fitness
+profiles. The transient event-budget time change is bypassed for dS branches.
+
 Version 1.2.1 fixes event-position reporting through stiff transients under
 `rescale_method = "exact"`; the defect was found by the engine validation
 notebook (below) and is included in new regression tests.
@@ -65,8 +73,8 @@ Version 1.1.0 corrects the transient rescaler for time-heterogeneous simulations
 previously did not correctly account for rate variation. We've also added an opt-in to 
 a faster, exact approach for simulating the transient approach to a new stationary
 distribution using `rescale_method = "exact"`. This approach replaces our branch segmentation
-algorithm with a closed-form time change. The rescaler ensures the expected number of
-substitutions per unit branch length are exact.
+algorithm with a closed-form time change. For event-count scaling, the rescaler
+ensures that the expected number of substitutions per unit branch length is exact.
 
 # Installation
 

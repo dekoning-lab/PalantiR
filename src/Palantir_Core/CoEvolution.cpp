@@ -147,13 +147,15 @@ double Palantir::CoEvolution::scaling(
     if (scaling_type == "none") {
         return sum(equilibrium);
     }
-    if (scaling_type != "substitution" && scaling_type != "synonymous"
+    if (scaling_type != "substitution" &&
+        scaling_type != "synonymous-per-codon"
         && scaling_type != "non-synonymous") {
         // Without this an unrecognised name leaves the accumulator at zero and
         // the caller divides the transition matrix by it.
         throw logic_error("Unknown scaling type '" + scaling_type + "'. Valid "
                           "values are \"none\", \"substitution\", "
-                          "\"synonymous\" and \"non-synonymous\".");
+                          "\"synonymous-per-codon\" and "
+                          "\"non-synonymous\".");
     }
 
     // FIX (2026-08-20): this function previously indexed the n_pairs x n_pairs
@@ -195,7 +197,7 @@ double Palantir::CoEvolution::scaling(
                     // first site: codon i -> k changed
                     if(i != k) {
                         if(scaling_type == "substitution"
-                           || (scaling_type == "synonymous" && Codon::_synonymous(i, k))
+                           || (scaling_type == "synonymous-per-codon" && Codon::_synonymous(i, k))
                            || (scaling_type == "non-synonymous" && !Codon::_synonymous(i, k))) {
                             events += 1;
                         }
@@ -203,7 +205,7 @@ double Palantir::CoEvolution::scaling(
                     // second site: codon j -> l changed
                     if(j != l) {
                         if(scaling_type == "substitution"
-                           || (scaling_type == "synonymous" && Codon::_synonymous(j, l))
+                           || (scaling_type == "synonymous-per-codon" && Codon::_synonymous(j, l))
                            || (scaling_type == "non-synonymous" && !Codon::_synonymous(j, l))) {
                             events += 1;
                         }

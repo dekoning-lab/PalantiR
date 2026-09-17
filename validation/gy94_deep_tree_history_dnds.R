@@ -2,7 +2,8 @@
 #
 # History-level validation of branch-heterogeneous Goldman--Yang 1994 models.
 #
-# This diagnostic simulates a deep 50-taxon tree under synonymous scaling and
+# This historical diagnostic simulates a deep 50-taxon tree under the explicit
+# synonymous-events-per-codon gauge and
 # estimates dN/dS separately in its two principal subtrees from the complete
 # substitution history.  The estimator uses the Goldman--Yang definition of
 # synonymous and nonsynonymous sites, rather than the raw N/S event ratio.
@@ -57,9 +58,9 @@ kappa <- 4
 omega <- c(`0` = 0.1, `1` = 1.0)
 nucleotide_frequencies <- c(T = 0.22, C = 0.28, A = 0.27, G = 0.23)
 
-# In synonymous scaling, branch length is measured in expected synonymous
-# changes per codon.  Every root-to-tip path is therefore exactly 20 in that
-# currency.  Most depth is placed on the two basal stems, keeping the complete
+# In synonymous-per-codon scaling, branch length is expected synonymous events
+# per codon. Every root-to-tip path is therefore exactly 20 in that currency.
+# Most depth is placed on the two basal stems, keeping the complete
 # event-history artifact tractable while retaining a fully bifurcating crown.
 root_to_tip_depth <- 20
 basal_stem <- 19
@@ -120,9 +121,9 @@ pi <- F1x4(nucleotide_frequencies)
 branch_process <- GY94BranchModel(
     models = list(
         GY94(omega = omega[["0"]], kappa = kappa, frequencies = pi,
-             scaling_type = "synonymous"),
+             scaling_type = "synonymous-per-codon"),
         GY94(omega = omega[["1"]], kappa = kappa, frequencies = pi,
-             scaling_type = "synonymous")),
+             scaling_type = "synonymous-per-codon")),
     mode_phylogeny = mode_tree,
     start_mode = 0L)
 site_model <- GY94SiteModel(list(branch_process = branch_process),
@@ -165,7 +166,8 @@ write.table(opportunities, out("goldman_yang_opportunities.tsv"), sep = "\t",
             quote = FALSE, row.names = FALSE)
 
 # Confirm the matrices actually passed to the simulator have the expected
-# synonymous-scaled rates.  This uses the post-mixture-normalization models.
+# synonymous-events-per-codon rates. This uses the post-mixture-normalization
+# models.
 effective_models <- site_model$models[[1]]$models
 matrix_rates <- do.call(rbind, lapply(seq_along(effective_models), function(i) {
     model <- effective_models[[i]]
@@ -180,7 +182,7 @@ matrix_rates <- do.call(rbind, lapply(seq_along(effective_models), function(i) {
 write.table(matrix_rates, out("effective_matrix_rates.tsv"), sep = "\t",
             quote = FALSE, row.names = FALSE)
 if(any(abs(matrix_rates$synonymous_rate - 1) > 1e-11)) {
-    stop("A synonymous-scaled GY94 matrix did not have synonymous rate one")
+    stop("A synonymous-per-codon GY94 matrix did not have synonymous rate one")
 }
 
 # ---------------------------------------------------------------------------
@@ -294,8 +296,8 @@ saveRDS(list(
     parameters = list(n_sites = n_sites, seed = seed, kappa = kappa,
                       omega = omega,
                       nucleotide_frequencies = nucleotide_frequencies,
-                      scaling_type = "synonymous",
-                      root_to_tip_synonymous_depth = root_to_tip_depth),
+                      scaling_type = "synonymous-per-codon",
+                      root_to_tip_synonymous_events_per_codon = root_to_tip_depth),
     codon_frequencies = pi,
     site_model = site_model,
     branch_table = branch_table,
@@ -322,8 +324,8 @@ writeLines(c(
     sprintf("kappa: %.10g", kappa),
     sprintf("F1x4_nucleotide_frequencies_T_C_A_G: %s",
             paste(format(nucleotide_frequencies, digits = 10), collapse = ",")),
-    "scaling: synonymous",
-    sprintf("root_to_tip_depth_in_synonymous_scaled_branch_units: %.10g",
+    "scaling: synonymous-per-codon",
+    sprintf("root_to_tip_depth_in_synonymous_events_per_codon: %.10g",
             root_to_tip_depth),
     sprintf("neutral_synonymous_opportunity_fraction: %.12g", pS),
     sprintf("neutral_nonsynonymous_opportunity_fraction: %.12g", pN),

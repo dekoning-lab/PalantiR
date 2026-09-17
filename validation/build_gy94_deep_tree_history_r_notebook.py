@@ -27,7 +27,7 @@ cells = [
 
     <div class="hero-note">
     <strong>Result:</strong> PASS · 50 taxa · 5,000 codon sites · 762,540
-    recorded substitutions · synonymous scaling
+    recorded substitutions · synonymous-per-codon scaling
     </div>
 
     This notebook constructs the complete branch-heterogeneous GY94 model in
@@ -122,14 +122,15 @@ cells = [
     ### 2. Define the experiment
 
     The test uses a fully bifurcating 50-taxon tree. Each root-to-tip path has
-    depth 20 in synonymous-scaled branch units. The two 25-tip subtrees share
+    depth 20 in synonymous-events-per-codon units. The two 25-tip subtrees share
     $\kappa=4$ and one mildly imbalanced F1x4 equilibrium, but use different
     values of $\omega$.
 
     #### Key assumptions
 
-    * Under `scaling_type = "synonymous"`, one branch-length unit is one
-      expected synonymous substitution per codon at stationarity.
+    * Under `scaling_type = "synonymous-per-codon"`, one branch-length unit is
+      one expected synonymous substitution per codon at stationarity. This is
+      the historical event-count gauge, distinct from the default dS gauge.
     * Root codons are sampled from the equilibrium shared by both branch modes,
       so this test contains no equilibrium-frequency transient.
     * Sites are independent simulation replicates; events on branches within a
@@ -150,7 +151,7 @@ cells = [
         parameter = c("Taxa", "Codon sites", "Root-to-tip depth", "Kappa",
                       "F1x4 frequencies", "Left subtree", "Right subtree", "RNG seed"),
         value = c("50 (25 + 25)", format(n_sites, big.mark = ","),
-                  "20 synonymous-scaled units", kappa,
+                  "20 synonymous events per codon", kappa,
                   "T=0.22, C=0.28, A=0.27, G=0.23",
                   "omega=0.1", "omega=1.0", seed),
         check.names = FALSE
@@ -234,9 +235,9 @@ cells = [
     branch_process <- GY94BranchModel(
         models = list(
             GY94(omega = omega[["0"]], kappa = kappa,
-                 frequencies = pi_codon, scaling_type = "synonymous"),
+                 frequencies = pi_codon, scaling_type = "synonymous-per-codon"),
             GY94(omega = omega[["1"]], kappa = kappa,
-                 frequencies = pi_codon, scaling_type = "synonymous")
+                 frequencies = pi_codon, scaling_type = "synonymous-per-codon")
         ),
         mode_phylogeny = mode_tree,
         start_mode = 0L
@@ -445,7 +446,7 @@ cells = [
     ### 7. Reconcile the live simulation
 
     These checks use the newly returned R objects. They verify tree assignment,
-    event totals, synonymous scaling, Goldman--Yang opportunity normalization,
+    event totals, synonymous-per-codon scaling, Goldman--Yang opportunity normalization,
     and the fixed-seed history-derived estimates.
     """),
     code(r"""
@@ -461,7 +462,7 @@ cells = [
     IRdisplay::display_html(paste0(
         '<div class="pass-note"><strong>PASS:</strong> the live PalantiR run produced ',
         format(nrow(history), big.mark = ","),
-        ' recorded substitutions. Branch allocation, synonymous scaling, event ',
+        ' recorded substitutions. Branch allocation, synonymous-per-codon scaling, event ',
         'totals, and history-derived dN/dS all reconcile.</div>'
     ))
 
@@ -621,7 +622,7 @@ cells = [
     draw_representative_history <- function() {
         par(mar = c(5, 1, 4.5, 5), bg = "white")
         plot(NA, xlim = c(-0.1, 21.4), ylim = c(-1, 51.3),
-             xlab = "Distance from root (synonymous-scaled branch units)",
+             xlab = "Distance from root (synonymous events per codon)",
              ylab = "", yaxt = "n", bty = "n",
              main = sprintf("Complete substitution history for representative site %d",
                             representative_site))
@@ -745,9 +746,9 @@ cells = [
 
     1. **Branch assignment works.** All 49 branches in each principal subtree
        use the intended GY94 process.
-    2. **Synonymous scaling retains its meaning.** The realized synonymous
-       rates are 1.00032 and 1.00756 per codon-branch unit, close to the exact
-       stationary target of 1.
+    2. **Synonymous-per-codon scaling retains its meaning.** The realized
+       synonymous rates are 1.00032 and 1.00756 per codon-branch unit, close
+       to the exact stationary target of 1.
     3. **The recorded histories recover $\omega$.** Opportunity-normalized
        estimates are 0.10002 and 0.99104 for assigned values 0.1 and 1.0.
     4. **Raw N/S is not $d_N/d_S$.** Correct normalization uses the synonymous
@@ -760,7 +761,7 @@ cells = [
     <div class="scope-note">
     <strong>Scope:</strong> this is a stationary-frequency, single-site-class
     GY94 demonstration. It validates this generator, branch heterogeneity,
-    history recording, and synonymous scaling. It is not by itself a validation
+    history recording, and synonymous-per-codon scaling. It is not by itself a validation
     of every site-mixture, branch-site, transient-frequency, or inference
     configuration.
     </div>
@@ -800,7 +801,7 @@ notebook = nbf.v4.new_notebook(
             "purpose": "live R validation and feature demonstration of branch-heterogeneous GY94 simulation",
             "sites": 5000,
             "seed": 20260825,
-            "scaling_type": "synonymous",
+            "scaling_type": "synonymous-per-codon",
         },
     },
 )

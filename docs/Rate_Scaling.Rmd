@@ -10,11 +10,12 @@ output:
 
 ## Scaling types
 
-There are four scaling schemes implemented:
+There are five scaling schemes implemented:
 
-* `synonymous` is the default scaling. This forces the branch length to be proportional to the expected number of _synonymous_ substitutions per site.
-* `non-synonymous` scaling forces the branch length to be equivalent to the expected number of _non-synonymous_ substitutions per site.
-* `substitution` scaling forces the branch length to be equivalent to the expected number of _both_ types of substitutions per site.
+* `synonymous` is the default dS gauge (`dS` and `ds` are explicit aliases). A branch length is neutral synonymous substitutions per synonymous opportunity, equivalently neutral nucleotide substitutions per site.
+* `synonymous-per-codon` preserves the earlier convention of one expected synonymous event per codon per branch-length unit.
+* `non-synonymous` scaling makes a branch length of one carry one expected _non-synonymous_ event per codon at stationarity.
+* `substitution` scaling makes a branch length of one carry one expected substitution event per codon at stationarity.
 * `none` can be specified to leave the substitution rates unscaled.
 
 Scaling type is specified as an optional parameter to substitution model constructors, _e.g._:
@@ -24,7 +25,24 @@ use_genetic_code("Standard nuclear")
 MutationSelection(..., scaling_type = "synonymous")
 ```
 
-## Implementation
+## dS implementation
+
+For GY94, PalantiR builds the neutral `omega = 1` generator and divides the
+selected generator by one third of its stationary total rate. The neutral
+total rate is consequently three substitutions per codon, and the scaling is
+independent of the simulated `omega`.
+
+For mutation--selection models, the same denominator is computed from a
+mutation-only reference with amino-acid fitness differences removed. Different
+site-specific fitness profiles built from the same mutation model therefore
+share one neutral clock rather than being individually normalized by their
+realized synonymous flux.
+
+The model object reports the raw `neutral_total_rate`,
+`neutral_synonymous_rate`, and Q-weighted `synonymous_opportunities` used in
+the conversion. The stored canonical `scaling_type` is `"dS"`.
+
+## Event-count implementation
 
 Scaling rate is calculated as:
 
@@ -39,9 +57,12 @@ $$
 The inner summation is over all the substitutions from each state (codon) $i$ to each state $j$.
 $Q^{(t)}$ means substitution rate for a substitution of type $t$ (e.g. synonymous substitution).
 
-At equilibrium the identity is exact: with the default `synonymous` scaling, a
+At equilibrium the identity is exact: with `synonymous-per-codon` scaling, a
 branch of length one carries one expected synonymous substitution per codon.
 On branches where the model changes and the process is temporarily out of
 equilibrium, the branch-length currency is maintained by the rescaling
 machinery described in
 [Temporal Heterogeneity Rescaling](Temporal_Heterogeneity_Rescaling.html).
+The event-budget rescaler is not applied to dS: dS is a neutral-time gauge, so
+the selected process runs for the supplied branch duration even while its
+state distribution is out of equilibrium.

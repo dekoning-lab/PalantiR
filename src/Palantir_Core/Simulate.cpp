@@ -308,6 +308,7 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
         string rescale_method,
         vec scaling_targets)
 {
+    scaling_type = CodonModel::canonical_scaling_type(scaling_type);
     if (rescale_method != "segments" && rescale_method != "exact") {
         throw logic_error("rescale_method must be \"segments\" or \"exact\"");
     }
@@ -428,6 +429,24 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
                 // that entered the branch, because those are tracked below
                 // rather than read off the last pushed segment.
                 if (!(finish > start)) {
+                    continue;
+                }
+
+                // dS is a neutral-time gauge. The selected process should run
+                // for the supplied branch duration even when a mode change
+                // leaves its state distribution away from the new
+                // equilibrium. The event-budget rescalers below are useful
+                // for currencies defined by a realised class-event count;
+                // applying them to dS would silently turn the dS clock back
+                // into synonymous-events-per-codon scaling. No forecast is
+                // needed here because every dS interval follows this path.
+                if (scaling_type == "dS") {
+                    current_pi = local_pi[mode];
+                    current_mode = mode;
+                    current_scal = 1.0;
+                    current_Q = local_Q[mode];
+                    push_segment(n, start, finish, current_mode,
+                                 current_scal, NO_TIME_CHANGE);
                     continue;
                 }
 

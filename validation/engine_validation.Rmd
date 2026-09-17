@@ -66,9 +66,9 @@ psi_2 <- equilibrium_to_fitness(as.numeric(psi_c50_1[2, ]), 1000)
 n_sites <- params$n_sites
 ```
 
-# Test 1: branch-length calibration under the three scaling modes
+# Test 1: branch-length calibration under event-count and dS scaling
 
-**Expectation.** A model built with `scaling_type = "synonymous"`,
+**Expectation.** A model built with `scaling_type = "synonymous-per-codon"`,
 `"non-synonymous"`, or `"substitution"` is normalized so that one unit of
 branch length delivers, at stationarity, one expected substitution of that
 class per codon site: synonymous, non-synonymous, or of any kind,
@@ -83,13 +83,13 @@ standard errors of 1.
 tree2 <- tempfile(fileext = ".newick"); writeLines("(A:1.0,B:1.0);", tree2)
 p2 <- Phylogeny(tree2)
 
-t1 <- do.call(rbind, lapply(c("synonymous", "non-synonymous", "substitution"),
+t1 <- do.call(rbind, lapply(c("synonymous-per-codon", "non-synonymous", "substitution"),
   function(sc) {
     ms <- MutationSelection(1000, 1e-8, hky, psi_1, scaling_type = sc)
     sim <- simulate_over_phylogeny(p2, ms, sample_sequence(ms, n_sites))
     sub <- sim$substitutions
     in_class <- switch(sc,
-        synonymous       = sub$synonymous,
+        `synonymous-per-codon` = sub$synonymous,
         "non-synonymous" = !sub$synonymous,
         substitution     = rep(TRUE, nrow(sub)))
     per_site <- tabulate(sub$site[in_class] + 1L, nbins = n_sites) / 2
@@ -104,6 +104,30 @@ knitr::kable(t1, digits = 4)
 verdict("Test 1", all(abs(t1$z) < 3),
         sprintf("class events per site per unit length: %s (|z| max %.2f, criterion < 3)",
                 paste(sprintf("%.3f", t1$mean), collapse = ", "), max(abs(t1$z))))
+```
+
+The default `scaling_type = "synonymous"` is a dS gauge rather than an
+event-count gauge. With amino-acid fitness differences removed, its neutral
+total rate is three substitutions per codon, so a branch of length one should
+deliver three events per codon on average.
+
+```{r test1-ds}
+ms_ds <- MutationSelection(1000, 1e-8, hky, rep(0, 20),
+                           scaling_type = "synonymous")
+sim_ds <- simulate_over_phylogeny(p2, ms_ds, sample_sequence(ms_ds, n_sites))
+per_site_ds <- tabulate(sim_ds$substitutions$site + 1L,
+                        nbins = n_sites) / 2
+ds_mean <- mean(per_site_ds)
+ds_se <- sd(per_site_ds) / sqrt(n_sites)
+ds_z <- (ds_mean - 3) / ds_se
+knitr::kable(data.frame(scaling = "dS", mean = ds_mean,
+                        se = ds_se, z = ds_z), digits = 4)
+```
+
+```{r test1-ds-verdict, results="asis"}
+verdict("Test 1 dS", abs(ds_z) < 3,
+        sprintf("neutral events per codon per unit dS: %.3f (z %.2f, criterion |z| < 3)",
+                ds_mean, ds_z))
 ```
 
 # Test 2: stationary distribution

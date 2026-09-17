@@ -55,7 +55,15 @@ introduced in v1.1.0 and the default since v1.2.2; pass
 branch's expected substitution budget exactly (the segment scheme delivers it
 to within the segment discretisation), runs faster, and reports event times in
 the same branch-position units, so output is interchangeable between the two
-methods. The segment scheme remains the default.
+methods. The segment scheme remains available for reproducing the original
+discretized calculation.
+
+This event-budget time change applies to `substitution`,
+`synonymous-per-codon`, and `non-synonymous` currencies. It is bypassed for
+`dS` (including user input `scaling_type = "synonymous"`), because dS denotes
+neutral evolutionary time. A selected process therefore runs for the supplied
+branch duration through an equilibrium transient; forcing a realized
+synonymous-event budget would change the gauge.
 
 Also note that since v1.0.1 the segment forecast advances at the site's rate
 multiplier; earlier versions under-delivered substitutions on fast sites

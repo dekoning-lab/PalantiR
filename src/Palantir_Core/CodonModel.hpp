@@ -8,8 +8,10 @@ namespace Palantir
 {
     namespace CodonModel
     {
-        // PalantiR historically calls the conventional all-substitution scale
-        // "substitution".  "standard" is accepted as a user-facing alias.
+        // "synonymous" is the user-facing dS gauge; "dS" and "ds" are
+        // explicit aliases. The historical synonymous-events-per-codon
+        // currency remains available under the unambiguous name
+        // "synonymous-per-codon".
         string canonical_scaling_type(const string& scaling_type);
 
         // Per-state outflux in the substitution class used to denominate branch
@@ -26,6 +28,14 @@ namespace Palantir
                 const vec& equilibrium,
                 const mat& transition,
                 const string& scaling_type,
+                const GeneticCode& g);
+
+        // Denominator that converts a neutral single-codon generator to the
+        // dS gauge: Q_dS = Q_neutral / neutral_dS_scaling(...). The resulting
+        // neutral total rate is three substitutions per codon.
+        double neutral_dS_scaling(
+                const vec& neutral_equilibrium,
+                const mat& neutral_transition,
                 const GeneticCode& g);
     }
 }

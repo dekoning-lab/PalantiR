@@ -377,11 +377,10 @@ List simulate_over_interval_phylogeny(
         sampling.push_back(substitution_model["sampling"]);
     }
 
-    // FIX (2026-08-17): scaling_type was never passed, so the segment rescaler
-    // always used its default of "synonymous" whatever the models were built
-    // with (PROJECT-RECORD 8E.5a). NOTE: with synonymous models this is a no-op;
-    // with "substitution" models it changes behaviour, and pinning the TOTAL
-    // rate during the transient is not what the analysis wants. Use synonymous.
+    // Pass the constructor's canonical scaling type through. Event-count
+    // currencies use it to identify the budget preserved through a transient;
+    // dS is recognized as a neutral-time gauge and bypasses that event-budget
+    // time change.
     string scaling_type = get_attr(first_model, "scaling_type");
     arma::vec target_rates;
     if(scaling_targets.isNotNull()) {

@@ -36,7 +36,7 @@ TEST_CASE("simulate_over_time")
 
     vec codon_equilibrium = MutationSelection::equilibrium(1000, 1e-8, nucleotide_equilibruim, fitness, g);
     mat codon_transition = MutationSelection::transition(1000, 1e-8, nucleotide_transition, fitness, g);
-    double rho = MutationSelection::scaling(codon_equilibrium, codon_transition, "synonymous", g);
+    double rho = MutationSelection::scaling(codon_equilibrium, codon_transition, "synonymous-per-codon", g);
     codon_transition /= rho;
     mat codon_sampling = Palantir::sampling(codon_transition);
 
@@ -98,7 +98,7 @@ TEST_CASE("simulate_over_time")
         for(ullong i = 0; i < population_sizes.n_elem; i++){
             vec pi =  MutationSelection::equilibrium(population_sizes[i], 1e-8, nucleotide_equilibruim, fitness, g);
             mat Q = MutationSelection::transition(population_sizes[i], 1e-8, nucleotide_transition, fitness, g);
-            double rho = MutationSelection::scaling(pi, Q, "synonymous", g);
+            double rho = MutationSelection::scaling(pi, Q, "synonymous-per-codon", g);
             Q /= rho;
             mat S = Palantir::sampling(Q);
 

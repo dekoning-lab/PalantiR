@@ -98,23 +98,37 @@ the codon state ordering may no longer agree.
 
 # Branch-length scaling
 
-Let \(\mathcal A\) be the set of ordered codon transitions that determines
-scaling. For one GY94 process, the corresponding stationary event rate is
+The dS choice is handled through a neutral reference. For `"synonymous"`,
+`"dS"`, or `"ds"`, PalantiR constructs the `omega = 1` generator
+\(\widetilde Q^{(1)}\) and uses the denominator
+
+$$
+S_{dS}=-\frac{1}{3}\sum_i\pi_i\widetilde q^{(1)}_{ii}.
+$$
+
+The selected generator is divided by \(S_{dS}\), so the neutral total rate is
+three substitutions per codon and branch length is dS per synonymous
+opportunity. The denominator is independent of the selected `omega`, and the
+model stores the canonical scaling type `"dS"`.
+
+The other scaled choices are event-count currencies. Let \(\mathcal A\) be the
+set of ordered codon transitions that determines the count. For one GY94
+process, the corresponding stationary event rate is
 
 $$
 S_{\mathcal A} = \sum_i \pi_i
 \sum_{j:(i,j)\in\mathcal A}\widetilde q_{ij}.
 $$
 
-The available choices for \(\mathcal A\) are:
+The event-count choices for \(\mathcal A\) are:
 
 * `"standard"` or `"substitution"`: all codon substitutions;
 * `"non-synonymous"`: amino-acid-changing substitutions only;
-* `"synonymous"`: synonymous substitutions only;
+* `"synonymous-per-codon"`: synonymous substitutions only;
 * `"none"`: no normalization.
 
 `"standard"` is an input alias for `"substitution"`; the model stores the
-canonical value `"substitution"`. A standalone model uses
+canonical value `"substitution"`. A standalone event-count model uses
 \(Q=\widetilde Q/S_{\mathcal A}\), so one branch-length unit represents one
 expected event from \(\mathcal A\) per codon at stationarity.
 
@@ -130,8 +144,12 @@ $$
 Every component therefore shares one denominator, while its stationary rate
 \(S_{\mathcal A,k}/\overline S_{\mathcal A}\) is retained. The
 mixture-weighted mean of those rates is one; individual component rates need
-not be one. Under synonymous or non-synonymous scaling, independent
+not be one. Under synonymous-per-codon or non-synonymous scaling, independent
 normalization would erase omega-dependent rate differences among classes.
+The dS mixture uses the same shared-denominator construction with
+class-specific neutral denominators. In the usual GY94 site and branch-site
+models, `kappa` and codon frequencies are shared within a branch type, so every
+class has the same dS denominator exactly.
 
 For a branch-site model, PalantiR computes the weighted denominator separately
 for each branch type, because the collection of active class-specific
@@ -144,7 +162,7 @@ $$
 All site classes active on branch type \(b\) share
 \(\overline S_{\mathcal A,b}\). Thus, under standard scaling, branch length is
 the expected number of codon substitutions per site averaged over the whole
-mixture. Synonymous and non-synonymous scaling give the analogous mean for the
+mixture. Synonymous-per-codon and non-synonymous scaling give the analogous mean for the
 specified transition set. This is the convention implemented for site and
 branch-site models in the [PAML `codeml`
 source](https://github.com/abacus-gene/paml/blob/master/src/codeml.c#L2580-L2629),
@@ -174,12 +192,14 @@ episodic <- GY94BranchModel(
 
 When stationary frequencies change, descendants enter the new process with the
 state distribution inherited from the parent; they are not redrawn from the
-new equilibrium. PalantiR simulates the resulting transient and uses the
-requested temporal rescaling method to preserve each component's rate relative
-to the common mixture denominator. The mixture-weighted rate therefore retains
-the chosen branch-length currency. The exact time change is the default; the
+new equilibrium. For event-count currencies, PalantiR uses the requested
+temporal rescaling method to preserve each component's event budget relative
+to the common mixture denominator. The exact time change is the default; the
 segment approximation remains available through
-`rescale_method = "segments"`.
+`rescale_method = "segments"`. For dS, both choices take the same ordinary
+branch-time path. A dS branch is neutral evolutionary time, so PalantiR does
+not change its duration to force a realized synonymous-event count through an
+out-of-equilibrium transient.
 
 # Arbitrary discrete site classes
 

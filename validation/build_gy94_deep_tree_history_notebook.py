@@ -34,7 +34,7 @@ cells = [
 
 <div class="hero-note">
 <strong>Result:</strong> PASS &nbsp;·&nbsp; 50 taxa &nbsp;·&nbsp; 5,000 codon sites
-&nbsp;·&nbsp; 762,540 recorded substitutions &nbsp;·&nbsp; synonymous scaling
+&nbsp;·&nbsp; 762,540 recorded substitutions &nbsp;·&nbsp; synonymous-per-codon scaling
 </div>
 
 This notebook asks a deliberately direct question: when PalantiR simulates a
@@ -69,7 +69,7 @@ stationary distribution:
 |---|---|
 | Taxa | 50, divided into two 25-tip subtrees |
 | Codon sites | 5,000 |
-| Root-to-tip depth | 20 synonymous-scaled branch units |
+| Root-to-tip depth | 20 synonymous events per codon |
 | $\kappa$ | 4 |
 | F1x4 frequencies | T = 0.22, C = 0.28, A = 0.27, G = 0.23 |
 | Left subtree | $\omega=0.1$ |
@@ -83,9 +83,9 @@ places 49 branches in each mode.
 
 ### Key assumptions
 
-1. Under `scaling_type = "synonymous"`, one branch-length unit denotes one
-   expected synonymous substitution per codon at stationarity. Thus “depth 20”
-   is expressed in synonymous-scaled units, not total codon-event units.
+1. Under `scaling_type = "synonymous-per-codon"`, one branch-length unit
+   denotes one expected synonymous substitution per codon at stationarity.
+   This historical event-count gauge is distinct from the default dS gauge.
 2. Root codons are sampled from the stationary distribution shared by both
    branch modes. There is no equilibrium-frequency transient in this test.
 3. Confidence intervals use independent sites as the replication unit; they do
@@ -324,7 +324,7 @@ for row, check in zip(summary_rows, recomputed):
 
 display(HTML(
     '<div class="pass-note"><strong>PASS:</strong> all 762,540 history rows were read; '
-    'event totals, opportunity normalization, branch allocation, synonymous scaling, '
+    'event totals, opportunity normalization, branch allocation, synonymous-per-codon scaling, '
     'and reported dN/dS values reconcile exactly.</div>'
 ))
 """),
@@ -570,7 +570,7 @@ ax.text(19, 50.5, "crown begins", ha="center", va="bottom", fontsize=8.5, color=
 ax.set_xlim(-0.1, 21.4)
 ax.set_ylim(-1, 51.2)
 ax.set_yticks([])
-ax.set_xlabel("Distance from root (synonymous-scaled branch units)")
+ax.set_xlabel("Distance from root (synonymous events per codon)")
 ax.set_title(f"Complete substitution history for representative site {representative_site}",
              loc="left", pad=22)
 ax.text(0, 1.012,
@@ -663,9 +663,9 @@ use_genetic_code("Standard nuclear")
 pi <- F1x4(c(T = 0.22, C = 0.28, A = 0.27, G = 0.23))
 models <- list(
   GY94(omega = 0.1, kappa = 4, frequencies = pi,
-       scaling_type = "synonymous"),
+       scaling_type = "synonymous-per-codon"),
   GY94(omega = 1.0, kappa = 4, frequencies = pi,
-       scaling_type = "synonymous")
+       scaling_type = "synonymous-per-codon")
 )
 
 branch_process <- GY94BranchModel(
@@ -693,7 +693,7 @@ objects, run metadata, and an MD5 manifest.
 1. **Branch assignment works.** All 49 branches in each major subtree use the
    intended GY94 process, and the history contains the expected large
    difference in nonsynonymous flux.
-2. **Synonymous scaling retains its meaning.** The empirical synonymous rates
+2. **Synonymous-per-codon scaling retains its meaning.** The empirical synonymous rates
    were 1.00032 and 1.00756 events per codon-branch unit, close to their exact
    stationary target of 1.
 3. **The history recovers $\omega$.** Opportunity-normalized estimates were
@@ -708,7 +708,7 @@ objects, run metadata, and an MD5 manifest.
 <div class="scope-note">
 <strong>Scope:</strong> this is a simple stationary-frequency, single-site-class
 GY94 demonstration. It validates this generator, branch heterogeneity, history
-recording, and synonymous scaling. It is not by itself a validation of every
+recording, and synonymous-per-codon scaling. It is not by itself a validation of every
 site-mixture, branch-site, transient-frequency, or inference configuration.
 </div>
 

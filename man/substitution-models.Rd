@@ -37,9 +37,10 @@ rate and scales the meaning of the branch lengths with it.}
 fitnesses. \strong{Order matters and is not checked}: see Details.}
 \item{delta}{Matrix of pairwise interaction terms for the co-evolution model.}
 \item{scaling_type}{How the rate matrix is normalised. One of
-\code{"synonymous"}, \code{"non-synonymous"}, \code{"substitution"} or
-\code{"none"}; \code{"standard"} is accepted as an alias of
-\code{"substitution"}. See Details.}
+\code{"synonymous"} (the dS gauge), \code{"synonymous-per-codon"},
+\code{"non-synonymous"}, \code{"substitution"}, or \code{"none"}.
+\code{"dS"} and \code{"ds"} are aliases of \code{"synonymous"};
+\code{"standard"} is an alias of \code{"substitution"}. See Details.}
 \item{switching_model}{An exchangeable model governing switching between modes.}
 \item{mutation_selection_models}{List of mutation-selection models, one per mode.}
 }
@@ -47,7 +48,10 @@ fitnesses. \strong{Order matters and is not checked}: see Details.}
 A list of class \code{SubstitutionModel} with elements \code{equilibrium},
 \code{transition} (the normalised rate matrix), \code{sampling} (its cumulative
 form, used by the simulators), \code{scaling} (the normalising constant applied),
-\code{scaling_type}, \code{n_states} and \code{type}.
+\code{scaling_type}, \code{n_states} and \code{type}. dS-scaled models also
+report \code{neutral_total_rate}, \code{neutral_synonymous_rate}, and the
+Q-weighted \code{synonymous_opportunities} used to define the gauge; these
+fields are \code{NA} for the other scaling types.
 }
 \description{
 Construct substitution models. \code{MutationSelection} implements the
@@ -63,15 +67,24 @@ software uses different conventions; PAML and its rate files, for instance, use
 validated, so a mismatch produces a silently permuted fitness landscape rather
 than an error. Reorder external input explicitly.
 
-\strong{Scaling.} The rate matrix is divided by a normalising constant so that
-one unit of branch length corresponds to one expected substitution of the chosen
-class per codon. \code{"synonymous"} makes branch lengths count synonymous
-substitutions, \code{"non-synonymous"} amino-acid-changing substitutions,
-\code{"substitution"} all substitutions, and \code{"none"} applies no scaling.
-Choose the class matching the units in which the guide tree's branch lengths were
-estimated. An unrecognised name raises an error. For compatibility with the
-2016 version of this package, \code{"standard"} is accepted as an alias and
-stored canonically as \code{"substitution"}.
+\strong{Scaling.} \code{"synonymous"} is the default dS gauge and is stored
+canonically as \code{"dS"}. The selected generator is divided by one third of
+the total rate of its mutation-only neutral reference. One unit of branch
+length is therefore one neutral synonymous substitution per synonymous
+opportunity, equivalently one neutral nucleotide substitution per site. The
+reference sets amino-acid fitness differences to zero and depends only on the
+nucleotide mutation model, so site-heterogeneous fitness profiles sharing that
+model also share one clock.
+
+\code{"synonymous-per-codon"} retains the earlier convention in which one
+branch-length unit gives one expected synonymous event per codon at the
+model's equilibrium. \code{"non-synonymous"} and \code{"substitution"}
+similarly count amino-acid-changing events or all events per codon;
+\code{"none"} applies no scaling. Choose the convention matching the supplied
+tree. An unrecognised name raises an error. \code{"dS"} and \code{"ds"} are
+explicit aliases for the dS gauge. For compatibility with the 2016 version of
+this package, \code{"standard"} is accepted as an alias and stored canonically
+as \code{"substitution"}.
 }
 \references{
 Halpern, A. L. and Bruno, W. J. (1998) Evolutionary distances for protein-coding

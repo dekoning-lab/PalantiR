@@ -11,8 +11,8 @@
 #     measured here; the reviewer measured 3.3 GB at length 5).
 #   After the fix:  PASS. The same branch costs a few megabytes, and the event
 #     distribution is unchanged: a fully rescaled branch still delivers about one
-#     scaled-class (synonymous) substitution per unit of branch length, under both
-#     rescale methods.
+#     scaled-class (synonymous-per-codon) substitution per unit of branch
+#     length, under both rescale methods.
 #
 # The distributional half of this test is a regression guard, not a
 # before/after discriminator: it passes both before and after the refactor, and
@@ -38,8 +38,10 @@ result <- try({
 
     hky <- HasegawaKishinoYano(equilibrium = c(.25, .25, .25, .25))
     set.seed(7)
-    m1 <- MutationSelection(1000, 1e-8, hky, 1 + rnorm(20, 0, 5e-4))
-    m2 <- MutationSelection(1000, 1e-8, hky, 1 + rnorm(20, 0, 5e-4))
+    m1 <- MutationSelection(1000, 1e-8, hky, 1 + rnorm(20, 0, 5e-4),
+                            scaling_type = "synonymous-per-codon")
+    m2 <- MutationSelection(1000, 1e-8, hky, 1 + rnorm(20, 0, 5e-4),
+                            scaling_type = "synonymous-per-codon")
 
     # ---- 1. memory: a long branch cut into very short segments -------------
     big_tree  <- mk("(A:3.0);")

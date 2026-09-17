@@ -32,7 +32,7 @@ TEST_CASE("FitnessSwitching")
         mat codon_transition = MutationSelection::transition(
                 100, 1e-8, nucleotide_transition, fitnesses[i], g);
         double codon_rho = MutationSelection::scaling(
-                codon_equilibrium, codon_transition, "synonymous", g);
+                codon_equilibrium, codon_transition, "synonymous-per-codon", g);
         codon_transition /= codon_rho;
 
         substitution_equilibrium.push_back(codon_equilibrium);
@@ -96,8 +96,8 @@ TEST_CASE("PoissonHeterogeneity")
     vec pi_2 = MutationSelection::equilibrium(1000, 1e-8, nucleotide_equilibrium, fitness_2, g);
     mat Q_1 = MutationSelection::transition(1000, 1e-8, nucleotide_transition, fitness_1, g);
     mat Q_2 = MutationSelection::transition(1000, 1e-8, nucleotide_transition, fitness_2, g);
-    double rho_1 = MutationSelection::scaling(pi_1, Q_1, "synonymous", g);
-    double rho_2 = MutationSelection::scaling(pi_2, Q_2, "synonymous", g);
+    double rho_1 = MutationSelection::scaling(pi_1, Q_1, "synonymous-per-codon", g);
+    double rho_2 = MutationSelection::scaling(pi_2, Q_2, "synonymous-per-codon", g);
     Q_1 /= rho_1;
     Q_2 /= rho_2;
     mat S_1 = Palantir::sampling(Q_1);

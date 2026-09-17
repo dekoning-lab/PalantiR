@@ -65,7 +65,7 @@ result <- try({
               paste("foreground frequencies wrong in class", label))
         check(all(vapply(spec$models, `[[`, numeric(1), "kappa") == kappa),
               paste("kappa was not propagated in class", label))
-        check(all(vapply(spec$models, `[[`, character(1), "scaling_type") == "synonymous"),
+        check(all(vapply(spec$models, `[[`, character(1), "scaling_type") == "dS"),
               paste("scaling type was not propagated in class", label))
         check(identical(spec$mode_phylogeny$newick, modes$newick),
               paste("mode phylogeny was not propagated in class", label))

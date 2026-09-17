@@ -49,7 +49,7 @@ result <- tryCatch({
     chg <- !diag(TRUE, S)
     class_of <- function(type) {
         if (type == "substitution") chg
-        else if (type == "synonymous") chg & syn
+        else if (type == "synonymous-per-codon") chg & syn
         else chg & !syn
     }
 
@@ -67,7 +67,7 @@ result <- tryCatch({
         (sum(agg(c1) * cls) + sum(agg(c2) * cls)) / 2
     }
 
-    for (type in c("substitution", "synonymous", "non-synonymous")) {
+    for (type in c("substitution", "synonymous-per-codon", "non-synonymous")) {
         ms1 <- MutationSelection(N, mu, hky, f1, type)
         ms2 <- MutationSelection(N, mu, hky, f2, type)
 

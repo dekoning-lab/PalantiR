@@ -42,7 +42,7 @@ TEST_CASE("GoldmanYang94")
 
     SECTION("all codon scaling currencies")
     {
-        const vector<string> types({"substitution", "synonymous", "non-synonymous"});
+        const vector<string> types({"substitution", "synonymous-per-codon", "non-synonymous"});
         for(const string& type : types) {
             double rho = CodonModel::scaling(pi, Q, type, g);
             REQUIRE(rho > 0);
