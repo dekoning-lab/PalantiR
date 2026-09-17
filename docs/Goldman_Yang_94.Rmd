@@ -181,8 +181,10 @@ between modes, including `omega`, `kappa`, and the stationary codon frequencies.
 mammals <- Phylogeny("../inst/extdata/mammals.newick")
 mammal_modes <- Phylogeny("../inst/extdata/mammals_switch.newick", type = "mode")
 
-background <- GY94(omega = 0.2, kappa = 2, frequencies = pi_1x4)
-foreground <- GY94(omega = 3.0, kappa = 2, frequencies = pi_3x4)
+background <- GY94(omega = 0.2, kappa = 2, frequencies = pi_1x4,
+                   scaling_type = "standard")
+foreground <- GY94(omega = 3.0, kappa = 2, frequencies = pi_3x4,
+                   scaling_type = "standard")
 
 episodic <- GY94BranchModel(
     models = list(background, foreground),
@@ -216,7 +218,8 @@ are zero-based.
 site_model <- GY94SiteModel(
     models = list(
         constrained = background,
-        neutral = GY94(omega = 1, kappa = 2, frequencies = pi_1x4),
+        neutral = GY94(omega = 1, kappa = 2, frequencies = pi_1x4,
+                       scaling_type = "standard"),
         episodic = episodic),
     n_sites = c(40, 30, 30),
     labels = c("constrained", "neutral", "episodic"))

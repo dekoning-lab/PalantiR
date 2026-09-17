@@ -260,13 +260,14 @@ substitution history, an interactive substitution-history plot, and a
 [`validation/engine_validation.Rmd`](validation/engine_validation.Rmd) tests
 the simulation engine against exact expectations and renders a standalone
 report with a pre-stated pass criterion and a computed verdict for each test:
-branch-length calibration under the three scaling modes, the stationary
-distribution against observed state frequencies, and the transient between
-two equilibria in a time-heterogeneous simulation, compared with the master
-equation under both rescale methods.
+branch-length calibration under the three event-count gauges; homogeneous and
+time-heterogeneous dS calibration for GY94 and mutation--selection models; the
+stationary distribution against observed state frequencies; and the transient
+between two equilibria, compared with the master equation under both rescale
+methods.
 
 The [current report](https://dekoning-lab.github.io/PalantiR/engine_validation.html)
-passes all tests (version 1.2.1; also verified under two further seeds). To
+passes all tests under version 1.3.0. To
 rerun it with your own seed and simulation size:
 
 ```
@@ -278,4 +279,6 @@ The separate
 [live R/PalantiR GY94 history-validation notebook](validation/gy94_deep_tree_history_dnds_R.ipynb)
 tests branch-specific omega recovery from complete substitution histories; its
 [rendered report](https://dekoning-lab.github.io/PalantiR/GY94_History_Validation.html)
-also serves as a compact GY94 feature demonstration.
+also serves as a compact GY94 feature demonstration. This older event-count
+experiment now names its scaling explicitly as `"synonymous-per-codon"`; it
+does not use the default dS gauge.

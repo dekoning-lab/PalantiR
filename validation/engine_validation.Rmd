@@ -15,6 +15,7 @@ knitr::opts_chunk$set(fig.width = 9, fig.height = 5, warning = FALSE, message = 
 suppressMessages(library(PalantiR))
 use_genetic_code("Standard nuclear")
 set_palantir_seed(params$seed)
+set.seed(params$seed)
 
 verdicts <- list()
 verdict <- function(id, ok, detail) {
@@ -25,6 +26,8 @@ has_logo <- requireNamespace("ggseqlogo", quietly = TRUE)
 
 aa_of <- unname(GeneticCode())
 aa_levels <- sort(unique(aa_of))
+syn_mask <- outer(aa_of, aa_of, "==")
+diag(syn_mask) <- FALSE
 
 # Sequence logo of one or more amino-acid frequency distributions
 # (columns of `freqs`), with a barplot fallback if ggseqlogo is absent.
@@ -42,6 +45,46 @@ plot_freqs <- function(freqs, labels) {
 
 codon_to_aa <- function(codon_counts) as.numeric(tapply(codon_counts, aa_of, sum))
 tv <- function(p, q) 0.5 * sum(abs(p - q))
+syn_outflux <- function(model) rowSums(model$transition * syn_mask)
+
+# Independently integrate a selected process until it expends a specified dS
+# clock budget. The augmented state tracks the codon distribution, the dS
+# functional, and synonymous opportunity exposure. This avoids relying on the
+# simulator's internal time-change implementation when constructing the test
+# expectation.
+rk4_to_budget <- function(p0, Q, h, g, budget, dt = 0.001) {
+    deriv <- function(y) {
+        p <- y[seq_along(p0)]
+        c(as.numeric(p %*% Q), sum(p * h), sum(p * g))
+    }
+    step <- function(y, d) {
+        k1 <- deriv(y)
+        k2 <- deriv(y + d * k1 / 2)
+        k3 <- deriv(y + d * k2 / 2)
+        k4 <- deriv(y + d * k3)
+        y + d * (k1 + 2 * k2 + 2 * k3 + k4) / 6
+    }
+    n <- length(p0)
+    y <- c(p0, dS_clock = 0, syn_exposure = 0)
+    tau <- 0
+    while (y[n + 1] < budget) {
+        proposal <- step(y, dt)
+        if (proposal[n + 1] <= budget) {
+            y <- proposal
+            tau <- tau + dt
+        } else {
+            lo <- 0; hi <- dt
+            for (i in seq_len(40)) {
+                mid <- (lo + hi) / 2
+                if (step(y, mid)[n + 1] < budget) lo <- mid else hi <- mid
+            }
+            y <- step(y, (lo + hi) / 2)
+            tau <- tau + (lo + hi) / 2
+        }
+    }
+    list(tau = unname(tau), dS_clock = unname(y[n + 1]),
+         syn_exposure = unname(y[n + 2]))
+}
 ```
 
 This notebook tests the core simulation engine against exact expectations.
@@ -54,9 +97,10 @@ simulation size:
 rmarkdown::render("engine_validation.Rmd", params = list(seed = 1, n_sites = 3000))
 ```
 
-All tests use the fitness profiles shipped with the package (`psi_c50_1`,
-amino-acid equilibrium frequencies converted to fitness with
-`equilibrium_to_fitness`) and the mutation–selection codon model.
+The stationary-distribution and generic-transient tests use fitness profiles
+shipped with the package (`psi_c50_1`). The dS tests additionally construct a
+standard Zhang--Nielsen--Yang branch-site model and a mutation--selection
+fitness and population-size shift.
 
 ```{r inputs}
 data(psi_c50_1)
@@ -66,13 +110,13 @@ psi_2 <- equilibrium_to_fitness(as.numeric(psi_c50_1[2, ]), 1000)
 n_sites <- params$n_sites
 ```
 
-# Test 1: branch-length calibration under event-count and dS scaling
+# Test 1: branch-length calibration under event-count scaling
 
 **Expectation.** A model built with `scaling_type = "synonymous-per-codon"`,
 `"non-synonymous"`, or `"substitution"` is normalized so that one unit of
 branch length delivers, at stationarity, one expected substitution of that
 class per codon site: synonymous, non-synonymous, or of any kind,
-respectively. Simulating `r sprintf("%d", 3000)` sites over a two-taxon tree
+respectively. Simulating `r sprintf("%d", n_sites)` sites over a two-taxon tree
 with branch lengths 1, the mean number of class events per site per unit
 branch length should equal 1.
 
@@ -106,45 +150,180 @@ verdict("Test 1", all(abs(t1$z) < 3),
                 paste(sprintf("%.3f", t1$mean), collapse = ", "), max(abs(t1$z))))
 ```
 
+# Test 2: dS calibration under homogeneous and heterogeneous models
+
+## Homogeneous neutral mutation--selection model
+
 The default `scaling_type = "synonymous"` is a dS gauge rather than an
-event-count gauge. With amino-acid fitness differences removed, its neutral
-total rate is three substitutions per codon, so a branch of length one should
-deliver three events per codon on average.
+event-count gauge. With amino-acid fitness differences removed, synonymous
+histories divided by the model's neutral synonymous opportunity count should
+recover dS = 1. The neutral total rate is also three substitutions per codon
+per dS unit.
 
 ```{r test1-ds}
 ms_ds <- MutationSelection(1000, 1e-8, hky, rep(0, 20),
                            scaling_type = "synonymous")
+set_palantir_seed(params$seed + 1L)
 sim_ds <- simulate_over_phylogeny(p2, ms_ds, sample_sequence(ms_ds, n_sites))
-per_site_ds <- tabulate(sim_ds$substitutions$site + 1L,
-                        nbins = n_sites) / 2
-ds_mean <- mean(per_site_ds)
-ds_se <- sd(per_site_ds) / sqrt(n_sites)
-ds_z <- (ds_mean - 3) / ds_se
-knitr::kable(data.frame(scaling = "dS", mean = ds_mean,
-                        se = ds_se, z = ds_z), digits = 4)
+per_site_total <- tabulate(sim_ds$substitutions$site + 1L,
+                           nbins = n_sites) / 2
+per_site_syn <- tabulate(sim_ds$substitutions$site[sim_ds$substitutions$synonymous] + 1L,
+                         nbins = n_sites) / 2
+ds_by_site <- per_site_syn / ms_ds$synonymous_opportunities
+ds_checks <- data.frame(
+    quantity = c("dS from synonymous histories", "neutral events per codon"),
+    expected = c(1, 3),
+    observed = c(mean(ds_by_site), mean(per_site_total)),
+    se = c(sd(ds_by_site), sd(per_site_total)) / sqrt(n_sites))
+ds_checks$z <- (ds_checks$observed - ds_checks$expected) / ds_checks$se
+knitr::kable(ds_checks, digits = 4)
 ```
 
-```{r test1-ds-verdict, results="asis"}
-verdict("Test 1 dS", abs(ds_z) < 3,
-        sprintf("neutral events per codon per unit dS: %.3f (z %.2f, criterion |z| < 3)",
-                ds_mean, ds_z))
+## Heterogeneous GY94 and mutation--selection trees
+
+**Expectation.** Under the dS gauge, branch lengths can be recovered from
+complete synonymous histories after dividing by the appropriate synonymous
+opportunity exposure. This should hold for (i) all branches and site classes
+of a standard GY94 branch-site model and (ii) a mutation--selection branch
+entered after a simultaneous fitness-profile and population-size shift. The
+second expectation is computed independently by Runge--Kutta integration of
+the selected master equation and the neutral dS-clock functional.
+
+**Criterion.** Each input branch length is within four Monte-Carlo standard
+errors of its history estimate. Four standard errors are used because the GY94
+check evaluates six branches simultaneously.
+
+```{r test2-ds-setup}
+n_ds <- max(12000L, 4L * ceiling(n_sites / 4L))
+
+ds_tree_file <- tempfile(fileext = ".newick")
+ds_mode_file <- tempfile(fileext = ".newick")
+writeLines("((A:0.15,B:0.30):0.20,(C:0.45,D:0.60):0.25);", ds_tree_file)
+writeLines("((A:0,B:1):0,(C:0,D:0):0);", ds_mode_file)
+ds_tree <- Phylogeny(ds_tree_file)
+ds_modes <- Phylogeny(ds_mode_file, type = "mode")
+ds_branches <- phylogeny_to_intervals(ds_tree, ds_modes)
+ds_branches$input_dS <- ds_branches$to - ds_branches$from
+
+set_palantir_seed(params$seed + 101L)
+zny <- ZNYBranchSiteModel(
+    mode_phylogeny = ds_modes,
+    site_counts = rep(n_ds / 4L, 4L),
+    omega0 = 0.2,
+    omega2 = 3.0,
+    kappa = 2.5,
+    frequencies = c(T = .20, C = .30, A = .25, G = .25),
+    frequency_model = "F1x4",
+    scaling_type = "dS")
+zny_models <- unlist(lapply(zny$models, `[[`, "models"), recursive = FALSE)
+zny_NS <- vapply(zny_models, `[[`, numeric(1), "synonymous_opportunities")
+stopifnot(max(zny_NS) - min(zny_NS) < 1e-12)
+zny_sim <- simulate_gy94_site_model(ds_tree, zny, rescale_method = "exact")
+
+zny_dS <- do.call(rbind, lapply(seq_len(nrow(ds_branches)), function(i) {
+    node_i <- ds_branches$node[i]
+    keep <- zny_sim$substitutions$node == node_i &
+            zny_sim$substitutions$synonymous
+    by_site <- tabulate(zny_sim$substitutions$site[keep] + 1L, nbins = n_ds)
+    values <- by_site / zny_NS[1]
+    estimate <- mean(values)
+    se <- sd(values) / sqrt(n_ds)
+    data.frame(model = "GY94 branch-site", node = node_i,
+               mode = ds_branches$state[i],
+               input_dS = ds_branches$input_dS[i],
+               observed_dS = estimate, se = se,
+               z = (estimate - ds_branches$input_dS[i]) / se)
+}))
+knitr::kable(zny_dS, digits = 4)
 ```
 
-# Test 2: stationary distribution
+The mutation--selection test uses a two-tip tree so that the shifted branch is
+entered directly from the ancestral equilibrium. Its independently integrated
+synonymous exposure is reported with the simulation estimate.
+
+```{r test2-mutsel-ds}
+nuc <- c(T = .22, C = .28, A = .31, G = .19)
+hky_ds <- HasegawaKishinoYano(nuc, transition_rate = 2.5,
+                              transversion_rate = 1)
+aa_order <- strsplit("ACDEFGHIKLMNPQRSTVWY", "")[[1]]
+freq0 <- freq1 <- setNames(rep(.20 / 19, 20), aa_order)
+freq0["W"] <- .80
+freq1["A"] <- .80
+Ne0 <- 500; Ne1 <- 20000
+fit0 <- equilibrium_to_fitness(as.numeric(freq0), Ne0,
+                               nucleotide_equilibrium = nuc)
+fit1 <- equilibrium_to_fitness(as.numeric(freq1), Ne1,
+                               nucleotide_equilibrium = nuc)
+ms0 <- MutationSelection(Ne0, .01, hky_ds, fit0, scaling_type = "dS")
+ms1 <- MutationSelection(Ne1, .01, hky_ds, fit1, scaling_type = "dS")
+
+shift_tree_file <- tempfile(fileext = ".newick")
+shift_mode_file <- tempfile(fileext = ".newick")
+writeLines("(A:0.30,B:0.10);", shift_tree_file)
+writeLines("(A:1,B:0);", shift_mode_file)
+shift_tree <- Phylogeny(shift_tree_file)
+shift_modes <- Phylogeny(shift_mode_file, type = "mode")
+shift_length <- 0.30
+
+p0_ds <- as.numeric(ms0$equilibrium)
+h1_ds <- as.numeric(ms1$dS_outflux)
+g1_syn <- syn_outflux(ms1)
+target <- shift_length * sum(as.numeric(ms1$equilibrium) * h1_ds)
+integrated <- rk4_to_budget(p0_ds, ms1$transition, h1_ds, g1_syn, target)
+mean_syn_opportunity <- integrated$syn_exposure / shift_length
+
+set_palantir_seed(params$seed + 201L)
+shift_root <- sample_sequence(ms0, n_ds)
+shift_sim <- simulate_over_interval_phylogeny(
+    phylogeny = shift_tree,
+    mode_phylogeny = shift_modes,
+    models = list(ms0, ms1),
+    sequence = shift_root,
+    start_mode = 0,
+    rescale_method = "exact")
+shift_node <- shift_sim$intervals$node[shift_sim$intervals$state == 1]
+shift_events <- shift_sim$substitutions[
+    shift_sim$substitutions$node == shift_node &
+    shift_sim$substitutions$synonymous, ]
+shift_by_site <- tabulate(shift_events$site + 1L, nbins = n_ds)
+shift_dS_by_site <- shift_by_site / mean_syn_opportunity
+shift_estimate <- mean(shift_dS_by_site)
+shift_se <- sd(shift_dS_by_site) / sqrt(n_ds)
+shift_z <- (shift_estimate - shift_length) / shift_se
+mutsel_dS <- data.frame(
+    model = "Mutation-selection fitness + Ne shift",
+    input_dS = shift_length,
+    observed_dS = shift_estimate,
+    se = shift_se,
+    z = shift_z,
+    intrinsic_time = integrated$tau,
+    synonymous_opportunities_per_codon_per_dS = mean_syn_opportunity)
+knitr::kable(mutsel_dS, digits = 5)
+```
+
+```{r test2-ds-verdict, results="asis"}
+all_ds_z_max <- max(abs(c(ds_checks$z, zny_dS$z, shift_z)))
+verdict("Test 2", all_ds_z_max < 4,
+        sprintf("homogeneous checks and all history estimates recover the dS scale (|z| max %.2f, criterion < 4)",
+                all_ds_z_max))
+```
+
+# Test 3: stationary distribution
 
 **Expectation.** The model's stationary distribution (`model$equilibrium`) is
 both the distribution the root sequence is sampled from and the invariant
 distribution of the substitution process, so the states observed at the end
 of a branch of any length are draws from it. Comparing the codon frequencies
-at a tip across `r sprintf("%d", 3000)` independent sites against the
+at a tip across `r sprintf("%d", n_sites)` independent sites against the
 computed stationary distribution tests the equilibrium computation, the root
 sampler, and the propagation together.
 
 **Criterion.** Monte-Carlo chi-square goodness of fit, observed tip codon
-counts against the stationary distribution, p > 0.01 at both the codon and
-the amino-acid level.
+counts against the stationary distribution, with both Holm-adjusted p-values
+greater than 0.01. The adjustment controls the family-wise false-positive rate
+across the codon- and amino-acid-level comparisons.
 
-```{r test2}
+```{r test3-stationary}
 ms <- MutationSelection(1000, 1e-8, hky, psi_1)
 sim <- simulate_over_phylogeny(p2, ms, sample_sequence(ms, n_sites))
 codons <- names(GeneticCode())
@@ -156,23 +335,26 @@ chi_codon <- chisq.test(obs_codon, p = pi_codon, rescale.p = TRUE,
 obs_aa <- codon_to_aa(obs_codon); th_aa <- codon_to_aa(pi_codon)
 chi_aa <- chisq.test(obs_aa, p = th_aa, rescale.p = TRUE,
                      simulate.p.value = TRUE, B = 5000)
+stationary_p <- p.adjust(c(codon = chi_codon$p.value,
+                           amino_acid = chi_aa$p.value), method = "holm")
 ```
 
 The stationary and observed amino-acid distributions as sequence logos
 (letter height = frequency):
 
-```{r test2-logo, fig.height=4}
+```{r test3-stationary-logo, fig.height=4}
 plot_freqs(data.frame(stationary = th_aa, observed = obs_aa / sum(obs_aa)),
            c("stationary", "observed"))
 ```
 
-```{r test2-verdict, results="asis"}
-verdict("Test 2", chi_codon$p.value > 0.01 && chi_aa$p.value > 0.01,
-        sprintf("chi-square p = %.3f (codon), %.3f (amino acid); TV(observed, stationary) = %.4f at the amino-acid level; criterion p > 0.01",
-                chi_codon$p.value, chi_aa$p.value, tv(obs_aa / sum(obs_aa), th_aa)))
+```{r test3-stationary-verdict, results="asis"}
+verdict("Test 3", all(stationary_p > 0.01),
+        sprintf("raw chi-square p = %.3f (codon), %.3f (amino acid); minimum Holm-adjusted p = %.3f; TV(observed, stationary) = %.4f at the amino-acid level; criterion adjusted p > 0.01",
+                chi_codon$p.value, chi_aa$p.value, min(stationary_p),
+                tv(obs_aa / sum(obs_aa), th_aa)))
 ```
 
-# Test 3: the transient between two equilibria
+# Test 4: the transient between two equilibria
 
 **Expectation.** In a time-heterogeneous simulation the sequence starts at
 the stationary distribution of the first model and relaxes to the stationary
@@ -192,12 +374,12 @@ event positions.)
 cumulative class events per site track branch position to within
 $0.02 + 4\sqrt{u/n}$ at every checkpoint (the count's sampling standard
 deviation grows with $u$, so the bound scales with the checkpoint; the 1.2.1
-defect exceeded the early-checkpoint bounds five-fold), and Monte-Carlo
-chi-square of the observed amino-acid distribution against the predicted
-trajectory gives p ≥ 0.001 at every checkpoint with at most two of the
-twelve p-values below 0.05.
+defect exceeded the early-checkpoint bounds five-fold), and no Monte-Carlo
+chi-square comparison of the observed amino-acid distribution against the
+predicted trajectory is rejected at family-wise alpha 0.01 after Holm
+adjustment across the twelve checkpoints.
 
-```{r test3-setup}
+```{r test4-transient-setup}
 mA <- MutationSelection(1000, 1e-8, hky, psi_1, scaling_type = "non-synonymous")
 mB <- MutationSelection(1000, 1e-8, hky, psi_2, scaling_type = "non-synonymous")
 Q <- mB$transition
@@ -265,15 +447,16 @@ run_method <- function(method) {
 }
 res_seg <- run_method("segments")
 res_ex  <- run_method("exact")
-t3 <- rbind(res_seg$table, res_ex$table)
-knitr::kable(t3, digits = 4)
+t4 <- rbind(res_seg$table, res_ex$table)
+t4$p_holm <- p.adjust(t4$p, method = "holm")
+knitr::kable(t4, digits = 4)
 ```
 
 The distance from the new equilibrium decays along the branch, and the
 observed distributions (points) follow the predicted trajectory (line) under
 both methods:
 
-```{r test3-curve}
+```{r test4-transient-curve}
 u_dense <- seq(0, L, by = 0.1)
 tv_pred <- sapply(u_dense, function(u) tv(codon_to_aa(pred_at(u)), codon_to_aa(piB)))
 plot(u_dense, tv_pred, type = "l", lwd = 2,
@@ -294,7 +477,7 @@ legend("topright", bty = "n",
 Amino-acid distributions at the start, in mid-transient, and at the end of
 the branch — predicted against observed (segments method):
 
-```{r test3-logo, fig.height=4}
+```{r test4-transient-logo, fig.height=4}
 plot_freqs(data.frame(
     start_pred = codon_to_aa(p0),
     u0.5_pred  = codon_to_aa(pred_at(0.5)),
@@ -305,13 +488,14 @@ plot_freqs(data.frame(
     c("start", "u=0.5 pred", "u=0.5 obs", "u=8 pred", "u=8 obs", "equilibrium B"))
 ```
 
-```{r test3-verdict, results="asis"}
-calib_tol <- 0.02 + 4 * sqrt(t3$u / n_sites)
-calib_ok <- all(abs(t3$cum_class - t3$u) < calib_tol)
-p_ok <- min(t3$p) >= 0.001 && sum(t3$p < 0.05) <= 2
-verdict("Test 3", calib_ok && p_ok,
-        sprintf("max |cumulative class events - u| / tolerance = %.2f (criterion < 1); chi-square p range %.3f-%.3f with %d of %d below 0.05 (criterion: min >= 0.001, at most 2)",
-                max(abs(t3$cum_class - t3$u) / calib_tol), min(t3$p), max(t3$p), sum(t3$p < 0.05), nrow(t3)))
+```{r test4-transient-verdict, results="asis"}
+calib_tol <- 0.02 + 4 * sqrt(t4$u / n_sites)
+calib_ok <- all(abs(t4$cum_class - t4$u) < calib_tol)
+p_ok <- all(t4$p_holm > 0.01)
+verdict("Test 4", calib_ok && p_ok,
+        sprintf("max |cumulative class events - u| / tolerance = %.2f (criterion < 1); raw chi-square p range %.3f-%.3f, minimum Holm-adjusted p %.3f (criterion > 0.01)",
+                max(abs(t4$cum_class - t4$u) / calib_tol), min(t4$p),
+                max(t4$p), min(t4$p_holm)))
 ```
 
 # Summary
@@ -320,7 +504,7 @@ verdict("Test 3", calib_ok && p_ok,
 for (id in names(verdicts)) {
     cat(sprintf("- **%s: %s**\n", id, ifelse(verdicts[[id]], "PASS", "FAIL")))
 }
-cat(sprintf("\n**Overall: %s** (PalantiR %s, seed %d, %d sites per test)\n",
+cat(sprintf("\n**Overall: %s** (PalantiR %s, seed %d, %d sites in standard tests; %d in tree-level dS tests)\n",
     ifelse(all(unlist(verdicts)), "PASS", "FAIL"),
-    as.character(packageVersion("PalantiR")), params$seed, n_sites))
+    as.character(packageVersion("PalantiR")), params$seed, n_sites, n_ds))
 ```

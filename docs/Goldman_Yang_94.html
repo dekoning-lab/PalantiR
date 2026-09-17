@@ -527,26 +527,42 @@ the codon state ordering may no longer agree.</p>
 </div>
 <div id="branch-length-scaling" class="section level1">
 <h1>Branch-length scaling</h1>
-<p>Let <span class="math inline">\(\mathcal A\)</span> be the set of
-ordered codon transitions that determines scaling. For one GY94 process,
-the corresponding stationary event rate is</p>
+<p>The dS choice is handled through a neutral reference. For
+<code>"synonymous"</code>, <code>"dS"</code>, or <code>"ds"</code>,
+PalantiR constructs the <code>omega = 1</code> generator <span
+class="math inline">\(\widetilde Q^{(1)}\)</span> and uses the
+denominator</p>
+<p><span class="math display">\[
+S_{dS}=-\frac{1}{3}\sum_i\pi_i\widetilde q^{(1)}_{ii}.
+\]</span></p>
+<p>The selected generator is divided by <span
+class="math inline">\(S_{dS}\)</span>, so the neutral total rate is
+three substitutions per codon and branch length is dS per synonymous
+opportunity. The denominator is independent of the selected
+<code>omega</code>, and the model stores the canonical scaling type
+<code>"dS"</code>.</p>
+<p>The other scaled choices are event-count currencies. Let <span
+class="math inline">\(\mathcal A\)</span> be the set of ordered codon
+transitions that determines the count. For one GY94 process, the
+corresponding stationary event rate is</p>
 <p><span class="math display">\[
 S_{\mathcal A} = \sum_i \pi_i
 \sum_{j:(i,j)\in\mathcal A}\widetilde q_{ij}.
 \]</span></p>
-<p>The available choices for <span class="math inline">\(\mathcal
+<p>The event-count choices for <span class="math inline">\(\mathcal
 A\)</span> are:</p>
 <ul>
 <li><code>"standard"</code> or <code>"substitution"</code>: all codon
 substitutions;</li>
 <li><code>"non-synonymous"</code>: amino-acid-changing substitutions
 only;</li>
-<li><code>"synonymous"</code>: synonymous substitutions only;</li>
+<li><code>"synonymous-per-codon"</code>: synonymous substitutions
+only;</li>
 <li><code>"none"</code>: no normalization.</li>
 </ul>
 <p><code>"standard"</code> is an input alias for
 <code>"substitution"</code>; the model stores the canonical value
-<code>"substitution"</code>. A standalone model uses <span
+<code>"substitution"</code>. A standalone event-count model uses <span
 class="math inline">\(Q=\widetilde Q/S_{\mathcal A}\)</span>, so one
 branch-length unit represents one expected event from <span
 class="math inline">\(\mathcal A\)</span> per codon at stationarity.</p>
@@ -562,8 +578,13 @@ Q_k=\widetilde Q_k/\overline S_{\mathcal A}.
 stationary rate <span class="math inline">\(S_{\mathcal A,k}/\overline
 S_{\mathcal A}\)</span> is retained. The mixture-weighted mean of those
 rates is one; individual component rates need not be one. Under
-synonymous or non-synonymous scaling, independent normalization would
-erase omega-dependent rate differences among classes.</p>
+synonymous-per-codon or non-synonymous scaling, independent
+normalization would erase omega-dependent rate differences among
+classes. The dS mixture uses the same shared-denominator construction
+with class-specific neutral denominators. In the usual GY94 site and
+branch-site models, <code>kappa</code> and codon frequencies are shared
+within a branch type, so every class has the same dS denominator
+exactly.</p>
 <p>For a branch-site model, PalantiR computes the weighted denominator
 separately for each branch type, because the collection of active
 class-specific generators differs between background and foreground
@@ -575,10 +596,10 @@ branches:</p>
 class="math inline">\(b\)</span> share <span
 class="math inline">\(\overline S_{\mathcal A,b}\)</span>. Thus, under
 standard scaling, branch length is the expected number of codon
-substitutions per site averaged over the whole mixture. Synonymous and
-non-synonymous scaling give the analogous mean for the specified
-transition set. This is the convention implemented for site and
-branch-site models in the <a
+substitutions per site averaged over the whole mixture.
+Synonymous-per-codon and non-synonymous scaling give the analogous mean
+for the specified transition set. This is the convention implemented for
+site and branch-site models in the <a
 href="https://github.com/abacus-gene/paml/blob/master/src/codeml.c#L2580-L2629">PAML
 <code>codeml</code> source</a>, which notes that scaling applies to all
 class-specific matrices for the whole branch. All classes and branch
@@ -595,21 +616,26 @@ codon frequencies.</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>mammals <span class="ot">&lt;-</span> <span class="fu">Phylogeny</span>(<span class="st">&quot;../inst/extdata/mammals.newick&quot;</span>)</span>
 <span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>mammal_modes <span class="ot">&lt;-</span> <span class="fu">Phylogeny</span>(<span class="st">&quot;../inst/extdata/mammals_switch.newick&quot;</span>, <span class="at">type =</span> <span class="st">&quot;mode&quot;</span>)</span>
 <span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a></span>
-<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>background <span class="ot">&lt;-</span> <span class="fu">GY94</span>(<span class="at">omega =</span> <span class="fl">0.2</span>, <span class="at">kappa =</span> <span class="dv">2</span>, <span class="at">frequencies =</span> pi_1x4)</span>
-<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>foreground <span class="ot">&lt;-</span> <span class="fu">GY94</span>(<span class="at">omega =</span> <span class="fl">3.0</span>, <span class="at">kappa =</span> <span class="dv">2</span>, <span class="at">frequencies =</span> pi_3x4)</span>
-<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a></span>
-<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>episodic <span class="ot">&lt;-</span> <span class="fu">GY94BranchModel</span>(</span>
-<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>    <span class="at">models =</span> <span class="fu">list</span>(background, foreground),</span>
-<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>    <span class="at">mode_phylogeny =</span> mammal_modes,</span>
-<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>    <span class="at">start_mode =</span> <span class="dv">0</span>)</span></code></pre></div>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>background <span class="ot">&lt;-</span> <span class="fu">GY94</span>(<span class="at">omega =</span> <span class="fl">0.2</span>, <span class="at">kappa =</span> <span class="dv">2</span>, <span class="at">frequencies =</span> pi_1x4,</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>                   <span class="at">scaling_type =</span> <span class="st">&quot;standard&quot;</span>)</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>foreground <span class="ot">&lt;-</span> <span class="fu">GY94</span>(<span class="at">omega =</span> <span class="fl">3.0</span>, <span class="at">kappa =</span> <span class="dv">2</span>, <span class="at">frequencies =</span> pi_3x4,</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>                   <span class="at">scaling_type =</span> <span class="st">&quot;standard&quot;</span>)</span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>episodic <span class="ot">&lt;-</span> <span class="fu">GY94BranchModel</span>(</span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>    <span class="at">models =</span> <span class="fu">list</span>(background, foreground),</span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>    <span class="at">mode_phylogeny =</span> mammal_modes,</span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a>    <span class="at">start_mode =</span> <span class="dv">0</span>)</span></code></pre></div>
 <p>When stationary frequencies change, descendants enter the new process
 with the state distribution inherited from the parent; they are not
-redrawn from the new equilibrium. PalantiR simulates the resulting
-transient and uses the requested temporal rescaling method to preserve
-each component’s rate relative to the common mixture denominator. The
-mixture-weighted rate therefore retains the chosen branch-length
-currency. The exact time change is the default; the segment
-approximation remains available through
+redrawn from the new equilibrium. PalantiR uses the requested temporal
+rescaling method to preserve each component’s branch-length budget
+relative to the common mixture denominator. For event-count gauges this
+is the requested class-event outflux. For dS it is one third of the
+per-state total outflux from the <code>omega = 1</code> reference,
+integrated under the evolving codon distribution. Thus dS remains
+neutral nucleotide time without being converted into a fixed realized
+synonymous-event count. The exact time change is the default; the
+segment approximation remains available through
 <code>rescale_method = "segments"</code>.</p>
 </div>
 <div id="arbitrary-discrete-site-classes" class="section level1">
@@ -628,10 +654,11 @@ zero-based.</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>site_model <span class="ot">&lt;-</span> <span class="fu">GY94SiteModel</span>(</span>
 <span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>    <span class="at">models =</span> <span class="fu">list</span>(</span>
 <span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>        <span class="at">constrained =</span> background,</span>
-<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>        <span class="at">neutral =</span> <span class="fu">GY94</span>(<span class="at">omega =</span> <span class="dv">1</span>, <span class="at">kappa =</span> <span class="dv">2</span>, <span class="at">frequencies =</span> pi_1x4),</span>
-<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>        <span class="at">episodic =</span> episodic),</span>
-<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>    <span class="at">n_sites =</span> <span class="fu">c</span>(<span class="dv">40</span>, <span class="dv">30</span>, <span class="dv">30</span>),</span>
-<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;constrained&quot;</span>, <span class="st">&quot;neutral&quot;</span>, <span class="st">&quot;episodic&quot;</span>))</span></code></pre></div>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>        <span class="at">neutral =</span> <span class="fu">GY94</span>(<span class="at">omega =</span> <span class="dv">1</span>, <span class="at">kappa =</span> <span class="dv">2</span>, <span class="at">frequencies =</span> pi_1x4,</span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>                       <span class="at">scaling_type =</span> <span class="st">&quot;standard&quot;</span>),</span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>        <span class="at">episodic =</span> episodic),</span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>    <span class="at">n_sites =</span> <span class="fu">c</span>(<span class="dv">40</span>, <span class="dv">30</span>, <span class="dv">30</span>),</span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a>    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;constrained&quot;</span>, <span class="st">&quot;neutral&quot;</span>, <span class="st">&quot;episodic&quot;</span>))</span></code></pre></div>
 <p>For an explicit interleaved assignment, use for example
 <code>site_classes = c("constrained", "episodic", "neutral", ...)</code>;
 the simulator restores that requested order after efficiently simulating
@@ -721,6 +748,13 @@ generating <code>GY94SiteModel</code> also records
 <code>class_weights</code>, the <code>mixture_scaling</code> denominator
 for each branch mode, and <code>stationary_class_rates</code> relative
 to that denominator.</p>
+<p>For a complete executable example, the <a
+href="../validation/gy94_deep_tree_history_dnds_R.ipynb">live R/PalantiR
+history-validation notebook</a> constructs a 50-taxon
+branch-heterogeneous GY94 model, simulates 5,000 codon sites, explores
+the native interactive viewers, and recovers branch-specific <span
+class="math inline">\(d_N/d_S\)</span> directly from all recorded
+substitution histories.</p>
 </div>
 <div id="references" class="section level1">
 <h1>References</h1>

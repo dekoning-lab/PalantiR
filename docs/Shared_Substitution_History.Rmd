@@ -62,16 +62,22 @@ ms_1k <- MutationSelection(
     population_size = 1000, 
     mutation_rate = 1e-8, 
     nucleotide_model = hky,
-    fitness = psi)
+    fitness = psi,
+    scaling_type = "synonymous")
 
 # Large population size
 ms_20k <- MutationSelection(
     population_size = 20000,
     mutation_rate = 1e-8, 
     nucleotide_model = hky,
-    fitness = psi)
+    fitness = psi,
+    scaling_type = "synonymous")
 
 ```
+
+Both substitution models use the dS gauge, so branch lengths are neutral
+nucleotide substitutions per site even as the shared process switches between
+population sizes.
 
 Sample sequence from model equilibrium distribution to start at root:
 ```{r sample_sequence}

@@ -13,13 +13,13 @@
 
 <title>Temporal_Heterogeneity_Rescaling.knit</title>
 
-<script src="Temporal_Heterogeneity_Rescaling_files/header-attrs-2.29/header-attrs.js"></script>
-<script src="Temporal_Heterogeneity_Rescaling_files/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="Temporal_Heterogeneity_Rescaling_files/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
-<script src="Temporal_Heterogeneity_Rescaling_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
-<script src="Temporal_Heterogeneity_Rescaling_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
-<script src="Temporal_Heterogeneity_Rescaling_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
 <style>h1 {font-size: 34px;}
        h1.title {font-size: 38px;}
        h2 {font-size: 30px;}
@@ -29,9 +29,9 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
-<script src="Temporal_Heterogeneity_Rescaling_files/navigation-1.1/tabsets.js"></script>
-<link href="Temporal_Heterogeneity_Rescaling_files/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
-<link href="Temporal_Heterogeneity_Rescaling_files/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet" />
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet" />
 
 <style type="text/css">
   code{white-space: pre-wrap;}
@@ -396,7 +396,18 @@ the original scheme) delivers the branch’s expected substitution budget
 exactly (the segment scheme delivers it to within the segment
 discretisation), runs faster, and reports event times in the same
 branch-position units, so output is interchangeable between the two
-methods. The segment scheme remains the default.</p>
+methods. The segment scheme remains available for reproducing the
+original discretized calculation.</p>
+<p>The same time-change machinery applies to dS, but its budget is
+defined by a neutral-reference clock rather than a realized event class.
+For each codon, PalantiR stores one third of the neutral reference’s
+total outflux. During a fitness-profile or population-size transient it
+integrates that outflux under the evolving codon distribution and
+preserves the destination mode’s stationary dS-clock rate. This keeps
+the supplied branch in neutral nucleotide units without forcing one
+realized synonymous event per codon. The other currencies preserve their
+selected event-class budgets: <code>substitution</code>,
+<code>synonymous-per-codon</code>, and <code>non-synonymous</code>.</p>
 <p>Also note that since v1.0.1 the segment forecast advances at the
 site’s rate multiplier; earlier versions under-delivered substitutions
 on fast sites during the transient.</p>

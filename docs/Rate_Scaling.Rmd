@@ -1,78 +1,144 @@
 ---
+title: "Rate Scaling"
 output:
   html_document:
     self_contained: no
 ---
 
-# Rate Matrix Scaling
+# Rate-matrix scaling
 
-`PalantiR` scales codon substitution rates to assign particular meanings to branches on a phylogeny.
+Scaling assigns a biological unit to every phylogenetic branch. PalantiR
+supports two distinct synonymous units, and code should name the intended one
+explicitly whenever the distinction matters.
 
-## Scaling types
+| Constructor input | Stored value | Meaning of one branch-length unit |
+|:--|:--|:--|
+| `"synonymous"`, `"dS"`, or `"ds"` | `"dS"` | One neutral synonymous substitution per synonymous opportunity, equivalent to one neutral nucleotide substitution per site |
+| `"synonymous-per-codon"` | `"synonymous-per-codon"` | One expected synonymous event per codon at stationarity |
+| `"non-synonymous"` | `"non-synonymous"` | One expected amino-acid-changing event per codon at stationarity |
+| `"standard"` or `"substitution"` | `"substitution"` | One expected substitution of any kind per codon at stationarity |
+| `"none"` | `"none"` | No rate normalization |
 
-There are five scaling schemes implemented:
+Since version 1.3.0, `scaling_type = "synonymous"` selects the dS gauge.
+Earlier PalantiR releases used that name for the event-count-per-codon gauge;
+that historical behavior remains available as `"synonymous-per-codon"`.
 
-* `synonymous` is the default dS gauge (`dS` and `ds` are explicit aliases). A branch length is neutral synonymous substitutions per synonymous opportunity, equivalently neutral nucleotide substitutions per site.
-* `synonymous-per-codon` preserves the earlier convention of one expected synonymous event per codon per branch-length unit.
-* `non-synonymous` scaling makes a branch length of one carry one expected _non-synonymous_ event per codon at stationarity.
-* `substitution` scaling makes a branch length of one carry one expected substitution event per codon at stationarity.
-* `none` can be specified to leave the substitution rates unscaled.
-
-Scaling type is specified as an optional parameter to substitution model constructors, _e.g._:
-
-```{r, eval=F}
+```{r, eval=FALSE}
 use_genetic_code("Standard nuclear")
-MutationSelection(..., scaling_type = "synonymous")
+MutationSelection(..., scaling_type = "synonymous")            # dS
+MutationSelection(..., scaling_type = "synonymous-per-codon")  # event count
 ```
 
-## dS implementation
+# The dS gauge
 
-For GY94, PalantiR builds the neutral `omega = 1` generator and divides the
-selected generator by one third of its stationary total rate. The neutral
-total rate is consequently three substitutions per codon, and the scaling is
-independent of the simulated `omega`.
+## GY94
 
-For mutation--selection models, the same denominator is computed from a
-mutation-only reference with amino-acid fitness differences removed. Different
-site-specific fitness profiles built from the same mutation model therefore
-share one neutral clock rather than being individually normalized by their
-realized synonymous flux.
-
-The model object reports the raw `neutral_total_rate`,
-`neutral_synonymous_rate`, and Q-weighted `synonymous_opportunities` used in
-the conversion. It also stores the per-state neutral-reference `dS_outflux`
-used by time-heterogeneous simulations. The stored canonical `scaling_type` is
-`"dS"`.
-
-## Event-count implementation
-
-Scaling rate is calculated as:
+For GY94, PalantiR constructs the neutral generator
+\(\widetilde Q^{(1)}\) by setting \(\omega=1\). If \(\pi\) is its stationary
+codon distribution, its total neutral rate is
 
 $$
-S(Q, \pi, t) = \sum \sum_{ij}\pi_i Q_{ij}^{(t)}
+r_{\mathrm{tot}}^{(1)} =
+  \sum_i \pi_i \sum_{j\ne i}\widetilde q_{ij}^{(1)}.
 $$
 
-* $Q$ is the substitution rate matrix
-* $\pi$ is the equilibrium distribution for $Q$
-* $t$ is the scaling type (outlined above)
+PalantiR divides the selected generator by
+\(S_{dS}=r_{\mathrm{tot}}^{(1)}/3\). The neutral reference consequently has
+three substitutions per codon per dS unit, or one per nucleotide site. This
+denominator is independent of the selected \(\omega\).
 
-The inner summation is over all the substitutions from each state (codon) $i$ to each state $j$.
-$Q^{(t)}$ means substitution rate for a substitution of type $t$ (e.g. synonymous substitution).
+Let \(N_S\) be the stationary synonymous flux of this dS-scaled neutral
+reference. On a stationary branch of length \(D\), the expected synonymous
+count across \(n\) codon sites is
 
-At equilibrium the identity is exact: with `synonymous-per-codon` scaling, a
-branch of length one carries one expected synonymous substitution per codon.
-On branches where the model changes and the process is temporarily out of
-equilibrium, the branch-length currency is maintained by the rescaling
-machinery described in
-[Temporal Heterogeneity Rescaling](Temporal_Heterogeneity_Rescaling.html).
-For dS, the rescaler uses a different functional. If (Q^0_{dS}) is the
-neutral reference already expressed in dS units, the per-state dS outflux is
+$$
+E[C_S] = nN_SD.
+$$
+
+Thus histories recover the branch length as
+\(\widehat D=C_S/(nN_S)\), rather than as synonymous events per codon.
+For the same neutral reference, the expected nonsynonymous count under GY94 is
+\(E[C_A]=n\omega N_A D\), which gives the usual opportunity-corrected dN/dS.
+
+## Mutation--selection models
+
+For mutation--selection models, PalantiR builds a mutation-only neutral
+reference by removing amino-acid fitness differences. All fitness profiles
+derived from the same nucleotide mutation model therefore share one neutral
+clock. A selected profile is not renormalized by its realized synonymous flux,
+which can change with codon composition or selection.
+
+The model object reports `neutral_total_rate`, `neutral_synonymous_rate`, and
+`synonymous_opportunities`. The last quantity is \(N_S\), the expected number
+of synonymous opportunities per codon per dS unit under the neutral reference.
+It also stores a per-state vector, `dS_outflux`, for time-heterogeneous
+rescaling. The canonical value recorded in `model$scaling_type` is `"dS"`.
+
+# Event-count gauges
+
+For an event class \(\mathcal A\), PalantiR computes the stationary flux
+
+$$
+S_{\mathcal A}(Q,\pi)=
+  \sum_i\pi_i\sum_{j\ne i}q_{ij}
+  \mathbf 1\{i\rightarrow j\in\mathcal A\}.
+$$
+
+Dividing \(Q\) by this flux makes a stationary branch of length one carry one
+expected event in \(\mathcal A\) per codon. This definition gives the
+`"synonymous-per-codon"`, `"non-synonymous"`, and `"substitution"` gauges.
+It is an event budget, rather than an opportunity-corrected evolutionary
+distance.
+
+# Time-heterogeneous branches
+
+When a fitness profile, population size, or other model parameter changes on
+a branch, the inherited codon distribution is generally not stationary under
+the new generator. PalantiR therefore integrates the requested branch-length
+currency along the transient; it does not assume the destination model starts
+at equilibrium.
+
+For dS, let \(Q^0_{dS}\) be the neutral reference expressed in dS units and
 
 $$
 h_i^{dS}=\frac{1}{3}\sum_{j\ne i}(Q^0_{dS})_{ij}.
 $$
 
-During a transient with codon distribution (p), the instantaneous dS-clock
-rate is (p^T h^{dS}). Rescaling the selected generator against this rate
-preserves neutral nucleotide time through a fitness or population-size shift.
-It does not force the realized synonymous-event count to one per codon.
+If the selected process enters the branch with distribution \(p_0\) and runs
+for intrinsic time \(\tau\), the exact rescaler chooses \(\tau\) so that
+
+$$
+\int_0^\tau p_0^T e^{Qu}h^{dS}\,du
+=D\,(\pi_{\mathrm{dest}}^T h^{dS}),
+$$
+
+where \(D\) is the supplied branch length and \(\pi_{\mathrm{dest}}\) is the
+destination model's equilibrium distribution. The selected generator \(Q\)
+still controls the substitution history; the neutral functional supplies only
+the clock used for the scalar time change. Consequently, dS scaling preserves
+neutral nucleotide time through a fitness or population-size shift without
+forcing one realized synonymous event per codon. Event-count gauges use the
+corresponding selected event-class outflux instead. See
+[Temporal Heterogeneity Rescaling](Temporal_Heterogeneity_Rescaling.html) for
+the numerical implementation.
+
+# Choosing a gauge
+
+Use dS scaling when tree lengths represent neutral nucleotide substitutions
+per site, including lengths estimated from noncoding sequence or fourfold
+degenerate positions, or when a branch or branch-site test is meant to compare
+nonsynonymous change against a fixed synonymous distance. Use
+`"synonymous-per-codon"` only when the desired input is a stationary expected
+number of synonymous events per codon. Use `"substitution"` or
+`"non-synonymous"` when the corresponding event count is the intended clock.
+
+These gauges are not numerically interchangeable. At stationarity,
+
+$$
+Q_{dS}=N_SQ_{\mathrm{syn/codon}},
+\qquad
+D=\frac{C_S}{nN_S}.
+$$
+
+The [engine-validation report](engine_validation.html) tests both synonymous
+definitions directly, including GY94 and mutation--selection dS branches.

@@ -84,12 +84,17 @@ gtr <- GeneralTimeReversible(
 pop_sizes <- c(100, 1000, 10000, 10000)
 pop_models <- lapply(pop_sizes, function(pop_size) {
     psi <- equilibrium_to_fitness(aa_pi[5,], pop_size)
-    MutationSelection(pop_size, 1e-8, hky, psi)
+    MutationSelection(pop_size, 1e-8, hky, psi,
+                      scaling_type = "synonymous")
 })
 
 # Markov-Modulated MS
 mmms <- MarkovModulatedMutationSelection(pop_models, gtr)
 ```
+
+The component models explicitly use the dS gauge. Branch lengths therefore
+measure neutral nucleotide substitutions per site rather than synonymous
+events per codon.
 
 Sample sequence from model equilibrium distribution to start at root:
 
@@ -114,7 +119,7 @@ Plot substitution history:
 plot(sim, sites = 0:10)
 ```
 
-Synonymous substiutions are shown in green, non-synonymous in red. Switches between models shown in blue.
+Synonymous substitutions are shown in green, non-synonymous in red. Switches between models shown in blue.
 
 Check substitution history table:
 

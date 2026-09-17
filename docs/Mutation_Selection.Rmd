@@ -63,8 +63,14 @@ ms <- MutationSelection(
     population_size = 1000,
     mutation_rate = 1e-8,
     nucleotide_model = hky,
-    fitness = aa_psi[1,])
+    fitness = aa_psi[1,],
+    scaling_type = "synonymous")
 ```
+
+Here `"synonymous"` selects the dS gauge, so the tree lengths are interpreted
+as neutral nucleotide substitutions per site. Use
+`"synonymous-per-codon"` only when one branch-length unit should instead mean
+one expected synonymous event per codon at stationarity.
 
 Sample sequence from model equilibrium distribution to start at root:
 
@@ -89,7 +95,7 @@ Plot substitution history:
 plot(sim, sites = 0:10)
 ```
 
-Synonymous substiutions are shown in green, non-synonymous in red.
+Synonymous substitutions are shown in green, non-synonymous in red.
 
 Check substitution history table:
 

@@ -63,16 +63,22 @@ ms_1 <- MutationSelection(
     population_size = 1000, 
     mutation_rate = 1e-8, 
     nucleotide_model = hky,
-    fitness = psi_1)
+    fitness = psi_1,
+    scaling_type = "synonymous")
 
 # Second fitness vector
 ms_2 <- MutationSelection(
     population_size = 1000,
     mutation_rate = 1e-8, 
     nucleotide_model = hky,
-    fitness = psi_2)
+    fitness = psi_2,
+    scaling_type = "synonymous")
 
 ```
+
+Both fitness profiles use the same mutation-based dS clock. The tree is
+therefore measured in neutral nucleotide substitutions per site while switch
+times remain site specific.
 
 Sample sequence from model equilibrium distribution to start at root:
 ```{r sample_sequence}

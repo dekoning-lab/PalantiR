@@ -42,25 +42,26 @@ following pages:
 * [Rate Scaling](Rate_Scaling.html)
 * [Temporal Heterogeneity Rescaling](Temporal_Heterogeneity_Rescaling.html)
 
-# What's new in 1.2
+# What's new in 1.3
 
-Following a full source review: reproducible simulations via
-`set_palantir_seed()`; an exact time-change alternative to the segment
-rescaler (`rescale_method = "exact"`); corrected `CoEvolution` and
-Markov-modulated model semantics; input validation throughout; and repaired
-datasets and documentation. See
+Version 1.3 makes `scaling_type = "synonymous"` a dS gauge: branch lengths
+measure neutral synonymous substitutions per synonymous opportunity,
+equivalent to neutral nucleotide substitutions per site. The former
+synonymous-event-count convention remains available as
+`"synonymous-per-codon"`. Time-heterogeneous simulations preserve the chosen
+currency through model shifts. See
 [NEWS.md](https://github.com/dekoning-lab/PalantiR/blob/master/NEWS.md) for
 the complete list, including breaking changes.
 
 # Engine validation
 
-The simulation engine is validated by a rerunnable notebook that tests
-branch-length calibration under each scaling mode, the stationary
-distribution, and the transient between two equilibria in a
-time-heterogeneous simulation, each against an exact expectation with a
-pre-stated pass criterion. Read the
-[current validation report](engine_validation.html) (all tests pass,
-version 1.2.1), or rerun it from a clone of the repository:
+The simulation engine is validated by a rerunnable notebook that separately
+tests event-count gauges, the dS gauge under homogeneous and
+time-heterogeneous GY94 and mutation--selection models, the stationary
+distribution, and transient rescaling. Each comparison has a pre-stated
+statistical criterion. Read the
+[current validation report](engine_validation.html) (all tests pass under
+version 1.3.0), or rerun it from a clone of the repository:
 
 ```r
 # in validation/, with PalantiR installed
@@ -70,7 +71,9 @@ rmarkdown::render("engine_validation.Rmd", params = list(seed = 1))
 For a larger event-level demonstration, the
 [GY94 history-validation report](GY94_History_Validation.html) simulates 5,000
 codons on a 50-taxon tree, reconstructs Goldman--Yang dN/dS from all recorded
-substitutions, and visualizes the branch-specific histories. The executable
+substitutions, and visualizes the branch-specific histories. That historical
+demonstration explicitly uses the `"synonymous-per-codon"` event-count gauge;
+its opportunity-corrected dN/dS calculation remains valid. The executable
 Jupyter notebook is retained in the repository under `validation/`.
 
 <table style="border: none;"><tr style="background: none;">

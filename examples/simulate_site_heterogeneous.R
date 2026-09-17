@@ -115,7 +115,8 @@ models <- lapply(used, function(p) {
         population_size  = pop_size,
         mutation_rate    = mu,
         nucleotide_model = nucleotide_model,
-        fitness          = psi)
+        fitness          = psi,
+        scaling_type     = "synonymous")
 })
 
 # ---------------------------------------------------------------------------
@@ -180,6 +181,7 @@ writeLines(c(
     sprintf("sites:             %d", n_sites),
     sprintf("population size:   %g", pop_size),
     sprintf("mutation rate:     %g", mu),
+    sprintf("rate scaling:      dS (neutral nucleotide substitutions per site)"),
     sprintf("seed:              %d", seed),
     sprintf("substitutions:     %d events (%d non-synonymous)",
             nrow(sim$substitutions), sum(!sim$substitutions$synonymous)),
