@@ -76,16 +76,16 @@ rescaling. The canonical value recorded in `model$scaling_type` is `"dS"`.
 
 # Event-count gauges
 
-For an event class \(\mathcal A\), PalantiR computes the stationary flux
+For an event class \(A\), PalantiR computes the stationary flux
 
 $$
-S_{\mathcal A}(Q,\pi)=
+S_A(Q,\pi)=
   \sum_i\pi_i\sum_{j\ne i}q_{ij}
-  \mathbf 1\{i\rightarrow j\in\mathcal A\}.
+  \mathbf 1\{i\rightarrow j\in A\}.
 $$
 
 Dividing \(Q\) by this flux makes a stationary branch of length one carry one
-expected event in \(\mathcal A\) per codon. This definition gives the
+expected event in \(A\) per codon. This definition gives the
 `"synonymous-per-codon"`, `"non-synonymous"`, and `"substitution"` gauges.
 It is an event budget, rather than an opportunity-corrected evolutionary
 distance.
