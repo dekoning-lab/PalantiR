@@ -50,9 +50,12 @@ branch lengths seen by \code{switching_model} only.}
 just changed, either \code{"exact"} (the default) or \code{"segments"}. See
 Details.}
 \item{scaling_targets}{Optional positive stationary rates, one per mode, for
-the set of transitions that determines scaling. \code{NULL} uses one for every
-mode. This is supplied automatically by \code{simulate_gy94_site_model} so
-components retain their rates relative to a common mixture denominator.}
+the functional that determines scaling. \code{NULL} derives each target from
+the model equilibrium. For dS this functional is the neutral-reference total
+outflux per codon divided by three; for the event-count gauges it is the
+requested transition class. This is supplied automatically by
+\code{simulate_gy94_site_model} so components retain their rates relative to a
+common mixture denominator.}
 }
 \value{
 A list of class \code{Simulation}. \code{simulate_over_phylogeny} returns
@@ -108,32 +111,31 @@ the path entirely, giving an instantaneous switch. Its accuracy and its cost are
 both set by \code{segment_length}.
 
 \code{"exact"} does the same job without discretising. The branch's budget of
-scaled-class events is the one the equilibrium model would deliver over the
+the scaling functional is the one the equilibrium model would deliver over the
 branch length; the transient model is run for however much intrinsic time it
 takes to deliver exactly that budget, solving the time change
 \eqn{\tau \mapsto \int_0^{\tau} f(u)\,du} for the intrinsic duration, where
-\eqn{f} is the scaled-class flux under the transient distribution. Event times
+\eqn{f} is the scaling-functional rate under the transient distribution. Event times
 are then mapped back onto the branch. This is exact in the segment size and
 usually much faster, but it is defined only when the models carry a scaled class:
 with \code{scaling_type = "none"} it now raises an error instead of quietly
 running the segment scheme. It does not use \code{segment_length}, which
 therefore has no effect on a run made with \code{rescale_method = "exact"}.
 
-The event-budget renormalisations apply to \code{"substitution"},
-\code{"synonymous-per-codon"}, and \code{"non-synonymous"} scaling. Models
-built with the dS gauge (user input \code{"synonymous"}, \code{"dS"}, or
-\code{"ds"}) run for the supplied neutral-time branch duration without either
-event-budget time change. The two \code{rescale_method} values consequently
-give the same simulation path for dS models.
+For \code{"substitution"}, \code{"synonymous-per-codon"}, and
+\code{"non-synonymous"}, the functional is the corresponding selected-event
+outflux. For the dS gauge (user input \code{"synonymous"}, \code{"dS"}, or
+\code{"ds"}), it is the neutral-reference total outflux per codon divided by
+three. Thus fitness-profile and population-size shifts retain transient
+rescaling while branch length remains neutral nucleotide time; dS is not
+reinterpreted as one realized synonymous event per codon.
 
 Either renormalisation is defined for single-codon models only. A
 \code{CoEvolution} model reaching it raises an error naming the mismatch; pass a
 \code{tolerance} of 1 or more to keep it out of the path.
 
 Only \code{simulate_over_interval_phylogeny} exposes \code{rescale_method}; the
-\code{simulate_with_shared_*} simulators always use \code{"segments"}, and their
-much smaller default \code{segment_length} makes them correspondingly expensive
-on long branches.
+\code{simulate_with_shared_*} simulators use the default exact method.
 
 Note that \code{tolerance} is an absolute root-mean-square deviation on a
 distribution whose entries scale as one over the number of states, so its

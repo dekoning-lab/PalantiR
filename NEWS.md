@@ -11,8 +11,11 @@
   of the simulated omega. Mutation--selection dS scaling is computed from the
   mutation-only neutral reference, so site-specific fitness profiles sharing a
   mutation model retain the same clock.
-- The transient event-budget rescalers are bypassed for dS branches. They
-  remain available for the three event-count currencies.
+- Time-heterogeneous dS simulations use the same exact or segmented transient
+  rescaler as other gauges, with a dS-specific clock functional: the
+  neutral-reference total outflux per codon divided by three. Fitness-profile
+  and population-size shifts therefore preserve the intended dS budget without
+  imposing one realized synonymous event per codon.
 
 ## New features
 

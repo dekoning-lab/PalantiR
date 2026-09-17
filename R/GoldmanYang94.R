@@ -213,6 +213,9 @@ GY94 <- GoldmanYang94
     # mixture-wide denominator. Multiplying a generator by a scalar does not
     # change its jump-destination probabilities, so `sampling` remains valid.
     model$transition <- model$transition * current_scaling / common_scaling
+    if(identical(model$scaling_type, "dS")) {
+        model$dS_outflux <- model$dS_outflux * current_scaling / common_scaling
+    }
     model$standalone_scaling <- standalone_scaling
     model$scaling <- as.numeric(common_scaling)
     model$stationary_scaled_rate <- standalone_scaling / common_scaling

@@ -83,3 +83,10 @@ double Palantir::CodonModel::neutral_dS_scaling(
         neutral_equilibrium, neutral_transition, "substitution", g);
     return neutral_total / 3.0;
 }
+
+vec Palantir::CodonModel::neutral_dS_outflux(
+        const mat& neutral_transition,
+        const GeneticCode& g)
+{
+    return class_outflux(neutral_transition, "substitution", g) / 3.0;
+}

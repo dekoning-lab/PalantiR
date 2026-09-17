@@ -40,7 +40,9 @@ realized synonymous flux.
 
 The model object reports the raw `neutral_total_rate`,
 `neutral_synonymous_rate`, and Q-weighted `synonymous_opportunities` used in
-the conversion. The stored canonical `scaling_type` is `"dS"`.
+the conversion. It also stores the per-state neutral-reference `dS_outflux`
+used by time-heterogeneous simulations. The stored canonical `scaling_type` is
+`"dS"`.
 
 ## Event-count implementation
 
@@ -63,6 +65,14 @@ On branches where the model changes and the process is temporarily out of
 equilibrium, the branch-length currency is maintained by the rescaling
 machinery described in
 [Temporal Heterogeneity Rescaling](Temporal_Heterogeneity_Rescaling.html).
-The event-budget rescaler is not applied to dS: dS is a neutral-time gauge, so
-the selected process runs for the supplied branch duration even while its
-state distribution is out of equilibrium.
+For dS, the rescaler uses a different functional. If (Q^0_{dS}) is the
+neutral reference already expressed in dS units, the per-state dS outflux is
+
+$$
+h_i^{dS}=\frac{1}{3}\sum_{j\ne i}(Q^0_{dS})_{ij}.
+$$
+
+During a transient with codon distribution (p), the instantaneous dS-clock
+rate is (p^T h^{dS}). Rescaling the selected generator against this rate
+preserves neutral nucleotide time through a fitness or population-size shift.
+It does not force the realized synonymous-event count to one per codon.

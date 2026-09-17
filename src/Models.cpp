@@ -88,6 +88,7 @@ List MutationSelection(
     double neutral_total_rate = NA_REAL;
     double neutral_synonymous_rate = NA_REAL;
     double synonymous_opportunities = NA_REAL;
+    arma::vec dS_outflux;
     double scaling;
     if(scaling_type == "dS") {
         // A dS branch is neutral nucleotide time, not one realised
@@ -108,6 +109,8 @@ List MutationSelection(
             "synonymous-per-codon", g);
         synonymous_opportunities =
             3.0 * neutral_synonymous_rate / neutral_total_rate;
+        dS_outflux = Palantir::CodonModel::neutral_dS_outflux(
+            neutral_transition / scaling, g);
     } else {
         scaling = Palantir::MutationSelection::scaling(
             equilibrium, transition, scaling_type, g);
@@ -129,6 +132,7 @@ List MutationSelection(
         _["neutral_total_rate"] = neutral_total_rate,
         _["neutral_synonymous_rate"] = neutral_synonymous_rate,
         _["synonymous_opportunities"] = synonymous_opportunities,
+        _["dS_outflux"] = dS_outflux,
         _["n_states"] = n_states,
         _["type"] = "codon"
     );
@@ -174,6 +178,7 @@ List CoEvolution(
     double neutral_total_rate = NA_REAL;
     double neutral_synonymous_rate = NA_REAL;
     double synonymous_opportunities = NA_REAL;
+    arma::vec dS_outflux;
     double scaling;
     if(scaling_type == "dS") {
         // The neutral reference for a codon pair is the Kronecker sum of two
@@ -195,6 +200,17 @@ List CoEvolution(
             "synonymous-per-codon", g);
         synonymous_opportunities =
             3.0 * neutral_synonymous_rate / neutral_total_rate;
+        // A codon-pair dS clock is the average of the two single-codon clocks.
+        arma::vec single_dS_outflux = Palantir::CodonModel::neutral_dS_outflux(
+            neutral_transition / scaling, g);
+        dS_outflux = arma::vec(g.size * g.size, fill::zeros);
+        for(const Palantir::Codon& i : g) {
+            for(const Palantir::Codon& j : g) {
+                dS_outflux[Palantir::CodonPair::index(i, j, g)] =
+                    (single_dS_outflux[i.index] +
+                     single_dS_outflux[j.index]) / 2.0;
+            }
+        }
     } else {
         scaling = Palantir::CoEvolution::scaling(
             equilibrium, transition, scaling_type, g);
@@ -217,6 +233,7 @@ List CoEvolution(
         _["neutral_total_rate"] = neutral_total_rate,
         _["neutral_synonymous_rate"] = neutral_synonymous_rate,
         _["synonymous_opportunities"] = synonymous_opportunities,
+        _["dS_outflux"] = dS_outflux,
         _["n_states"] = n_states,
         _["type"] = "codon_pair"
     );
@@ -272,6 +289,7 @@ List GoldmanYang94Cpp(
     double neutral_total_rate = NA_REAL;
     double neutral_synonymous_rate = NA_REAL;
     double synonymous_opportunities = NA_REAL;
+    arma::vec dS_outflux;
     double scaling;
     if(scaling_type == "dS") {
         // Define the clock from omega=1 so changing selection does not change
@@ -285,6 +303,8 @@ List GoldmanYang94Cpp(
             equilibrium, neutral_transition, "synonymous-per-codon", g);
         synonymous_opportunities =
             3.0 * neutral_synonymous_rate / neutral_total_rate;
+        dS_outflux = Palantir::CodonModel::neutral_dS_outflux(
+            neutral_transition / scaling, g);
     } else {
         scaling = Palantir::CodonModel::scaling(
             equilibrium, transition, scaling_type, g);
@@ -318,6 +338,7 @@ List GoldmanYang94Cpp(
         _["neutral_total_rate"] = neutral_total_rate,
         _["neutral_synonymous_rate"] = neutral_synonymous_rate,
         _["synonymous_opportunities"] = synonymous_opportunities,
+        _["dS_outflux"] = dS_outflux,
         _["n_states"] = g.size,
         _["type"] = "codon"
     );
@@ -373,6 +394,18 @@ List MarkovModulatedMutationSelection(
     unsigned long long n_states = equilibrium.n_elem;
 
     mat sampling = Palantir::sampling(transition);
+    arma::vec dS_outflux;
+    if(scaling_type == "dS") {
+        dS_outflux = arma::vec(n_states, fill::zeros);
+        for(ullong mode = 0; mode < mutation_selection_models.size(); mode++) {
+            List component = mutation_selection_models[mode];
+            arma::vec component_outflux = component["dS_outflux"];
+            for(const Palantir::Codon& codon : g) {
+                dS_outflux[Palantir::CompoundCodon::index(codon, mode, g)] =
+                    component_outflux[codon.index];
+            }
+        }
+    }
 
     List ms = List::create(
         _["equilibrium"] = equilibrium,
@@ -380,6 +413,7 @@ List MarkovModulatedMutationSelection(
         _["sampling"] = sampling,
         _["mutation_selection_models"] = mutation_selection_models,
         _["scaling_type"] = scaling_type,
+        _["dS_outflux"] = dS_outflux,
         _["n_states"] = n_states,
         _["type"] = "compound_codon"
     );

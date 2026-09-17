@@ -162,9 +162,10 @@ or stationary codon frequencies among branches. Following a frequency change,
 the child process starts from the distribution inherited from its parent; it is
 not redrawn from the new equilibrium. Event-count gauges use the normal
 transient-rescaling machinery to preserve the selected event budget during
-this approach. The dS gauge instead runs the selected generator for the
-supplied neutral-time branch duration; applying an event-budget time change
-would change its meaning back to synonymous events per codon.
+this approach. The dS gauge uses the same machinery with the neutral-reference
+total outflux per codon divided by three as its clock functional. This
+preserves neutral nucleotide time without imposing a realized synonymous-event
+count.
 
 \strong{Discrete classes.} \code{GY94SiteModel} is the general representation.
 Each class may contain one homogeneous GY94 model or one branch-heterogeneous

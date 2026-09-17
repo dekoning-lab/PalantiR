@@ -192,14 +192,14 @@ episodic <- GY94BranchModel(
 
 When stationary frequencies change, descendants enter the new process with the
 state distribution inherited from the parent; they are not redrawn from the
-new equilibrium. For event-count currencies, PalantiR uses the requested
-temporal rescaling method to preserve each component's event budget relative
-to the common mixture denominator. The exact time change is the default; the
-segment approximation remains available through
-`rescale_method = "segments"`. For dS, both choices take the same ordinary
-branch-time path. A dS branch is neutral evolutionary time, so PalantiR does
-not change its duration to force a realized synonymous-event count through an
-out-of-equilibrium transient.
+new equilibrium. PalantiR uses the requested temporal rescaling method to
+preserve each component's branch-length budget relative to the common mixture
+denominator. For event-count gauges this is the requested class-event outflux.
+For dS it is one third of the per-state total outflux from the `omega = 1`
+reference, integrated under the evolving codon distribution. Thus dS remains
+neutral nucleotide time without being converted into a fixed realized
+synonymous-event count. The exact time change is the default; the segment
+approximation remains available through `rescale_method = "segments"`.
 
 # Arbitrary discrete site classes
 

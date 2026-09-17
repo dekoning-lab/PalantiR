@@ -37,6 +37,14 @@ namespace Palantir
                 const vec& neutral_equilibrium,
                 const mat& neutral_transition,
                 const GeneticCode& g);
+
+        // Per-state rate at which the neutral reference consumes dS time.
+        // `neutral_transition` must already be expressed in the model's dS
+        // gauge, so its stationary mean total rate is three per codon. Dividing
+        // the total outflux by three converts it to a per-nucleotide clock.
+        vec neutral_dS_outflux(
+                const mat& neutral_transition,
+                const GeneticCode& g);
     }
 }
 

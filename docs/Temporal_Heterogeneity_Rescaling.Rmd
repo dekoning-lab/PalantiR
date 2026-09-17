@@ -58,12 +58,15 @@ the same branch-position units, so output is interchangeable between the two
 methods. The segment scheme remains available for reproducing the original
 discretized calculation.
 
-This event-budget time change applies to `substitution`,
-`synonymous-per-codon`, and `non-synonymous` currencies. It is bypassed for
-`dS` (including user input `scaling_type = "synonymous"`), because dS denotes
-neutral evolutionary time. A selected process therefore runs for the supplied
-branch duration through an equilibrium transient; forcing a realized
-synonymous-event budget would change the gauge.
+The same time-change machinery applies to dS, but its budget is defined by a
+neutral-reference clock rather than a realized event class. For each codon,
+PalantiR stores one third of the neutral reference's total outflux. During a
+fitness-profile or population-size transient it integrates that outflux under
+the evolving codon distribution and preserves the destination mode's
+stationary dS-clock rate. This keeps the supplied branch in neutral nucleotide
+units without forcing one realized synonymous event per codon. The other
+currencies preserve their selected event-class budgets: `substitution`,
+`synonymous-per-codon`, and `non-synonymous`.
 
 Also note that since v1.0.1 the segment forecast advances at the site's rate
 multiplier; earlier versions under-delivered substitutions on fast sites

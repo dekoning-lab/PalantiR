@@ -51,7 +51,8 @@ form, used by the simulators), \code{scaling} (the normalising constant applied)
 \code{scaling_type}, \code{n_states} and \code{type}. dS-scaled models also
 report \code{neutral_total_rate}, \code{neutral_synonymous_rate}, and the
 Q-weighted \code{synonymous_opportunities} used to define the gauge; these
-fields are \code{NA} for the other scaling types.
+fields are \code{NA} for the other scaling types. They also report the
+per-state neutral-reference \code{dS_outflux} used by the transient rescaler.
 }
 \description{
 Construct substitution models. \code{MutationSelection} implements the

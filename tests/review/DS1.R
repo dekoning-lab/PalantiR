@@ -49,6 +49,8 @@ result <- try({
           "GY94 dS denominator depends on omega")
     check(abs(flux(gy_1, one_step) - 3) < 2e-12,
           "neutral GY94 total rate is not three per codon")
+    check(abs(sum(gy_1$equilibrium * gy_1$dS_outflux) - 1) < 2e-12,
+          "GY94 neutral-reference dS clock does not have stationary rate one")
     check(abs(flux(gy_1, syn) - gy_1$synonymous_opportunities) < 2e-12,
           "GY94 synonymous rate does not equal N_S")
     check(abs(flux(gy_c, syn) - 1) < 2e-12,
@@ -73,28 +75,83 @@ result <- try({
           "mutation--selection dS denominator depends on the fitness profile")
     check(abs(flux(ms0, one_step) - 3) < 2e-12,
           "neutral mutation--selection total rate is not three per codon")
+    check(abs(sum(ms0$equilibrium * ms0$dS_outflux) - 1) < 2e-12,
+          "mutation--selection neutral-reference dS clock does not have rate one")
     check(abs(flux(ms0, syn) - ms0$synonymous_opportunities) < 2e-12,
           "neutral mutation--selection synonymous rate does not equal N_S")
 
-    # A dS-scaled mode change must run for ordinary branch time. Both rescaler
-    # choices therefore take the same no-time-change path and consume the same
-    # random stream.
-    tf <- tempfile(fileext = ".newick")
-    mf <- tempfile(fileext = ".newick")
-    writeLines("(A:0.4,B:0.2);", tf)
-    writeLines("(A:1,B:0);", mf)
-    tree <- Phylogeny(tf)
-    modes <- Phylogeny(mf, type = "mode")
-    root <- sample_sequence(ms1, 40)
-    set_palantir_seed(1701)
+    # A dS-scaled mode change uses the destination model's neutral-reference
+    # per-nucleotide outflux as its clock functional. For neutral GY94 this is
+    # exactly one third of the total event outflux, so a rescaled branch of
+    # length one must deliver about three events per codon even when it enters
+    # with a distribution far from the destination equilibrium.
+    mk <- function(txt, type = "phylogeny") {
+        f <- tempfile(fileext = ".newick")
+        writeLines(txt, f)
+        Phylogeny(f, type = type)
+    }
+    tree <- mk("(A:1);")
+    modes <- mk("(A:1);", "mode")
+    split <- floor(S / 2)
+    w_a <- w_b <- rep(1, S)
+    w_a[seq_len(split)] <- 1000
+    w_b[seq_len(split)] <- .001
+    gy_shift_a <- GY94(1, 4, F61(setNames(w_a, codons)),
+                       scaling_type = "dS")
+    gy_shift_b <- GY94(1, 4, F61(setNames(w_b, codons)),
+                       scaling_type = "dS")
+    check(sum(gy_shift_a$equilibrium * gy_shift_b$dS_outflux) < .3,
+          "GY94 dS transient fixture does not require rescaling")
+    root <- sample_sequence(gy_shift_a, 4000)
+    for(method in c("segments", "exact")) {
+        set_palantir_seed(1701)
+        sim <- simulate_over_interval_phylogeny(
+            tree, modes, list(gy_shift_a, gy_shift_b), root, 0,
+            segment_length = .002, tolerance = 1e-9,
+            rescale_method = method)
+        events <- nrow(sim$substitutions) / 4000
+        check(abs(events - 3) < .18,
+              sprintf("%s dS rescaler delivered %.3f neutral events per codon, expected about 3",
+                      method, events))
+    }
+
+    # Exercise the motivating mutation--selection cases directly: both the
+    # amino-acid fitness profile and Ne change. The two numerical rescalers
+    # should engage and approximate the same time change rather than silently
+    # taking an ordinary branch-time path.
+    aa_order <- strsplit("ACDEFGHIKLMNPQRSTVWY", "")[[1]]
+    p_a <- p_b <- setNames(rep(.05 / 19, 20), aa_order)
+    p_a["W"] <- .95
+    p_b["A"] <- .95
+    n_a <- 500
+    n_b <- 20000
+    fit_a <- equilibrium_to_fitness(as.numeric(p_a), n_a,
+                                    nucleotide_equilibrium = rep(.25, 4))
+    fit_b <- equilibrium_to_fitness(as.numeric(p_b), n_b,
+                                    nucleotide_equilibrium = rep(.25, 4))
+    ms_a <- MutationSelection(n_a, mu, hky, fit_a, "dS")
+    ms_b <- MutationSelection(n_b, mu, hky, fit_b, "dS")
+    target_b <- sum(ms_b$equilibrium * ms_b$dS_outflux)
+    entry_b <- sum(ms_a$equilibrium * ms_b$dS_outflux)
+    check(abs(target_b - entry_b) > .1,
+          "mutation--selection dS transient fixture does not require rescaling")
+    root_ms <- sample_sequence(ms_a, 3000)
+    set_palantir_seed(1702)
     seg <- simulate_over_interval_phylogeny(
-        tree, modes, list(ms1, ms2), root, 0, rescale_method = "segments")
-    set_palantir_seed(1701)
+        tree, modes, list(ms_a, ms_b), root_ms, 0,
+        segment_length = .002, tolerance = 1e-9,
+        rescale_method = "segments")
+    set_palantir_seed(1702)
     ex <- simulate_over_interval_phylogeny(
-        tree, modes, list(ms1, ms2), root, 0, rescale_method = "exact")
-    check(identical(seg$alignment, ex$alignment) &&
-          identical(seg$substitutions, ex$substitutions),
-          "dS simulation was altered by the event-budget rescaler choice")
+        tree, modes, list(ms_a, ms_b), root_ms, 0,
+        rescale_method = "exact")
+    seg_events <- nrow(seg$substitutions) / 3000
+    ex_events <- nrow(ex$substitutions) / 3000
+    check(abs(seg_events - ex_events) < .15,
+          sprintf("dS rescalers disagree after fitness/Ne shift: segments %.3f, exact %.3f",
+                  seg_events, ex_events))
+    check(!identical(seg$substitutions, ex$substitutions),
+          "dS fitness/Ne shift bypassed both transient rescalers")
 
     if(length(failures)) fail(paste(failures, collapse = "; "))
     pass()

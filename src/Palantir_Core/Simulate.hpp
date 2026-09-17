@@ -60,7 +60,8 @@ namespace Palantir
                 double tolerance = 0.001,
                 string scaling_type = "synonymous",
                 string rescale_method = "exact",
-                vec scaling_targets = vec());
+                vec scaling_targets = vec(),
+                vector<vec> scaling_outflux = vector<vec>());
 
         vector<IntervalHistory> switching_intervals(
                 const Phylogeny& tree,

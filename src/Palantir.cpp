@@ -64,6 +64,34 @@ static void check_substitution_model_state_space(List model, std::string argumen
     }
 }
 
+static vector<arma::vec> dS_scaling_outflux(
+        List models,
+        const string& scaling_type)
+{
+    vector<arma::vec> outflux;
+    if(scaling_type != "dS") {
+        return outflux;
+    }
+    outflux.reserve(models.size());
+    for(ullong i = 0; i < models.size(); i++) {
+        List model = models[i];
+        if(!model.containsElementNamed("dS_outflux")) {
+            stop("substitution_models[[" + std::to_string(i + 1) +
+                 "]] is dS-scaled but has no neutral-reference `dS_outflux`; "
+                 "rebuild it with the current model constructor");
+        }
+        arma::vec value = model["dS_outflux"];
+        arma::mat transition = model["transition"];
+        if(value.n_elem != transition.n_rows || !value.is_finite() ||
+           value.min() < 0) {
+            stop("substitution_models[[" + std::to_string(i + 1) +
+                 "]] has an invalid neutral-reference `dS_outflux`");
+        }
+        outflux.push_back(value);
+    }
+    return outflux;
+}
+
 // FIX (2026-08-20, M4): Phylogeny() used to accept anything ifstream could
 // open -- a directory, an empty file, arbitrary text, or a file holding several
 // trees (only the first was used). The newick parser then either built a
@@ -377,11 +405,11 @@ List simulate_over_interval_phylogeny(
         sampling.push_back(substitution_model["sampling"]);
     }
 
-    // Pass the constructor's canonical scaling type through. Event-count
-    // currencies use it to identify the budget preserved through a transient;
-    // dS is recognized as a neutral-time gauge and bypasses that event-budget
-    // time change.
+    // Pass the constructor's canonical scaling type through. dS models also
+    // carry the per-state neutral-reference clock used by the transient
+    // rescaler; this preserves dS time rather than a synonymous-event count.
     string scaling_type = get_attr(first_model, "scaling_type");
+    vector<vec> scaling_outflux = dS_scaling_outflux(models, scaling_type);
     arma::vec target_rates;
     if(scaling_targets.isNotNull()) {
         target_rates = Rcpp::as<arma::vec>(Rcpp::NumericVector(scaling_targets));
@@ -389,7 +417,7 @@ List simulate_over_interval_phylogeny(
     vector<Palantir::SiteSimulation> sims = Palantir::Simulate::sequence_over_intervals(
         p, tree_intervals, equilibrium, transition, sampling, codons, start_mode,
         g, rate, segment_length, tolerance, scaling_type, rescale_method,
-        target_rates);
+        target_rates, scaling_outflux);
 
     List substitutions = site_simulations_to_list(sims, p);
 
@@ -494,8 +522,12 @@ List simulate_with_shared_substitution_heterogeneity(
     // FIX (2026-08-17): see the note on the same call in
     // simulate_over_interval_phylogeny -- scaling_type was never passed through.
     string mm_scaling_type = get_attr(List(substitution_models[0]), "scaling_type");
+    vector<vec> mm_scaling_outflux = dS_scaling_outflux(
+        substitution_models, mm_scaling_type);
     vector<Palantir::SiteSimulation> sims = Palantir::Simulate::sequence_over_intervals(
-        p, tree_intervals, equilibrium, transition, sampling, codons, start_mode, g, rate, segment_length, tolerance, mm_scaling_type);
+        p, tree_intervals, equilibrium, transition, sampling, codons, start_mode,
+        g, rate, segment_length, tolerance, mm_scaling_type, "exact", vec(),
+        mm_scaling_outflux);
 
     List substitutions = site_simulations_to_list(sims, p);
 
@@ -600,13 +632,17 @@ List simulate_with_shared_time_heterogeneity(
 
     // FIX (2026-08-17): see the note in simulate_over_interval_phylogeny.
     string th_scaling_type = get_attr(List(substitution_models[0]), "scaling_type");
+    vector<vec> th_scaling_outflux = dS_scaling_outflux(
+        substitution_models, th_scaling_type);
     vector<Palantir::SiteSimulation> sims;
     for(unsigned long long site = 0; site < n_sites; site++) {
         uvec seq(1);
         seq[0] = codons[site];
 
         vector<Palantir::SiteSimulation> sim = Palantir::Simulate::sequence_over_intervals(
-             p, tree_intervals[site], equilibrium, transition, sampling, seq, start_mode, g, rate, segment_length, tolerance, th_scaling_type);
+             p, tree_intervals[site], equilibrium, transition, sampling, seq,
+             start_mode, g, rate, segment_length, tolerance, th_scaling_type,
+             "exact", vec(), th_scaling_outflux);
         if(sim.size() != 1) {
             Rcout << sim.size() << endl;
             stop("This should never happen!");

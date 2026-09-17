@@ -127,15 +127,24 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_phylogeny(
 // See the accompanying technical note: because every rescaled segment applies a
 // scalar multiple of one generator, the out-of-equilibrium branch is exactly
 // the homogeneous chain run for an intrinsic duration tau*. With p0 the
-// forecast entering the branch and g the per-state class outflux, the budget
+// forecast entering the branch and g the per-state scaling-functional outflux,
+// the budget
 // delivered by intrinsic time tau is F(tau) = p0' (int_0^tau e^{Qu} du) g,
 // strictly increasing with F'(tau) = p0' e^{Qtau} g approaching the mode's
-// stationary target r*. Thus F(tau*) = t*rate*r* has a unique root. F and F'
+// stationary target r*. Thus F(tau*) = t*rate*r* has a unique root. For dS,
+// g is one third of the neutral-reference total outflux; for the event-count
+// gauges it is the selected class outflux. F and F'
 // come from one exponential of the augmented matrix [[Q, I], [0, 0]].
 
 static vec rescale_class_outflux(const mat& Q, const string& scaling_type,
                                  const Palantir::GeneticCode& g)
 {
+    if (Palantir::CodonModel::canonical_scaling_type(scaling_type) == "none") {
+        // The legacy segment path treats unscaled models as having the constant
+        // functional sum(p)=1, so its scalar remains one while the transient
+        // distribution is still advanced.
+        return vec(Q.n_rows, fill::ones);
+    }
     return Palantir::CodonModel::class_outflux(Q, scaling_type, g);
 }
 
@@ -306,7 +315,8 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
         double tolerance,
         string scaling_type,
         string rescale_method,
-        vec scaling_targets)
+        vec scaling_targets,
+        vector<vec> scaling_outflux)
 {
     scaling_type = CodonModel::canonical_scaling_type(scaling_type);
     if (rescale_method != "segments" && rescale_method != "exact") {
@@ -319,9 +329,9 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
     // for. Say so rather than quietly running something else.
     if (rescale_method == "exact" && scaling_type == "none") {
         throw logic_error("rescale_method \"exact\" needs models built with a "
-                          "scaled class: the exact time change solves for the "
-                          "intrinsic duration that delivers the branch's budget "
-                          "of scaled-class events, and scaling_type \"none\" "
+                          "scaling functional: the exact time change solves for "
+                          "the intrinsic duration that delivers the branch's "
+                          "scaling budget, and scaling_type \"none\" "
                           "defines no such class. Rebuild the models with a "
                           "scaling_type, or use rescale_method \"segments\".");
     }
@@ -329,8 +339,37 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
         throw logic_error("Intervals must correspond to tree nodes");
     }
 
+    if (scaling_outflux.empty()) {
+        if (scaling_type == "dS") {
+            throw logic_error("dS transient rescaling needs the per-state "
+                              "neutral-reference dS outflux stored by the "
+                              "substitution-model constructor");
+        }
+        scaling_outflux.reserve(transition.size());
+        for (const mat& Q : transition) {
+            scaling_outflux.push_back(
+                rescale_class_outflux(Q, scaling_type, g));
+        }
+    }
+    if (scaling_outflux.size() != transition.size()) {
+        throw logic_error("Scaling outflux must contain one vector for every "
+                          "substitution mode");
+    }
+    for (ullong mode = 0; mode < scaling_outflux.size(); mode++) {
+        if (scaling_outflux[mode].n_elem != transition[mode].n_rows ||
+            !scaling_outflux[mode].is_finite() ||
+            scaling_outflux[mode].min() < 0) {
+            throw logic_error("Each scaling outflux must be a finite, "
+                              "non-negative vector with one value per state");
+        }
+    }
+
     if (scaling_targets.n_elem == 0) {
-        scaling_targets = vec(transition.size(), fill::ones);
+        scaling_targets = vec(transition.size(), fill::zeros);
+        for (ullong mode = 0; mode < transition.size(); mode++) {
+            scaling_targets[mode] = dot(
+                equilibrium[mode], scaling_outflux[mode]);
+        }
     }
     if (scaling_targets.n_elem != transition.size() ||
         !scaling_targets.is_finite() || scaling_targets.min() <= 0) {
@@ -432,24 +471,6 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
                     continue;
                 }
 
-                // dS is a neutral-time gauge. The selected process should run
-                // for the supplied branch duration even when a mode change
-                // leaves its state distribution away from the new
-                // equilibrium. The event-budget rescalers below are useful
-                // for currencies defined by a realised class-event count;
-                // applying them to dS would silently turn the dS clock back
-                // into synonymous-events-per-codon scaling. No forecast is
-                // needed here because every dS interval follows this path.
-                if (scaling_type == "dS") {
-                    current_pi = local_pi[mode];
-                    current_mode = mode;
-                    current_scal = 1.0;
-                    current_Q = local_Q[mode];
-                    push_segment(n, start, finish, current_mode,
-                                 current_scal, NO_TIME_CHANGE);
-                    continue;
-                }
-
                 double pi_rmsd = rmsd(current_pi, local_pi[mode]);
 
                 if (pi_rmsd > tolerance) {
@@ -482,13 +503,13 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
                     if (rescale_method == "exact") {
                         // Exact time change: one homogeneous stretch of the
                         // mode's own matrix for intrinsic duration tau*, with
-                        // the mode's stationary class-rate target over
+                        // the mode's stationary scaling-functional target over
                         // (finish-start)*rate delivered identically. Standalone
                         // models target one; a site-mixture component retains
                         // its rate relative to the common mixture denominator.
                         // Event times are mapped from intrinsic time back to
                         // physical branch position using the same budget.
-                        vec g_class = rescale_class_outflux(local_Q[mode], scaling_type, g);
+                        const vec& g_class = scaling_outflux[mode];
                         if (exact_step.count(mode) == 0) {
                             const uword nn = local_Q[mode].n_rows;
                             mat aug(2 * nn, 2 * nn, fill::zeros);
@@ -518,16 +539,13 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
                         continue;
                     }
 
-                    // NOTE: no constraint on scaling_type. The rescaler must
-                    // normalise the SAME quantity the models were built with --
-                    // which the preceding commit guarantees by passing
-                    // scaling_type through -- but WHICH quantity that is, is the
-                    // caller's modelling choice, set by the units of the guide
-                    // tree's branch lengths. An earlier revision of this guard
-                    // required "synonymous"; that was wrong, because it assumed
-                    // the invariant should be the Ne-independent rate rather than
-                    // whatever the branch lengths denominate. With amino-acid
-                    // branch lengths the correct invariant is non-synonymous.
+                    // The cached outflux vector represents the same functional
+                    // used to define the model's branch-length gauge. For the
+                    // event-count gauges it selects the requested event class.
+                    // For dS it is the neutral-reference total outflux divided
+                    // by three. Thus dS rescaling preserves neutral nucleotide
+                    // time without imposing one realised synonymous event per
+                    // codon.
 
                     // Iterate over small branch segments -
                     IntervalHistory segments(finish - start, segment_length);
@@ -556,8 +574,7 @@ vector<Palantir::SiteSimulation> Palantir::Simulate::sequence_over_intervals(
                             // the scaled class, for every site.
                             current_pi = trans(current_pi.t() * ((current_Q * (s_length * rate)) + I));
 
-                            double rho = CodonModel::scaling(
-                                    current_pi, local_Q[mode], scaling_type, g);
+                            double rho = dot(current_pi, scaling_outflux[mode]);
 
                             current_mode = mode;
                             current_scal = scaling_targets[mode] / rho;

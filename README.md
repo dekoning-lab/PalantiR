@@ -55,7 +55,9 @@ opportunity, matching neutral nucleotide substitutions per site. The previous
 one-synonymous-event-per-codon convention is available as
 `"synonymous-per-codon"`. GY94 uses its `omega = 1` reference;
 mutation--selection models use a mutation-only reference shared across fitness
-profiles. The transient event-budget time change is bypassed for dS branches.
+profiles. During a fitness or population-size shift, the transient rescaler
+preserves the neutral-reference dS clock; it does not reinterpret dS as one
+realized synonymous event per codon.
 
 Version 1.2.1 fixes event-position reporting through stiff transients under
 `rescale_method = "exact"`; the defect was found by the engine validation
