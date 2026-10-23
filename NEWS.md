@@ -14,6 +14,11 @@
   depend on the profiles' composition.
 - New data set `psi_c50_2`: the second independent C50 estimate (Table 5 of the
   same supplement), with raw file `inst/extdata/psi-c50-2.txt`.
+- New data set `psi_c50_iqtree`, with weights `psi_c50_iqtree_weights`: the C50
+  profiles and mixture weights built into IQ-TREE 2, reordered to PalantiR's
+  amino-acid order. These are a different estimate of C50 from Tables 4 and 5
+  (no profile matches a table row after rounding) and are not interchangeable
+  with `psi_c50_1` or `psi_c50_2`.
 - `?datasets` now cites the source tables and describes the raw files'
   trailing 21st field correctly (a zero for Palantir-Perl's stop symbol, not a
   trailing tab).

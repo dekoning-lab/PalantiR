@@ -9,8 +9,9 @@
 # column names in the package's order, and multiplying a row by its printed
 # total recovers the table's integers. Spot checks below cover the two
 # aromatic-rich profiles and the isoleucine/valine profile, and two composition
-# checks guard against any future V/W exchange across all 50 rows. This script
-# PASSES.
+# checks guard against any future V/W exchange across all 50 rows. The IQ-TREE
+# version, psi_c50_iqtree, is pinned to IQ-TREE's C50pi1, which is listed in
+# ARNDCQEGHILKMFPSTWYV order and so checks the reordering. This script PASSES.
 
 suppressMessages(library(PalantiR))
 
@@ -22,7 +23,7 @@ fail <- function(reason) {
 aa <- c("A","C","D","E","F","G","H","I","K","L","M","N","P","Q","R","S","T","V","W","Y")
 
 env <- new.env()
-data(list = c("psi_c50_1", "psi_c50_2"), package = "PalantiR", envir = env)
+data(list = c("psi_c50_1", "psi_c50_2", "psi_c50_iqtree"), package = "PalantiR", envir = env)
 
 # Printed integers (whole percentages) and row totals from Tables 4 and 5.
 spots <- list(
@@ -55,5 +56,20 @@ for (nm in c("psi_c50_1", "psi_c50_2")) {
         fail(sprintf("%s: V and I are uncorrelated across profiles (r = %.2f)", nm,
                      cor(ps[, "V"], ps[, "I"])))
 }
+
+# IQ-TREE's C50pi1 = 0.1357566757 (A) ... 0.2060115780 (S) 0.1011347978 (T)
+# 0.0012443033 (W) 0.0056104605 (Y) 0.0093801079 (V), weight 0.0164297003.
+iq <- get("psi_c50_iqtree", envir = env)
+iq_w <- get("psi_c50_iqtree_weights", envir = env)
+if (!is.numeric(iq) || !identical(dim(iq), c(50L, 20L)) || !identical(colnames(iq), aa))
+    fail("psi_c50_iqtree is not a 50 x 20 matrix with the amino-acid column names")
+iq1 <- c(A = 0.1357566757, S = 0.2060115780, T = 0.1011347978,
+         W = 0.0012443033, Y = 0.0056104605, V = 0.0093801079)
+if (max(abs(iq[1, names(iq1)] - iq1)) > 1e-12)
+    fail("psi_c50_iqtree profile 1 does not match IQ-TREE's C50pi1")
+if (max(abs(rowSums(iq) - 1)) > 1e-9)
+    fail("psi_c50_iqtree rows do not sum to 1")
+if (length(iq_w) != 50 || abs(sum(iq_w) - 1) > 1e-9 || abs(iq_w[1] - 0.0164297003) > 1e-12)
+    fail("psi_c50_iqtree_weights are not IQ-TREE's 50 C50 weights")
 
 cat("D5: PASS\n")

@@ -3,6 +3,8 @@
 \alias{amino_acid_fitness_N_1000}
 \alias{psi_c50_1}
 \alias{psi_c50_2}
+\alias{psi_c50_iqtree}
+\alias{psi_c50_iqtree_weights}
 \title{Example amino-acid distributions and fitnesses}
 \format{
 \code{amino_acid_equilibrium}: a 6 x 20 numeric matrix of amino-acid stationary
@@ -19,6 +21,11 @@ names; row \eqn{k} is profile \eqn{k} of the source table. Rows sum to 1, so
 these are frequency profiles rather than fitnesses; pass them through
 \code{\link{equilibrium_to_fitness}} before building a
 \code{\link{MutationSelection}} model.
+
+\code{psi_c50_iqtree}: a 50 x 20 numeric matrix in the same layout, holding the
+C50 profiles built into IQ-TREE. \code{psi_c50_iqtree_weights}: a numeric
+vector of their 50 mixture weights, which sum to 1. \code{data(psi_c50_iqtree)}
+loads both.
 }
 \description{
 Example inputs shipped with the package. \code{amino_acid_equilibrium} holds
@@ -26,7 +33,8 @@ amino-acid stationary distributions, \code{amino_acid_fitness_N_1000} the
 corresponding relative fitnesses at an effective population size of 1000, and
 \code{psi_c50_1} and \code{psi_c50_2} two independent estimates of the 50
 amino-acid profiles of the C50 profile mixture of Le, Gascuel and Lartillot
-(2008).
+(2008). \code{psi_c50_iqtree} is the version of C50 built into IQ-TREE, with
+its mixture weights in \code{psi_c50_iqtree_weights}.
 }
 \details{
 \code{psi_c50_1} is Table 4 (\dQuote{first run}) and \code{psi_c50_2} is
@@ -37,6 +45,19 @@ divided by its own total, and multiplying it by that total recovers the printed
 integers. Table 5 is ordered to match Table 4, and the paper identifies its
 first 41 profiles unequivocally with those of the first run. The tables give no
 mixture weights, so neither data set carries any.
+
+\code{psi_c50_iqtree} holds the profiles that IQ-TREE 2 defines as
+\code{C50pi1} to \code{C50pi50}, in that order, and
+\code{psi_c50_iqtree_weights} the weights of its \code{C50} model. IQ-TREE's
+source attributes them to Le, Gascuel and Lartillot (2008) without saying which
+estimate they are, and lists frequencies in the order
+\code{ARNDCQEGHILKMFPSTWYV}; here they are reordered to this package's order.
+They are a different set of profiles from Tables 4 and 5: none of the 50
+matches a row of either table after rounding to whole percentages. They are
+therefore not interchangeable with \code{psi_c50_1} or \code{psi_c50_2}, and
+their weights do not apply to those data sets. Values are kept as IQ-TREE
+prints them, to ten decimal places, so rows sum to 1 only to within
+\eqn{10^{-9}}.
 
 The raw files these were built from are in \code{inst/extdata}
 (\code{amino_acid_equilibrium.csv}, \code{amino_acid_fitness_N_1000.csv},
@@ -57,6 +78,11 @@ models for phylogenetic reconstruction. \emph{Bioinformatics} \bold{24},
 2317--2323. \doi{10.1093/bioinformatics/btn445}. Supplementary material
 (\file{bioinf-2008-0768-File009.pdf}), Table 4 (\code{psi_c50_1}) and Table 5
 (\code{psi_c50_2}).
+
+\code{psi_c50_iqtree}, \code{psi_c50_iqtree_weights}: IQ-TREE 2,
+\file{model/modelmixture.cpp} (\code{frequency C50pi1} to \code{C50pi50} and
+\code{model C50}), commit \code{8891b7d} (11 July 2024),
+\url{https://github.com/iqtree/iqtree2}.
 }
 \note{
 Before version 1.3.0, \code{psi_c50_1} had its V and W columns exchanged:
