@@ -2,7 +2,8 @@
 #
 # When the entering forecast is far from the new mode's equilibrium, the scaled
 # class flux can start orders of magnitude above its equilibrium value of ~1
-# (634x measured on the disjoint-profile switch below). The exact rescaler's
+# (634x measured on the disjoint-profile switch below, before 1.3.0 corrected
+# the V and W columns of psi_c50_1). The exact rescaler's
 # knot table used to march at a fixed intrinsic-time step, so the whole
 # boundary layer fell inside one knot interval and the piecewise-linear
 # inverse time change misplaced early events: 4.6x too many class events were

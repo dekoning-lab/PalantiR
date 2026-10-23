@@ -1,5 +1,23 @@
 # PalantiR 1.3.0
 
+## Corrected C50 profiles
+
+- `psi_c50_1` had its V and W columns exchanged: the column documented as V
+  held the W frequencies and vice versa, so profile 2 (41% I, 43% V in the
+  source) read as 41% I, 43% W. The swap was present when the file was added
+  to Palantir-Perl in 2015 and was copied into PalantiR unchanged. The data are
+  now relabelled, every row reproduces Table 4 of the supplementary material
+  of Le, Gascuel & Lartillot (2008, *Bioinformatics* 24:2317-2323), and the
+  matrix has amino-acid column names. The raw `inst/extdata/psi-c50-1.txt` is
+  corrected the same way. Simulations that used `psi_c50_1` in earlier
+  versions used profiles with V and W exchanged; rerun any whose conclusions
+  depend on the profiles' composition.
+- New data set `psi_c50_2`: the second independent C50 estimate (Table 5 of the
+  same supplement), with raw file `inst/extdata/psi-c50-2.txt`.
+- `?datasets` now cites the source tables and describes the raw files'
+  trailing 21st field correctly (a zero for Palantir-Perl's stop symbol, not a
+  trailing tab).
+
 ## Corrected branch-length semantics
 
 - `scaling_type = "synonymous"` now implements dS per synonymous opportunity,
