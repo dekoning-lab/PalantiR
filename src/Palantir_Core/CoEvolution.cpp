@@ -7,10 +7,14 @@ vec Palantir::CoEvolution::equilibrium(
         const vec& fitness_1,
         const vec& fitness_2,
         const mat& delta,
-        const GeneticCode& g)
+        const GeneticCode& g,
+        FixationModel model)
 {
     ullong n_pairs = g.size * g.size;
-    const ullong& N = population_size;
+    // FIX (2026-10-24): stationary exponent of the generator, 2N - 1 under the
+    // default diffusion fixation probability (this used 2N); see
+    // MutationSelection::equilibrium.
+    const double E = stationary_exponent(population_size, model);
     // FIX (2026-08-20): the log-sum-exp offset was initialised to
     // numeric_limits<double>::min(), the smallest POSITIVE double, so an
     // all-negative fitness surface never updated it and the equilibrium came
@@ -27,7 +31,7 @@ vec Palantir::CoEvolution::equilibrium(
             ullong aa_j = j.amino_acid;
             
             double selection = fitness_1[aa_i] + fitness_2[aa_j];
-            double population_selection = 2.0 * N * selection * delta.at(aa_i, aa_j);
+            double population_selection = E * selection * delta.at(aa_i, aa_j);
             if(max < population_selection) {
                 max = population_selection;
             }
@@ -41,7 +45,7 @@ vec Palantir::CoEvolution::equilibrium(
             ullong pair_index = CodonPair::index(i, j, g);
             
             double selection = fitness_1[aa_i] + fitness_2[aa_j];
-            double population_selection = 2.0 * N * selection * delta.at(aa_i, aa_j);
+            double population_selection = E * selection * delta.at(aa_i, aa_j);
             equilibrium.at(pair_index) = population_selection;
             
             double s = exp(population_selection - max);
@@ -77,7 +81,8 @@ mat Palantir::CoEvolution::transition(
         const vec& fitness_1,
         const vec& fitness_2,
         const mat& delta,
-        const GeneticCode& g)
+        const GeneticCode& g,
+        FixationModel model)
 {
     ullong n_pairs = g.size * g.size;
     const ullong& N = population_size;
@@ -123,7 +128,7 @@ mat Palantir::CoEvolution::transition(
                             * delta.at(k.amino_acid, l.amino_acid);
 
                         transition.at(c_ij, c_kl) = (2 * N * mu_ik * mu_jl *
-                                MutationSelection::fixation_probability(N, joint_fitness_kl - joint_fitness_ij));
+                                MutationSelection::fixation_probability(N, joint_fitness_kl - joint_fitness_ij, model));
                         
                     }
                 }

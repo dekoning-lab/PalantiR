@@ -1,3 +1,40 @@
+# PalantiR 1.4.0
+
+## Stationary distribution of the mutation-selection generator
+
+- `MutationSelection()` and `CoEvolution()` simulate with Kimura's (1962)
+  diffusion fixation probability, u(s) = (1 - e^-s) / (1 - e^-2Ns) (his
+  eq. 10, with s the homozygote selection coefficient). Detailed balance for
+  this generator gives a stationary distribution proportional to the
+  mutational weight times exp((2N - 1) f). The reported `equilibrium`, and
+  hence the root sequences sampled from it, used exp(2N f), the stationary
+  distribution of the weak-selection form (eq. 11) instead. Each frequency
+  ratio was off by a factor exp(f_j - f_i), which is exp(S/2N) for a scaled
+  difference S: with scaled fitnesses spanning 20 units, amino-acid
+  frequencies were off by up to 9% at N = 100, 1% at N = 1000 and 1e-5 at
+  N = 10^6. Descendant sequences relaxed from the reported distribution
+  towards the true one along the tree. `equilibrium` now uses 2N - 1 and is
+  the stationary distribution of `transition` to rounding error.
+- `equilibrium_to_fitness()` now divides by the same exponent, 2N - 1, so
+  that a model built on its output has the requested stationary distribution.
+  Its default output changes: every fitness moves away from the fittest
+  amino acid's by the factor 2N / (2N - 1). Simulations at large N are
+  essentially unaffected (a 5e-7 relative change in every selection
+  coefficient at N = 10^6).
+
+## New features
+
+- `MutationSelection()`, `CoEvolution()` and `equilibrium_to_fitness()` take
+  `fixation = "diffusion"` (the default, as above) or
+  `fixation = "weak-selection"`, Kimura's eq. (11),
+  u(s) = s / (1 - e^-2Ns). Its substitution rate, mu S / (1 - e^-S) with
+  S = 2Ns, depends on the population-scaled coefficient alone and is the
+  model of Halpern and Bruno (1998), PhyloBayes MutSel and swMutSel; its
+  stationary distribution carries exp(2N f). Use it to simulate data for
+  those programs exactly. `equilibrium_to_fitness(..., fixation =
+  "weak-selection")` reproduces the pre-1.4.0 default output bit for bit.
+  Models store the choice in `fixation`.
+
 # PalantiR 1.3.0
 
 ## Corrected C50 profiles

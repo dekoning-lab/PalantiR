@@ -1,10 +1,20 @@
 #include "MutationSelection.hpp"
 #include "CodonModel.hpp"
 
-double Palantir::MutationSelection::fixation_probability(ullong population_size, double selection)
+double Palantir::MutationSelection::fixation_probability(ullong population_size, double selection, FixationModel model)
 {
     if (selection == 0) {
         return 1.0 / (2.0 * population_size);
+    }
+    if (model == FixationModel::WeakSelection) {
+        // Kimura (1962) eq. (11), u = s / (1 - e^{-2Ns}). For s < 0 the
+        // equivalent form -s e^{2Ns} / (1 - e^{2Ns}) underflows to 0 instead
+        // of overflowing, so neither sign needs a cut-off.
+        double S = 2.0 * population_size * selection;
+        if (S < 0) {
+            return -selection * exp(S) / (-expm1(S));
+        }
+        return selection / (-expm1(-S));
     }
     // FIX (2026-08-20): guard both exponential asymptotes. For selection below
     // about -709.78, exp(-selection) overflows so numerator and denominator are
@@ -31,10 +41,18 @@ vec Palantir::MutationSelection::equilibrium(
         double mutation_rate,
         const vec& nucleotide_equilibrium,
         const vec& fitness,
-        const GeneticCode& g)
+        const GeneticCode& g,
+        FixationModel model)
 {
     ullong n_codons = g.size;
-    const ullong& N = population_size;
+    // FIX (2026-10-24): the stationary distribution of transition() is the
+    // mutational weight times exp(E f), with E = 2N - 1 under the default
+    // diffusion fixation probability and E = 2N under weak selection (see
+    // stationary_exponent). This used 2N for both, so under the default the
+    // reported equilibrium was not the generator's stationary distribution:
+    // every frequency ratio was off by a factor e^{f_j - f_i}, i.e. e^{S/2N}
+    // for a scaled difference S (5% at N = 100 and S = 10).
+    const double E = stationary_exponent(population_size, model);
     // FIX (2026-08-20): the log-sum-exp offset was initialised to
     // numeric_limits<double>::min(), which is the smallest POSITIVE double
     // (2.2e-308), not the most negative one. With an all-negative fitness
@@ -48,14 +66,14 @@ vec Palantir::MutationSelection::equilibrium(
 
     // Log-scale normalizing constant
     for(const Codon& i : g) {
-        double population_selection = 2.0 * N * fitness[i.amino_acid];
+        double population_selection = E * fitness[i.amino_acid];
         if (max < population_selection) {
             max = population_selection;
         }
     }
 
     for(const Codon& i : g) {
-        double population_selection = 2.0 * N * fitness[i.amino_acid];
+        double population_selection = E * fitness[i.amino_acid];
         codon_equilibrium[i.index] = population_selection;
         double s = exp(population_selection - max);
         for(int k = 0; k < 3; k++) {
@@ -81,7 +99,8 @@ mat Palantir::MutationSelection::transition(
         double mutation_rate,
         const mat& nucleotide_transition,
         const vec& fitness,
-        const GeneticCode& g)
+        const GeneticCode& g,
+        FixationModel model)
 {
     const ullong& N = population_size;
     mat codon_transition(g.size, g.size, fill::zeros);
@@ -96,7 +115,7 @@ mat Palantir::MutationSelection::transition(
 
                 codon_transition.at(i.index, j.index) = (
                         2 * N * mu *
-                        fixation_probability(N, fitness[j.amino_acid] - fitness[i.amino_acid]));
+                        fixation_probability(N, fitness[j.amino_acid] - fitness[i.amino_acid], model));
             }
         }
     }

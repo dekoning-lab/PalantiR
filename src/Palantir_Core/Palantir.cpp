@@ -75,18 +75,55 @@ mat Palantir::sampling(const mat& transition)
     return sampling;
 }
 
-vec Palantir::equilibrium_to_fitness(const vec& equilibrium, double population_size, double epsilon)
+Palantir::FixationModel Palantir::fixation_model(const string& name)
+{
+    if(name == "diffusion") {
+        return FixationModel::Diffusion;
+    }
+    if(name == "weak-selection") {
+        return FixationModel::WeakSelection;
+    }
+    throw invalid_argument("Unknown fixation model '" + name + "'. Valid values "
+                           "are \"diffusion\" (Kimura 1962, eq. 10) and "
+                           "\"weak-selection\" (Kimura 1962, eq. 11).");
+}
+
+string Palantir::fixation_model_name(FixationModel model)
+{
+    return model == FixationModel::Diffusion ? "diffusion" : "weak-selection";
+}
+
+double Palantir::stationary_exponent(double population_size, FixationModel model)
+{
+    double E = 2.0 * population_size;
+    if(model == FixationModel::Diffusion) {
+        E -= 1.0;
+    }
+    if(!(E > 0)) {
+        throw invalid_argument("The stationary exponent " + to_string(E) +
+                               " is not positive: population_size must exceed "
+                               "1/2 under the diffusion fixation model and 0 "
+                               "under weak selection");
+    }
+    return E;
+}
+
+vec Palantir::equilibrium_to_fitness(
+        const vec& equilibrium,
+        double population_size,
+        FixationModel model,
+        double epsilon)
 {
     // FIX (2026-08-20): population_size is a real number. The formula is
     // smooth in N, and callers legitimately pass non-integer effective sizes
     // (e.g. a branch-length-weighted mean); the previous ullong parameter
     // silently truncated them.
     vec pi(equilibrium);
-    double N = 2.0 * population_size;
+    double E = stationary_exponent(population_size, model);
     uvec small = find(pi < epsilon);
     pi.elem(small).fill(epsilon);
     pi /= sum(pi);
-    return (log(pi) - log(max(pi)) + N) / N;
+    return (log(pi) - log(max(pi)) + E) / E;
 }
 
 // FIX (2026-08-20, M2): mutational weight of each amino acid, i.e. the total
@@ -111,20 +148,22 @@ vec Palantir::amino_acid_mutational_weight(const vec& nucleotide_equilibrium, co
 }
 
 // FIX (2026-08-20, M2): degeneracy-aware inversion, see the note in
-// Palantir.hpp. psi_A = (log(pi_A) - log(m_A) - max(log(pi) - log(m)) + 2N)/2N
-// gives exp(2 N psi_A) * m_A proportional to pi_A, so the amino-acid marginal
+// Palantir.hpp. psi_A = (log(pi_A) - log(m_A) - max(log(pi) - log(m)) + E)/E
+// gives exp(E psi_A) * m_A proportional to pi_A, so the amino-acid marginal
 // of MutationSelection::equilibrium built on this fitness vector reproduces
-// `equilibrium`. The offset keeps the convention of the two-argument form:
-// the fittest amino acid has fitness exactly 1.
+// `equilibrium`. E is the stationary exponent, 2N - 1 or 2N. The offset keeps
+// the convention of the two-argument form: the fittest amino acid has fitness
+// exactly 1.
 vec Palantir::equilibrium_to_fitness(
         const vec& equilibrium,
         double population_size,
         const vec& nucleotide_equilibrium,
         const GeneticCode& g,
+        FixationModel model,
         double epsilon)
 {
     vec pi(equilibrium);
-    double N = 2.0 * population_size;
+    double E = stationary_exponent(population_size, model);
     uvec small = find(pi < epsilon);
     pi.elem(small).fill(epsilon);
     pi /= sum(pi);
@@ -140,5 +179,5 @@ vec Palantir::equilibrium_to_fitness(
     weight.elem(unreachable).fill(epsilon);
 
     vec psi = log(pi) - log(weight);
-    return (psi - max(psi) + N) / N;
+    return (psi - max(psi) + E) / E;
 }

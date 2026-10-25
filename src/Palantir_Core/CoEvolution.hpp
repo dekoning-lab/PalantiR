@@ -19,7 +19,8 @@ namespace Palantir{
                 const vec& fitness_1,
                 const vec& fitness_2,
                 const mat& delta,
-                const GeneticCode& g);
+                const GeneticCode& g,
+                FixationModel model = FixationModel::Diffusion);
 
         mat transition(
                 ullong population_size,
@@ -28,7 +29,8 @@ namespace Palantir{
                 const vec& fitness_1,
                 const vec& fitness_2,
                 const mat& delta,
-                const GeneticCode& g);
+                const GeneticCode& g,
+                FixationModel model = FixationModel::Diffusion);
 
         double scaling(
                 const vec& equilibrium,

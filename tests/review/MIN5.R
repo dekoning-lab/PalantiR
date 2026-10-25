@@ -69,9 +69,10 @@ result <- tryCatch({
     mf <- MutationSelection(N2, mu, hky, f_norm, "none")
 
     # recover per-codon fitness (up to a constant) from the equilibria:
-    # pi_f/pi_0 is proportional to exp(2N f), so differences of
-    # log(pi_f/pi_0)/2N are the selection coefficients of each move
-    d <- log(as.numeric(mf$equilibrium) / as.numeric(m0b$equilibrium)) / (2 * N2)
+    # pi_f/pi_0 is proportional to exp((2N - 1) f) under the default fixation
+    # probability (WF1), so differences of log(pi_f/pi_0)/(2N - 1) are the
+    # selection coefficients of each move
+    d <- log(as.numeric(mf$equilibrium) / as.numeric(m0b$equilibrium)) / (2 * N2 - 1)
     sel <- outer(d, d, function(a, b) b - a)
 
     fix_ref <- function(N, s) ifelse(s == 0, 1 / (2 * N),
