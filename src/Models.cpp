@@ -61,10 +61,12 @@ List MutationSelection(
         double mutation_rate,
         List nucleotide_model,
         arma::vec fitness,
-        std::string scaling_type = "synonymous")
+        std::string scaling_type = "synonymous",
+        std::string fixation = "diffusion")
 {
     Palantir::GeneticCode g(get_genetic_code_name());
     scaling_type = Palantir::CodonModel::canonical_scaling_type(scaling_type);
+    Palantir::FixationModel fixation_model = Palantir::fixation_model(fixation);
 
     if(!has_class(nucleotide_model, "SubstitutionModel") || get_attr(nucleotide_model, "type") != "nucleotide") {
         stop("Argument `nucleotide_model` should be a nucleotide substitution model");
@@ -82,9 +84,9 @@ List MutationSelection(
     arma::mat nucleotide_transition = nucleotide_model["transition"];
 
     arma::vec equilibrium = Palantir::MutationSelection::equilibrium(
-        N, mutation_rate, nucleotide_equilibrium, fitness, g);
+        N, mutation_rate, nucleotide_equilibrium, fitness, g, fixation_model);
     arma::mat transition = Palantir::MutationSelection::transition(
-        N, mutation_rate, nucleotide_transition, fitness, g);
+        N, mutation_rate, nucleotide_transition, fitness, g, fixation_model);
     double neutral_total_rate = NA_REAL;
     double neutral_synonymous_rate = NA_REAL;
     double synonymous_opportunities = NA_REAL;
@@ -98,9 +100,9 @@ List MutationSelection(
         // that share a mutation process retain a common clock.
         arma::vec neutral_fitness(Palantir::AminoAcid::size, fill::zeros);
         arma::vec neutral_equilibrium = Palantir::MutationSelection::equilibrium(
-            N, mutation_rate, nucleotide_equilibrium, neutral_fitness, g);
+            N, mutation_rate, nucleotide_equilibrium, neutral_fitness, g, fixation_model);
         arma::mat neutral_transition = Palantir::MutationSelection::transition(
-            N, mutation_rate, nucleotide_transition, neutral_fitness, g);
+            N, mutation_rate, nucleotide_transition, neutral_fitness, g, fixation_model);
         scaling = Palantir::CodonModel::neutral_dS_scaling(
             neutral_equilibrium, neutral_transition, g);
         neutral_total_rate = 3.0 * scaling;
@@ -125,6 +127,7 @@ List MutationSelection(
         _["transition"] = transition,
         _["sampling"] = sampling,
         _["population_size"] = N,
+        _["fixation"] = Palantir::fixation_model_name(fixation_model),
         _["fitness"] = fitness,
         _["nucleotide_model"] = nucleotide_model,
         _["scaling"] = scaling,
@@ -149,10 +152,12 @@ List CoEvolution(
     arma::vec fitness_1,
     arma::vec fitness_2,
     arma::mat delta,
-    std::string scaling_type = "synonymous")
+    std::string scaling_type = "synonymous",
+    std::string fixation = "diffusion")
 {
     Palantir::GeneticCode g(get_genetic_code_name());
     scaling_type = Palantir::CodonModel::canonical_scaling_type(scaling_type);
+    Palantir::FixationModel fixation_model = Palantir::fixation_model(fixation);
 
     if(!has_class(nucleotide_model, "SubstitutionModel") || get_attr(nucleotide_model, "type") != "nucleotide") {
         stop("Argument `nucleotide_model` should be a nucleotide substitution model");
@@ -172,9 +177,9 @@ List CoEvolution(
     arma::mat nucleotide_transition = nucleotide_model["transition"];
 
     arma::vec equilibrium = Palantir::CoEvolution::equilibrium(
-        N, mutation_rate, nucleotide_equilibrium, fitness_1, fitness_2, delta, g);
+        N, mutation_rate, nucleotide_equilibrium, fitness_1, fitness_2, delta, g, fixation_model);
     arma::mat transition = Palantir::CoEvolution::transition(
-        N, mutation_rate, nucleotide_transition, fitness_1, fitness_2, delta, g);
+        N, mutation_rate, nucleotide_transition, fitness_1, fitness_2, delta, g, fixation_model);
     double neutral_total_rate = NA_REAL;
     double neutral_synonymous_rate = NA_REAL;
     double synonymous_opportunities = NA_REAL;
@@ -189,9 +194,9 @@ List CoEvolution(
         // selected generator.
         arma::vec neutral_fitness(Palantir::AminoAcid::size, fill::zeros);
         arma::vec neutral_equilibrium = Palantir::MutationSelection::equilibrium(
-            N, mutation_rate, nucleotide_equilibrium, neutral_fitness, g);
+            N, mutation_rate, nucleotide_equilibrium, neutral_fitness, g, fixation_model);
         arma::mat neutral_transition = Palantir::MutationSelection::transition(
-            N, mutation_rate, nucleotide_transition, neutral_fitness, g);
+            N, mutation_rate, nucleotide_transition, neutral_fitness, g, fixation_model);
         scaling = Palantir::CodonModel::neutral_dS_scaling(
             neutral_equilibrium, neutral_transition, g);
         neutral_total_rate = 3.0 * scaling;
@@ -225,6 +230,7 @@ List CoEvolution(
         _["transition"] = transition,
         _["sampling"] = sampling,
         _["population_size"] = N,
+        _["fixation"] = Palantir::fixation_model_name(fixation_model),
         _["fitness_1"] = fitness_1,
         _["fitness_2"] = fitness_2,
         _["nucleotide_model"] = nucleotide_model,

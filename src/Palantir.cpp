@@ -210,7 +210,8 @@ std::vector<std::string> genetic_code_names()
 arma::vec equilibrium_to_fitness(
     arma::vec equilibrium,
     double population_size,
-    Rcpp::Nullable<Rcpp::NumericVector> nucleotide_equilibrium = R_NilValue)
+    Rcpp::Nullable<Rcpp::NumericVector> nucleotide_equilibrium = R_NilValue,
+    std::string fixation = "diffusion")
 {
     // FIX (2026-08-20): population_size here is a real effective size (the
     // formula is smooth in N and callers pass branch-length-weighted means);
@@ -220,9 +221,17 @@ arma::vec equilibrium_to_fitness(
              + std::to_string(population_size));
     }
     double N = population_size;
+    // FIX (2026-10-24): invert with the stationary exponent of the fixation
+    // model the fitnesses will be simulated under, 2N - 1 by default.
+    Palantir::FixationModel model = Palantir::fixation_model(fixation);
+    if(model == Palantir::FixationModel::Diffusion && N <= 0.5) {
+        stop("Argument `population_size` should exceed 1/2 under fixation = "
+             "\"diffusion\", whose stationary exponent is 2N - 1, not " +
+             std::to_string(population_size));
+    }
 
     if(nucleotide_equilibrium.isNull()) {
-        return Palantir::equilibrium_to_fitness(equilibrium, N);
+        return Palantir::equilibrium_to_fitness(equilibrium, N, model);
     }
 
     arma::vec nucleotide = as<arma::vec>(NumericVector(nucleotide_equilibrium));
@@ -237,7 +246,7 @@ arma::vec equilibrium_to_fitness(
     check_length(equilibrium.n_elem, Palantir::AminoAcid::size, "equilibrium");
 
     Palantir::GeneticCode g(get_genetic_code_name());
-    return Palantir::equilibrium_to_fitness(equilibrium, N, nucleotide, g);
+    return Palantir::equilibrium_to_fitness(equilibrium, N, nucleotide, g, model);
 }
 
 // [[Rcpp::export]]

@@ -37,12 +37,13 @@ result <- tryCatch({
     f1 <- seq(-600, -400, length.out = 20)
     f2 <- seq(-550, -420, length.out = 20)
 
-    # R-side reference: pi_i proportional to exp(2N f_aa(i)) * prod_k nuc_eq
+    # R-side reference: pi_i proportional to exp((2N - 1) f_aa(i)) * prod_k nuc_eq,
+    # the stationary distribution of the default (diffusion) generator (WF1)
     cn <- t(sapply(codons, function(s) match(strsplit(s, "")[[1]], nuc_order)))
     lognuc <- rowSums(matrix(log(nuc_eq)[cn], S, 3))
     softmax <- function(lw) { w <- exp(lw - max(lw)); w / sum(w) }
-    ref1 <- softmax(2 * N * f1[aa_idx] + lognuc)
-    ref2 <- softmax(2 * N * f2[aa_idx] + lognuc)
+    ref1 <- softmax((2 * N - 1) * f1[aa_idx] + lognuc)
+    ref2 <- softmax((2 * N - 1) * f2[aa_idx] + lognuc)
 
     # MutationSelection
     ms <- MutationSelection(N, mu, hky, f1, "synonymous")

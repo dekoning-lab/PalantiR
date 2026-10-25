@@ -42,8 +42,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // MutationSelection
-List MutationSelection(double population_size, double mutation_rate, List nucleotide_model, arma::vec fitness, std::string scaling_type);
-RcppExport SEXP _PalantiR_MutationSelection(SEXP population_sizeSEXP, SEXP mutation_rateSEXP, SEXP nucleotide_modelSEXP, SEXP fitnessSEXP, SEXP scaling_typeSEXP) {
+List MutationSelection(double population_size, double mutation_rate, List nucleotide_model, arma::vec fitness, std::string scaling_type, std::string fixation);
+RcppExport SEXP _PalantiR_MutationSelection(SEXP population_sizeSEXP, SEXP mutation_rateSEXP, SEXP nucleotide_modelSEXP, SEXP fitnessSEXP, SEXP scaling_typeSEXP, SEXP fixationSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -52,13 +52,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< List >::type nucleotide_model(nucleotide_modelSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type fitness(fitnessSEXP);
     Rcpp::traits::input_parameter< std::string >::type scaling_type(scaling_typeSEXP);
-    rcpp_result_gen = Rcpp::wrap(MutationSelection(population_size, mutation_rate, nucleotide_model, fitness, scaling_type));
+    Rcpp::traits::input_parameter< std::string >::type fixation(fixationSEXP);
+    rcpp_result_gen = Rcpp::wrap(MutationSelection(population_size, mutation_rate, nucleotide_model, fitness, scaling_type, fixation));
     return rcpp_result_gen;
 END_RCPP
 }
 // CoEvolution
-List CoEvolution(double population_size, double mutation_rate, List nucleotide_model, arma::vec fitness_1, arma::vec fitness_2, arma::mat delta, std::string scaling_type);
-RcppExport SEXP _PalantiR_CoEvolution(SEXP population_sizeSEXP, SEXP mutation_rateSEXP, SEXP nucleotide_modelSEXP, SEXP fitness_1SEXP, SEXP fitness_2SEXP, SEXP deltaSEXP, SEXP scaling_typeSEXP) {
+List CoEvolution(double population_size, double mutation_rate, List nucleotide_model, arma::vec fitness_1, arma::vec fitness_2, arma::mat delta, std::string scaling_type, std::string fixation);
+RcppExport SEXP _PalantiR_CoEvolution(SEXP population_sizeSEXP, SEXP mutation_rateSEXP, SEXP nucleotide_modelSEXP, SEXP fitness_1SEXP, SEXP fitness_2SEXP, SEXP deltaSEXP, SEXP scaling_typeSEXP, SEXP fixationSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -69,7 +70,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type fitness_2(fitness_2SEXP);
     Rcpp::traits::input_parameter< arma::mat >::type delta(deltaSEXP);
     Rcpp::traits::input_parameter< std::string >::type scaling_type(scaling_typeSEXP);
-    rcpp_result_gen = Rcpp::wrap(CoEvolution(population_size, mutation_rate, nucleotide_model, fitness_1, fitness_2, delta, scaling_type));
+    Rcpp::traits::input_parameter< std::string >::type fixation(fixationSEXP);
+    rcpp_result_gen = Rcpp::wrap(CoEvolution(population_size, mutation_rate, nucleotide_model, fitness_1, fitness_2, delta, scaling_type, fixation));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -133,15 +135,16 @@ BEGIN_RCPP
 END_RCPP
 }
 // equilibrium_to_fitness
-arma::vec equilibrium_to_fitness(arma::vec equilibrium, double population_size, Rcpp::Nullable<Rcpp::NumericVector> nucleotide_equilibrium);
-RcppExport SEXP _PalantiR_equilibrium_to_fitness(SEXP equilibriumSEXP, SEXP population_sizeSEXP, SEXP nucleotide_equilibriumSEXP) {
+arma::vec equilibrium_to_fitness(arma::vec equilibrium, double population_size, Rcpp::Nullable<Rcpp::NumericVector> nucleotide_equilibrium, std::string fixation);
+RcppExport SEXP _PalantiR_equilibrium_to_fitness(SEXP equilibriumSEXP, SEXP population_sizeSEXP, SEXP nucleotide_equilibriumSEXP, SEXP fixationSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::vec >::type equilibrium(equilibriumSEXP);
     Rcpp::traits::input_parameter< double >::type population_size(population_sizeSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::NumericVector> >::type nucleotide_equilibrium(nucleotide_equilibriumSEXP);
-    rcpp_result_gen = Rcpp::wrap(equilibrium_to_fitness(equilibrium, population_size, nucleotide_equilibrium));
+    Rcpp::traits::input_parameter< std::string >::type fixation(fixationSEXP);
+    rcpp_result_gen = Rcpp::wrap(equilibrium_to_fitness(equilibrium, population_size, nucleotide_equilibrium, fixation));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -294,14 +297,14 @@ static const R_CallMethodDef CallEntries[] = {
     {"_PalantiR_GeneticCode", (DL_FUNC) &_PalantiR_GeneticCode, 0},
     {"_PalantiR_HasegawaKishinoYano", (DL_FUNC) &_PalantiR_HasegawaKishinoYano, 3},
     {"_PalantiR_GeneralTimeReversible", (DL_FUNC) &_PalantiR_GeneralTimeReversible, 2},
-    {"_PalantiR_MutationSelection", (DL_FUNC) &_PalantiR_MutationSelection, 5},
-    {"_PalantiR_CoEvolution", (DL_FUNC) &_PalantiR_CoEvolution, 7},
+    {"_PalantiR_MutationSelection", (DL_FUNC) &_PalantiR_MutationSelection, 6},
+    {"_PalantiR_CoEvolution", (DL_FUNC) &_PalantiR_CoEvolution, 8},
     {"_PalantiR_GoldmanYang94Cpp", (DL_FUNC) &_PalantiR_GoldmanYang94Cpp, 5},
     {"_PalantiR_MarkovModulatedMutationSelection", (DL_FUNC) &_PalantiR_MarkovModulatedMutationSelection, 2},
     {"_PalantiR_Phylogeny", (DL_FUNC) &_PalantiR_Phylogeny, 2},
     {"_PalantiR_set_palantir_seed", (DL_FUNC) &_PalantiR_set_palantir_seed, 1},
     {"_PalantiR_genetic_code_names", (DL_FUNC) &_PalantiR_genetic_code_names, 0},
-    {"_PalantiR_equilibrium_to_fitness", (DL_FUNC) &_PalantiR_equilibrium_to_fitness, 3},
+    {"_PalantiR_equilibrium_to_fitness", (DL_FUNC) &_PalantiR_equilibrium_to_fitness, 4},
     {"_PalantiR_simulate_over_phylogeny", (DL_FUNC) &_PalantiR_simulate_over_phylogeny, 4},
     {"_PalantiR_phylogeny_to_intervals", (DL_FUNC) &_PalantiR_phylogeny_to_intervals, 2},
     {"_PalantiR_simulate_over_interval_phylogeny", (DL_FUNC) &_PalantiR_simulate_over_interval_phylogeny, 10},

@@ -12,10 +12,11 @@ HasegawaKishinoYano(equilibrium, transition_rate = 1, transversion_rate = 1)
 GeneralTimeReversible(equilibrium, exchangeability)
 
 MutationSelection(population_size, mutation_rate, nucleotide_model, fitness,
-                  scaling_type = "synonymous")
+                  scaling_type = "synonymous", fixation = "diffusion")
 
 CoEvolution(population_size, mutation_rate, nucleotide_model, fitness_1,
-            fitness_2, delta, scaling_type = "synonymous")
+            fitness_2, delta, scaling_type = "synonymous",
+            fixation = "diffusion")
 
 MarkovModulatedMutationSelection(mutation_selection_models, switching_model)
 }
@@ -41,6 +42,9 @@ fitnesses. \strong{Order matters and is not checked}: see Details.}
 \code{"non-synonymous"}, \code{"substitution"}, or \code{"none"}.
 \code{"dS"} and \code{"ds"} are aliases of \code{"synonymous"};
 \code{"standard"} is an alias of \code{"substitution"}. See Details.}
+\item{fixation}{The fixation probability of a new mutant: \code{"diffusion"}
+(Kimura's eq. 10, the default) or \code{"weak-selection"} (his eq. 11, as in
+Halpern and Bruno, PhyloBayes MutSel and swMutSel). See Details.}
 \item{switching_model}{An exchangeable model governing switching between modes.}
 \item{mutation_selection_models}{List of mutation-selection models, one per mode.}
 }
@@ -53,6 +57,8 @@ report \code{neutral_total_rate}, \code{neutral_synonymous_rate}, and the
 Q-weighted \code{synonymous_opportunities} used to define the gauge; these
 fields are \code{NA} for the other scaling types. They also report the
 per-state neutral-reference \code{dS_outflux} used by the transient rescaler.
+Mutation-selection and co-evolution models also store \code{population_size}
+and \code{fixation}.
 }
 \description{
 Construct substitution models. \code{MutationSelection} implements the
@@ -61,6 +67,32 @@ amino-acid fitnesses and an effective population size determine fixation
 probabilities and hence substitution rates.
 }
 \details{
+\strong{Fixation probability.} A single-nucleotide move from codon \eqn{i} to
+codon \eqn{j} has rate \eqn{2N\mu_{ij}u(s)}, where \eqn{N} is the number of
+diploid individuals, \eqn{\mu_{ij}} the mutation rate and
+\eqn{s = f_j - f_i} the difference between the fitnesses of the two amino
+acids, which is the homozygote selection coefficient (Kimura's \eqn{2s}).
+\code{"diffusion"} uses Kimura's (1962) diffusion result,
+\deqn{u(s) = \frac{1 - e^{-s}}{1 - e^{-2Ns}},}{u(s) = (1 - exp(-s)) / (1 - exp(-2Ns)),}
+and \code{"weak-selection"} its weak-selection limit,
+\deqn{u(s) = \frac{s}{1 - e^{-2Ns}}.}{u(s) = s / (1 - exp(-2Ns)).}
+Under weak selection the rate is \eqn{\mu_{ij} S / (1 - e^{-S})} with
+\eqn{S = 2Ns}, a function of the population-scaled coefficient alone. This is
+the substitution model of Halpern and Bruno (1998), PhyloBayes MutSel
+(Rodrigue et al. 2010) and swMutSel (Tamuri et al. 2012); use it to simulate
+data for those programs, whose fitted profiles are scaled fitnesses
+\eqn{2Nf}. Under the diffusion form the rate also depends on \eqn{N}: the two
+rates differ by a factor of about \eqn{1 - S/4N}, and the diffusion form is
+the closer approximation to Wright-Fisher fixation at small \eqn{N}.
+
+The stationary distribution of each codon is proportional to the mutational
+weight of its nucleotides times \eqn{e^{Ef}}, where detailed balance gives
+\eqn{E = 2N - 1} under the diffusion form and \eqn{E = 2N} under weak
+selection. \code{equilibrium} is exactly this distribution. Before version
+1.4.0 it used \eqn{E = 2N} under the diffusion form as well, and so was not
+the stationary distribution of \code{transition}; each frequency ratio was off
+by a factor \eqn{e^{f_j - f_i}}.
+
 \strong{Amino-acid ordering.} \code{fitness} is interpreted in this package's
 own order, \code{ACDEFGHIKLMNPQRSTVWY} (alphabetical by one-letter code). Other
 software uses different conventions; PAML and its rate files, for instance, use
@@ -88,6 +120,9 @@ this package, \code{"standard"} is accepted as an alias and stored canonically
 as \code{"substitution"}.
 }
 \references{
+Kimura, M. (1962) On the probability of fixation of mutant genes in a
+population. \emph{Genetics} \bold{47}, 713--719.
+
 Halpern, A. L. and Bruno, W. J. (1998) Evolutionary distances for protein-coding
 sequences: modeling site-specific residue frequencies.
 \emph{Molecular Biology and Evolution} \bold{15}, 910--917.
@@ -95,6 +130,15 @@ sequences: modeling site-specific residue frequencies.
 Hasegawa, M., Kishino, H. and Yano, T. (1985) Dating of the human-ape splitting
 by a molecular clock of mitochondrial DNA. \emph{Journal of Molecular Evolution}
 \bold{22}, 160--174.
+
+Rodrigue, N., Philippe, H. and Lartillot, N. (2010) Mutation-selection models
+of coding sequence evolution with site-heterogeneous amino acid fitness
+profiles. \emph{Proceedings of the National Academy of Sciences USA}
+\bold{107}, 4629--4634.
+
+Tamuri, A. U., dos Reis, M. and Goldstein, R. A. (2012) Estimating the
+distribution of selection coefficients from phylogenetic data using sitewise
+mutation-selection models. \emph{Genetics} \bold{190}, 1101--1115.
 }
 \examples{
 use_genetic_code("Vertebrate mitochondrial")

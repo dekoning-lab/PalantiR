@@ -14,6 +14,12 @@
 #   vector is bit-identical to the values produced by the pre-fix library
 #   (recorded below from rlib_patch); (c) the old tilt is still there when the
 #   argument is omitted, so the two branches are genuinely different.
+#
+# 1.4.0 (WF1): the default inversion now divides by 2N - 1, the stationary
+# exponent of the default (diffusion) generator, instead of 2N. Check (b)
+# therefore holds for fixation = "weak-selection", whose exponent is 2N, and
+# the default must equal the recorded values rescaled by 2N / (2N - 1) about
+# the fittest amino acid.
 
 suppressMessages(library(PalantiR))
 
@@ -66,15 +72,22 @@ tryCatch({
     tilt       <- aa_marginal(m_tilted)
     tilt_ratio <- max(tilt) / min(tilt)
 
-    # (b) the default path is unchanged, to the last bit.
+    # (b) the plain inversion is unchanged, to the last bit, under the
+    #     weak-selection exponent 2N, and the default is the same inversion
+    #     with exponent 2N - 1.
+    psi_weak    <- as.vector(equilibrium_to_fitness(PI_REF, Ne, fixation = "weak-selection"))
     psi_default <- as.vector(equilibrium_to_fitness(PI_REF, Ne))
+    psi_rescaled <- 1 + (2 * Ne / (2 * Ne - 1)) * (PSI_OLD - 1)
 
     if (any(tvs >= 1e-6)) {
         why <- paste0("round-trip TV distance too large: ",
                       paste(sprintf("%s=%.3g", names(tvs), tvs), collapse = ", "))
-    } else if (!isTRUE(all.equal(psi_default, PSI_OLD, tolerance = 1e-15))) {
-        why <- paste0("default (no nucleotide_equilibrium) path changed; max abs diff ",
-                      sprintf("%.3g", max(abs(psi_default - PSI_OLD))))
+    } else if (!isTRUE(all.equal(psi_weak, PSI_OLD, tolerance = 1e-15))) {
+        why <- paste0("weak-selection (no nucleotide_equilibrium) path changed; max abs diff ",
+                      sprintf("%.3g", max(abs(psi_weak - PSI_OLD))))
+    } else if (!isTRUE(max(abs(psi_default - psi_rescaled)) <= 1e-14)) {
+        why <- paste0("default path is not the 2N - 1 inversion; max abs diff ",
+                      sprintf("%.3g", max(abs(psi_default - psi_rescaled))))
     } else if (abs(tilt_ratio - 6) > 1e-6) {
         why <- paste0("expected the uncorrected uniform target to be spread 6x, got ",
                       sprintf("%.6f", tilt_ratio))

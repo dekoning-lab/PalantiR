@@ -32,7 +32,33 @@ namespace Palantir {
 
     uvec sample_sequence(const vec& equilibrium, ullong length);
 
-    vec equilibrium_to_fitness(const vec& equilibrium, double population_size, double epsilon = 1e-316);
+    // Fixation probability used by the mutation-selection generators, for a
+    // diploid Wright-Fisher population of N individuals. The selection
+    // coefficient s = f_j - f_i is the homozygote one, Kimura's 2s.
+    //   Diffusion:     Kimura (1962) eq. (10), u = (1 - e^{-s}) / (1 - e^{-2Ns}).
+    //   WeakSelection: Kimura (1962) eq. (11), u = s / (1 - e^{-2Ns}). The
+    //                  rate 2N mu u = mu S / (1 - e^{-S}) then depends on
+    //                  S = 2Ns alone, as in Halpern & Bruno (1998), PhyloBayes
+    //                  MutSel and swMutSel.
+    enum class FixationModel { Diffusion, WeakSelection };
+
+    FixationModel fixation_model(const string& name);
+    string fixation_model_name(FixationModel model);
+
+    // Exponent E of the generator's stationary distribution, which is
+    // proportional to the mutational weight times exp(E f). Detailed balance
+    // gives u(s) / u(-s) = e^{(2N - 1)s} under Diffusion and e^{2Ns} under
+    // WeakSelection.
+    double stationary_exponent(double population_size, FixationModel model);
+
+    // FIX (2026-10-24): both inversions take the fixation model, so that they
+    // divide by the stationary exponent of the generator the fitnesses will be
+    // used with. They divided by 2N, the weak-selection exponent, for both.
+    vec equilibrium_to_fitness(
+            const vec& equilibrium,
+            double population_size,
+            FixationModel model = FixationModel::Diffusion,
+            double epsilon = 1e-316);
 
     // FIX (2026-08-20, M2): degeneracy-aware inversion. The two-argument form
     // above inverts pi -> psi ignoring the mutational weight of each amino
@@ -49,6 +75,7 @@ namespace Palantir {
             double population_size,
             const vec& nucleotide_equilibrium,
             const GeneticCode& g,
+            FixationModel model = FixationModel::Diffusion,
             double epsilon = 1e-316);
 }
 

@@ -13,12 +13,12 @@ GeneralTimeReversible <- function(equilibrium, exchangeability) {
     .Call('_PalantiR_GeneralTimeReversible', PACKAGE = 'PalantiR', equilibrium, exchangeability)
 }
 
-MutationSelection <- function(population_size, mutation_rate, nucleotide_model, fitness, scaling_type = "synonymous") {
-    .Call('_PalantiR_MutationSelection', PACKAGE = 'PalantiR', population_size, mutation_rate, nucleotide_model, fitness, scaling_type)
+MutationSelection <- function(population_size, mutation_rate, nucleotide_model, fitness, scaling_type = "synonymous", fixation = "diffusion") {
+    .Call('_PalantiR_MutationSelection', PACKAGE = 'PalantiR', population_size, mutation_rate, nucleotide_model, fitness, scaling_type, fixation)
 }
 
-CoEvolution <- function(population_size, mutation_rate, nucleotide_model, fitness_1, fitness_2, delta, scaling_type = "synonymous") {
-    .Call('_PalantiR_CoEvolution', PACKAGE = 'PalantiR', population_size, mutation_rate, nucleotide_model, fitness_1, fitness_2, delta, scaling_type)
+CoEvolution <- function(population_size, mutation_rate, nucleotide_model, fitness_1, fitness_2, delta, scaling_type = "synonymous", fixation = "diffusion") {
+    .Call('_PalantiR_CoEvolution', PACKAGE = 'PalantiR', population_size, mutation_rate, nucleotide_model, fitness_1, fitness_2, delta, scaling_type, fixation)
 }
 
 .GoldmanYang94Cpp <- function(equilibrium, omega, kappa, frequency_model, scaling_type = "substitution") {
@@ -41,8 +41,8 @@ genetic_code_names <- function() {
     .Call('_PalantiR_genetic_code_names', PACKAGE = 'PalantiR')
 }
 
-equilibrium_to_fitness <- function(equilibrium, population_size, nucleotide_equilibrium = NULL) {
-    .Call('_PalantiR_equilibrium_to_fitness', PACKAGE = 'PalantiR', equilibrium, population_size, nucleotide_equilibrium)
+equilibrium_to_fitness <- function(equilibrium, population_size, nucleotide_equilibrium = NULL, fixation = "diffusion") {
+    .Call('_PalantiR_equilibrium_to_fitness', PACKAGE = 'PalantiR', equilibrium, population_size, nucleotide_equilibrium, fixation)
 }
 
 simulate_over_phylogeny <- function(phylogeny, model, sequence, rate = 1) {
